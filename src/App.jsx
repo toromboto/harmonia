@@ -1109,80 +1109,80 @@ const STORAGE_KEY_L = "bandoneon_left_v1";
 const STORAGE_KEY_R = "bandoneon_right_v1";
 
 const DEFS_L = [
-  { id:"L01", row:0, x:208, y: 46, abre:"SOL#", cierra:"SOL#", color_abre:"#ff6a00", color_cierra:"#ff6a00" , oct_abre:3, oct_cierra:3 },
-  { id:"L02", row:0, x:308, y: 40, abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a" , oct_abre:3, oct_cierra:2 },
-  { id:"L03", row:0, x:416, y: 42, abre:"DO#",  cierra:"RE#",  color_abre:"#01c7fc", color_cierra:"#84cc16" , oct_abre:3, oct_cierra:1 },
-  { id:"L04", row:0, x:526, y: 58, abre:"FA",   cierra:"RE#",  color_abre:"#d38301", color_cierra:"#84cc16" , oct_abre:3, oct_cierra:2 },
-  { id:"L05", row:0, x:640, y: 78, abre:"SOL#", cierra:"SOL",  color_abre:"#ff6a00", color_cierra:"#fefb41" , oct_abre:2, oct_cierra:3 },
-  { id:"L06", row:1, x: 64, y:126, abre:"MI",   cierra:"RE",   color_abre:"#583300", color_cierra:"#587934" , oct_abre:3, oct_cierra:3 },
-  { id:"L07", row:1, x:162, y:106, abre:"LA",   cierra:"RE",   color_abre:"#a62c17", color_cierra:"#587934" , oct_abre:3, oct_cierra:2 },
-  { id:"L08", row:1, x:254, y: 94, abre:"SOL",  cierra:"LA#",  color_abre:"#fefb41", color_cierra:"#e63b7a" , oct_abre:3, oct_cierra:1 },
-  { id:"L09", row:1, x:358, y: 98, abre:"RE#",  cierra:"DO",   color_abre:"#84cc16", color_cierra:"#285ff4" , oct_abre:2, oct_cierra:3 },
-  { id:"L10", row:1, x:472, y:108, abre:"FA",   cierra:"DO#",  color_abre:"#d38301", color_cierra:"#01c7fc" , oct_abre:1, oct_cierra:2 },
-  { id:"L11", row:1, x:576, y:108, abre:"LA#",  cierra:"DO",   color_abre:"#e63b7a", color_cierra:"#285ff4" , oct_abre:2, oct_cierra:2 },
-  { id:"L12", row:1, x:680, y:142, abre:"FA",   cierra:"FA#",  color_abre:"#d38301", color_cierra:"#feb43f" , oct_abre:2, oct_cierra:3 },
-  { id:"L13", row:2, x:110, y:172, abre:"RE",   cierra:"SOL",  color_abre:"#587934", color_cierra:"#fefb41" , oct_abre:2, oct_cierra:1 },
-  { id:"L14", row:2, x:210, y:156, abre:"LA",   cierra:"SOL",  color_abre:"#a62c17", color_cierra:"#fefb41" , oct_abre:1, oct_cierra:2 },
-  { id:"L15", row:2, x:302, y:154, abre:"DO",   cierra:"SI",   color_abre:"#285ff4", color_cierra:"#5e30eb" , oct_abre:1, oct_cierra:2 },
-  { id:"L16", row:2, x:410, y:162, abre:"MI",   cierra:"RE",   color_abre:"#583300", color_cierra:"#587934" , oct_abre:1, oct_cierra:1 },
-  { id:"L17", row:2, x:528, y:164, abre:"DO",   cierra:"FA",   color_abre:"#285ff4", color_cierra:"#d38301" , oct_abre:3, oct_cierra:3 },
-  { id:"L18", row:2, x:618, y:170, abre:"SOL",  cierra:"FA#",  color_abre:"#fefb41", color_cierra:"#feb43f" , oct_abre:2, oct_cierra:1 },
-  { id:"L19", row:3, x: 66, y:252, abre:"MI",   cierra:"LA",   color_abre:"#583300", color_cierra:"#a62c17" , oct_abre:2, oct_cierra:2 },
-  { id:"L20", row:3, x:158, y:230, abre:"SOL#", cierra:"MI",   color_abre:"#ff6a00", color_cierra:"#583300" , oct_abre:1, oct_cierra:2 },
-  { id:"L21", row:3, x:254, y:222, abre:"SI",   cierra:"LA",   color_abre:"#5e30eb", color_cierra:"#a62c17" , oct_abre:2, oct_cierra:3 },
-  { id:"L22", row:3, x:354, y:218, abre:"RE",   cierra:"DO#",  color_abre:"#587934", color_cierra:"#01c7fc" , oct_abre:3, oct_cierra:3 },
-  { id:"L23", row:3, x:458, y:224, abre:"FA#",  cierra:"MI",   color_abre:"#feb43f", color_cierra:"#583300" , oct_abre:1, oct_cierra:3 },
-  { id:"L24", row:3, x:560, y:234, abre:"DO#",  cierra:"SOL#", color_abre:"#00a1d8", color_cierra:"#ff6a00" , oct_abre:2, oct_cierra:2 },
-  { id:"L25", row:3, x:646, y:246, abre:"FA#",  cierra:"SI",   color_abre:"#feb43f", color_cierra:"#5e30eb" , oct_abre:3, oct_cierra:1 },
-  { id:"L26", row:4, x: 26, y:328, abre:"RE",   cierra:"MI",   color_abre:"#587934", color_cierra:"#583300" , oct_abre:1, oct_cierra:1 },
-  { id:"L27", row:4, x:110, y:308, abre:"SI",   cierra:"MI",   color_abre:"#5e30eb", color_cierra:"#583300" , oct_abre:1, oct_cierra:1 },
-  { id:"L28", row:4, x:204, y:294, abre:"MI",   cierra:"SOL",  color_abre:"#583300", color_cierra:"#fefb41" , oct_abre:2, oct_cierra:1 },
-  { id:"L29", row:4, x:298, y:288, abre:"LA",   cierra:"LA",   color_abre:"#a62c17", color_cierra:"#a62c17" , oct_abre:2, oct_cierra:1 },
-  { id:"L30", row:4, x:390, y:286, abre:"RE#",  cierra:"SI",   color_abre:"#84cc16", color_cierra:"#5e30eb" , oct_abre:1, oct_cierra:1 },
-  { id:"L31", row:4, x:496, y:296, abre:"FA#",  cierra:"FA",   color_abre:"#feb43f", color_cierra:"#d38301" , oct_abre:2, oct_cierra:1 },
-  { id:"L32", row:4, x:590, y:306, abre:"RE#",  cierra:"DO#",  color_abre:"#84cc16", color_cierra:"#01c7fc" , oct_abre:3, oct_cierra:1 },
-  { id:"L33", row:4, x:674, y:324, abre:"DO",   cierra:"FA",   color_abre:"#285ff4", color_cierra:"#d38301" , oct_abre:2, oct_cierra:2 },
+  { id:"L01", row:0, x:208, y:46,  abre:"SOL#", cierra:"SOL#", color_abre:"#ff6a00", color_cierra:"#ff6a00", oct_abre:0, oct_cierra:2 },
+  { id:"L02", row:0, x:308, y:40,  abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a", oct_abre:0, oct_cierra:0 },
+  { id:"L03", row:0, x:416, y:42,  abre:"DO#",  cierra:"RE#",  color_abre:"#01c7fc", color_cierra:"#84cc16", oct_abre:1, oct_cierra:0 },
+  { id:"L04", row:0, x:526, y:58,  abre:"FA",   cierra:"RE#",  color_abre:"#d38301", color_cierra:"#84cc16", oct_abre:1, oct_cierra:2 },
+  { id:"L05", row:0, x:640, y:78,  abre:"SOL#", cierra:"SOL",  color_abre:"#ff6a00", color_cierra:"#fefb41", oct_abre:2, oct_cierra:2 },
+  { id:"L06", row:1, x:64,  y:126, abre:"MI",   cierra:"RE",   color_abre:"#583300", color_cierra:"#587934", oct_abre:0, oct_cierra:0 },
+  { id:"L07", row:1, x:162, y:106, abre:"LA",   cierra:"RE",   color_abre:"#a62c17", color_cierra:"#587934", oct_abre:2, oct_cierra:1 },
+  { id:"L08", row:1, x:258, y:96,  abre:"SOL",  cierra:"LA#",  color_abre:"#fefb41", color_cierra:"#e63b7a", oct_abre:1, oct_cierra:1 },
+  { id:"L09", row:1, x:358, y:98,  abre:"RE#",  cierra:"DO",   color_abre:"#84cc16", color_cierra:"#285ff4", oct_abre:1, oct_cierra:2 },
+  { id:"L10", row:1, x:472, y:108, abre:"FA",   cierra:"DO#",  color_abre:"#d38301", color_cierra:"#01c7fc", oct_abre:3, oct_cierra:2 },
+  { id:"L11", row:1, x:576, y:108, abre:"LA#",  cierra:"DO",   color_abre:"#e63b7a", color_cierra:"#285ff4", oct_abre:1, oct_cierra:1 },
+  { id:"L12", row:1, x:680, y:142, abre:"FA",   cierra:"FA#",  color_abre:"#d38301", color_cierra:"#feb43f", oct_abre:0, oct_cierra:2 },
+  { id:"L13", row:2, x:110, y:172, abre:"RE",   cierra:"SOL",  color_abre:"#587934", color_cierra:"#fefb41", oct_abre:1, oct_cierra:0 },
+  { id:"L14", row:2, x:210, y:156, abre:"LA",   cierra:"SOL",  color_abre:"#a62c17", color_cierra:"#fefb41", oct_abre:1, oct_cierra:1 },
+  { id:"L15", row:2, x:302, y:154, abre:"DO",   cierra:"SI",   color_abre:"#285ff4", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:1 },
+  { id:"L16", row:2, x:410, y:162, abre:"MI",   cierra:"RE",   color_abre:"#583300", color_cierra:"#587934", oct_abre:2, oct_cierra:2 },
+  { id:"L17", row:2, x:528, y:164, abre:"DO",   cierra:"FA",   color_abre:"#285ff4", color_cierra:"#d38301", oct_abre:1, oct_cierra:2 },
+  { id:"L18", row:2, x:618, y:170, abre:"SOL",  cierra:"FA#",  color_abre:"#fefb41", color_cierra:"#feb43f", oct_abre:0, oct_cierra:0 },
+  { id:"L19", row:3, x:66,  y:252, abre:"MI",   cierra:"LA",   color_abre:"#583300", color_cierra:"#a62c17", oct_abre:1, oct_cierra:1 },
+  { id:"L20", row:3, x:158, y:230, abre:"SOL#", cierra:"MI",   color_abre:"#ff6a00", color_cierra:"#583300", oct_abre:1, oct_cierra:1 },
+  { id:"L21", row:3, x:254, y:222, abre:"SI",   cierra:"LA",   color_abre:"#5e30eb", color_cierra:"#a62c17", oct_abre:1, oct_cierra:1 },
+  { id:"L22", row:3, x:354, y:218, abre:"RE",   cierra:"DO#",  color_abre:"#587934", color_cierra:"#01c7fc", oct_abre:2, oct_cierra:2 },
+  { id:"L23", row:3, x:458, y:224, abre:"FA#",  cierra:"MI",   color_abre:"#feb43f", color_cierra:"#583300", oct_abre:2, oct_cierra:2 },
+  { id:"L24", row:3, x:560, y:234, abre:"DO#",  cierra:"SOL#", color_abre:"#00a1d8", color_cierra:"#ff6a00", oct_abre:2, oct_cierra:1 },
+  { id:"L25", row:3, x:646, y:246, abre:"FA#",  cierra:"SI",   color_abre:"#feb43f", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:0 },
+  { id:"L26", row:4, x:26,  y:328, abre:"RE",   cierra:"MI",   color_abre:"#587934", color_cierra:"#754400", oct_abre:0, oct_cierra:0 },
+  { id:"L27", row:4, x:110, y:308, abre:"SI",   cierra:"MI",   color_abre:"#5e30eb", color_cierra:"#583300", oct_abre:0, oct_cierra:1 },
+  { id:"L28", row:4, x:204, y:294, abre:"SOL",  cierra:"SOL#", color_abre:"#705200", color_cierra:"#ecac22", oct_abre:2, oct_cierra:2 },
+  { id:"L29", row:4, x:298, y:288, abre:"LA",   cierra:"LA",   color_abre:"#a62c17", color_cierra:"#a62c17", oct_abre:2, oct_cierra:0 },
+  { id:"L30", row:4, x:390, y:286, abre:"RE#",  cierra:"SI",   color_abre:"#84cc16", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:0 },
+  { id:"L31", row:4, x:496, y:296, abre:"FA#",  cierra:"FA",   color_abre:"#feb43f", color_cierra:"#d38301", oct_abre:1, oct_cierra:0 },
+  { id:"L32", row:4, x:590, y:306, abre:"RE#",  cierra:"DO#",  color_abre:"#84cc16", color_cierra:"#01c7fc", oct_abre:0, oct_cierra:0 },
+  { id:"L33", row:4, x:674, y:324, abre:"DO",   cierra:"FA",   color_abre:"#285ff4", color_cierra:"#d38301", oct_abre:0, oct_cierra:0 },
 ];
 
 const DEFS_R = [
-  { id:"R01", row:0, x:174, y:  0, abre:"SI",   cierra:"SI",   color_abre:"#5e30eb", color_cierra:"#5e30eb" , oct_abre:2, oct_cierra:3 },
-  { id:"R02", row:0, x:274, y:  0, abre:"SOL#", cierra:"SOL#", color_abre:"#ff6a00", color_cierra:"#ff6a00" , oct_abre:5, oct_cierra:5 },
-  { id:"R03", row:0, x:376, y:  0, abre:"SOL",  cierra:"FA#",  color_abre:"#fefb41", color_cierra:"#ffc777" , oct_abre:2, oct_cierra:5 },
-  { id:"R04", row:0, x:484, y:  0, abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800" , oct_abre:5, oct_cierra:3 },
-  { id:"R05", row:0, x:220, y: 38, abre:"LA",   cierra:"SOL",  color_abre:"#a62c17", color_cierra:"#fefb41" , oct_abre:5, oct_cierra:2 },
-  { id:"R06", row:0, x:326, y: 38, abre:"FA#",  cierra:"LA#",  color_abre:"#ffc777", color_cierra:"#e63b7a" , oct_abre:5, oct_cierra:4 },
-  { id:"R07", row:0, x:432, y: 40, abre:"MI",   cierra:"DO",   color_abre:"#583300", color_cierra:"#285ff4" , oct_abre:5, oct_cierra:5 },
-  { id:"R08", row:1, x:128, y: 46, abre:"DO#",  cierra:"DO",   color_abre:"#01c7fc", color_cierra:"#285ff4" , oct_abre:3, oct_cierra:3 },
-  { id:"R09", row:1, x:528, y: 50, abre:"RE#",  cierra:"RE#",  color_abre:"#84cc16", color_cierra:"#84cc16" , oct_abre:5, oct_cierra:5 },
-  { id:"R10", row:1, x: 88, y:104, abre:"DO",   cierra:"RE",   color_abre:"#285ff4", color_cierra:"#587934" , oct_abre:3, oct_cierra:3 },
-  { id:"R11", row:1, x:178, y: 98, abre:"RE",   cierra:"DO#",  color_abre:"#587934", color_cierra:"#01c7fc" , oct_abre:3, oct_cierra:3 },
-  { id:"R12", row:1, x:280, y: 86, abre:"SOL",  cierra:"SOL#", color_abre:"#fefb41", color_cierra:"#ff6a00" , oct_abre:3, oct_cierra:3 },
-  { id:"R13", row:1, x:388, y: 86, abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a" , oct_abre:4, oct_cierra:3 },
-  { id:"R14", row:1, x:484, y: 94, abre:"DO",   cierra:"MI",   color_abre:"#285ff4", color_cierra:"#583300" , oct_abre:5, oct_cierra:4 },
-  { id:"R15", row:1, x:572, y:114, abre:"RE",   cierra:"RE",   color_abre:"#587934", color_cierra:"#587934" , oct_abre:5, oct_cierra:5 },
-  { id:"R16", row:2, x: 42, y:188, abre:"SI",   cierra:"DO",   color_abre:"#5e30eb", color_cierra:"#285ff4" , oct_abre:3, oct_cierra:4 },
-  { id:"R17", row:2, x:136, y:168, abre:"MI",   cierra:"DO#",  color_abre:"#583300", color_cierra:"#01c7fc" , oct_abre:3, oct_cierra:4 },
-  { id:"R18", row:2, x:236, y:156, abre:"DO#",  cierra:"FA#",  color_abre:"#01c7fc", color_cierra:"#ffc777" , oct_abre:4, oct_cierra:4 },
-  { id:"R19", row:2, x:342, y:148, abre:"FA#",  cierra:"SI",   color_abre:"#ffc777", color_cierra:"#5e30eb" , oct_abre:3, oct_cierra:2 },
-  { id:"R20", row:2, x:436, y:156, abre:"LA",   cierra:"SI",   color_abre:"#a62c17", color_cierra:"#5e30eb" , oct_abre:3, oct_cierra:4 },
-  { id:"R21", row:2, x:530, y:164, abre:"DO",   cierra:"RE",   color_abre:"#285ff4", color_cierra:"#587934" , oct_abre:4, oct_cierra:4 },
-  { id:"R22", row:2, x:612, y:184, abre:"MI",   cierra:"SOL",  color_abre:"#583300", color_cierra:"#fefb41" , oct_abre:4, oct_cierra:5 },
-  { id:"R23", row:2, x:  0, y:262, abre:"LA",   cierra:"RE",   color_abre:"#a62c17", color_cierra:"#587934" , oct_abre:2, oct_cierra:4 },
-  { id:"R24", row:2, x: 94, y:246, abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800" , oct_abre:3, oct_cierra:4 },
-  { id:"R25", row:3, x:188, y:232, abre:"LA#",  cierra:"MI",   color_abre:"#e63b7a", color_cierra:"#583300" , oct_abre:3, oct_cierra:3 },
-  { id:"R26", row:3, x:284, y:224, abre:"SOL#", cierra:"LA",   color_abre:"#ff6a00", color_cierra:"#a62c17" , oct_abre:3, oct_cierra:3 },
-  { id:"R27", row:3, x:386, y:224, abre:"SI",   cierra:"DO#",  color_abre:"#5e30eb", color_cierra:"#01c7fc" , oct_abre:4, oct_cierra:5 },
-  { id:"R28", row:3, x:478, y:232, abre:"RE",   cierra:"MI",   color_abre:"#587934", color_cierra:"#583300" , oct_abre:4, oct_cierra:5 },
-  { id:"R29", row:3, x:570, y:246, abre:"SOL#", cierra:"LA",   color_abre:"#ff6a00", color_cierra:"#a62c17" , oct_abre:4, oct_cierra:4 },
-  { id:"R30", row:3, x:654, y:266, abre:"SI",   cierra:"DO#",  color_abre:"#5e30eb", color_cierra:"#01c7fc" , oct_abre:4, oct_cierra:5 },
-  { id:"R31", row:3, x: 26, y:328, abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a" , oct_abre:2, oct_cierra:2 },
-  { id:"R32", row:3, x:122, y:312, abre:"RE#",  cierra:"RE#",  color_abre:"#84cc16", color_cierra:"#84cc16" , oct_abre:3, oct_cierra:4 },
-  { id:"R33", row:4, x:220, y:298, abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800" , oct_abre:4, oct_cierra:5 },
-  { id:"R34", row:4, x:316, y:296, abre:"RE#",  cierra:"MI",   color_abre:"#84cc16", color_cierra:"#583300" , oct_abre:4, oct_cierra:5 },
-  { id:"R35", row:4, x:412, y:300, abre:"FA#",  cierra:"SOL#", color_abre:"#ffc777", color_cierra:"#ff6a00" , oct_abre:4, oct_cierra:4 },
-  { id:"R36", row:4, x:500, y:308, abre:"LA",   cierra:"SI",   color_abre:"#a62c17", color_cierra:"#5e30eb" , oct_abre:4, oct_cierra:4 },
-  { id:"R37", row:4, x:594, y:322, abre:"DO#",  cierra:"MI",   color_abre:"#01c7fc", color_cierra:"#583300" , oct_abre:5, oct_cierra:5 },
-  { id:"R38", row:4, x:680, y:346, abre:"SOL",  cierra:"RE#",  color_abre:"#fefb41", color_cierra:"#84cc16" , oct_abre:4, oct_cierra:3 },
+  { id:"R01", row:0, x:174, y:0,   abre:"SI",   cierra:"SI",   color_abre:"#5e30eb", color_cierra:"#5e30eb", oct_abre:1, oct_cierra:2 },
+  { id:"R02", row:0, x:274, y:0,   abre:"SOL#", cierra:"SOL#", color_abre:"#ff6a00", color_cierra:"#ff6a00", oct_abre:4, oct_cierra:4 },
+  { id:"R03", row:0, x:376, y:0,   abre:"SOL",  cierra:"FA#",  color_abre:"#fefb41", color_cierra:"#ffc777", oct_abre:1, oct_cierra:4 },
+  { id:"R04", row:0, x:484, y:0,   abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800", oct_abre:4, oct_cierra:2 },
+  { id:"R05", row:0, x:220, y:38,  abre:"LA",   cierra:"SOL",  color_abre:"#a62c17", color_cierra:"#fefb41", oct_abre:4, oct_cierra:1 },
+  { id:"R06", row:0, x:326, y:38,  abre:"FA#",  cierra:"LA#",  color_abre:"#ffc777", color_cierra:"#e63b7a", oct_abre:4, oct_cierra:3 },
+  { id:"R07", row:0, x:432, y:40,  abre:"MI",   cierra:"DO",   color_abre:"#583300", color_cierra:"#285ff4", oct_abre:4, oct_cierra:4 },
+  { id:"R08", row:1, x:128, y:46,  abre:"DO#",  cierra:"DO",   color_abre:"#01c7fc", color_cierra:"#285ff4", oct_abre:2, oct_cierra:2 },
+  { id:"R09", row:1, x:528, y:50,  abre:"RE#",  cierra:"RE#",  color_abre:"#84cc16", color_cierra:"#84cc16", oct_abre:4, oct_cierra:4 },
+  { id:"R10", row:1, x:88,  y:104, abre:"DO",   cierra:"RE",   color_abre:"#285ff4", color_cierra:"#587934", oct_abre:2, oct_cierra:2 },
+  { id:"R11", row:1, x:178, y:98,  abre:"RE",   cierra:"DO#",  color_abre:"#587934", color_cierra:"#01c7fc", oct_abre:2, oct_cierra:2 },
+  { id:"R12", row:1, x:280, y:86,  abre:"SOL",  cierra:"SOL#", color_abre:"#fefb41", color_cierra:"#ff6a00", oct_abre:2, oct_cierra:2 },
+  { id:"R13", row:1, x:388, y:86,  abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a", oct_abre:3, oct_cierra:2 },
+  { id:"R14", row:1, x:484, y:94,  abre:"DO",   cierra:"MI",   color_abre:"#285ff4", color_cierra:"#583300", oct_abre:4, oct_cierra:3 },
+  { id:"R15", row:1, x:572, y:114, abre:"RE",   cierra:"RE",   color_abre:"#587934", color_cierra:"#587934", oct_abre:4, oct_cierra:4 },
+  { id:"R16", row:2, x:42,  y:188, abre:"SI",   cierra:"DO",   color_abre:"#5e30eb", color_cierra:"#285ff4", oct_abre:2, oct_cierra:3 },
+  { id:"R17", row:2, x:136, y:168, abre:"MI",   cierra:"DO#",  color_abre:"#583300", color_cierra:"#01c7fc", oct_abre:2, oct_cierra:3 },
+  { id:"R18", row:2, x:236, y:156, abre:"DO#",  cierra:"FA#",  color_abre:"#01c7fc", color_cierra:"#ffc777", oct_abre:3, oct_cierra:3 },
+  { id:"R19", row:2, x:342, y:148, abre:"FA#",  cierra:"SI",   color_abre:"#ffc777", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:1 },
+  { id:"R20", row:2, x:436, y:156, abre:"LA",   cierra:"SI",   color_abre:"#a62c17", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:3 },
+  { id:"R21", row:2, x:530, y:164, abre:"DO",   cierra:"RE",   color_abre:"#285ff4", color_cierra:"#587934", oct_abre:3, oct_cierra:3 },
+  { id:"R22", row:2, x:612, y:184, abre:"MI",   cierra:"SOL",  color_abre:"#583300", color_cierra:"#fefb41", oct_abre:3, oct_cierra:4 },
+  { id:"R23", row:2, x:0,   y:262, abre:"LA",   cierra:"RE",   color_abre:"#a62c17", color_cierra:"#587934", oct_abre:1, oct_cierra:3 },
+  { id:"R24", row:2, x:94,  y:246, abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800", oct_abre:2, oct_cierra:3 },
+  { id:"R25", row:3, x:188, y:232, abre:"LA#",  cierra:"MI",   color_abre:"#e63b7a", color_cierra:"#583300", oct_abre:2, oct_cierra:2 },
+  { id:"R26", row:3, x:284, y:224, abre:"SOL#", cierra:"LA",   color_abre:"#ff6a00", color_cierra:"#a62c17", oct_abre:2, oct_cierra:2 },
+  { id:"R27", row:3, x:386, y:224, abre:"SI",   cierra:"DO#",  color_abre:"#5e30eb", color_cierra:"#01c7fc", oct_abre:3, oct_cierra:4 },
+  { id:"R28", row:3, x:478, y:232, abre:"RE",   cierra:"MI",   color_abre:"#587934", color_cierra:"#583300", oct_abre:3, oct_cierra:4 },
+  { id:"R29", row:3, x:570, y:246, abre:"SOL#", cierra:"LA",   color_abre:"#ff6a00", color_cierra:"#a62c17", oct_abre:3, oct_cierra:3 },
+  { id:"R30", row:3, x:654, y:266, abre:"SI",   cierra:"DO#",  color_abre:"#5e30eb", color_cierra:"#01c7fc", oct_abre:3, oct_cierra:4 },
+  { id:"R31", row:3, x:26,  y:328, abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a", oct_abre:1, oct_cierra:1 },
+  { id:"R32", row:3, x:122, y:312, abre:"RE#",  cierra:"RE#",  color_abre:"#84cc16", color_cierra:"#84cc16", oct_abre:2, oct_cierra:3 },
+  { id:"R33", row:4, x:220, y:298, abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800", oct_abre:3, oct_cierra:4 },
+  { id:"R34", row:4, x:316, y:296, abre:"RE#",  cierra:"MI",   color_abre:"#84cc16", color_cierra:"#583300", oct_abre:3, oct_cierra:4 },
+  { id:"R35", row:4, x:412, y:300, abre:"FA#",  cierra:"SOL#", color_abre:"#ffc777", color_cierra:"#ff6a00", oct_abre:3, oct_cierra:3 },
+  { id:"R36", row:4, x:500, y:308, abre:"LA",   cierra:"SI",   color_abre:"#a62c17", color_cierra:"#5e30eb", oct_abre:3, oct_cierra:3 },
+  { id:"R37", row:4, x:594, y:322, abre:"DO#",  cierra:"MI",   color_abre:"#01c7fc", color_cierra:"#583300", oct_abre:4, oct_cierra:4 },
+  { id:"R38", row:4, x:680, y:346, abre:"SOL",  cierra:"RE#",  color_abre:"#fefb41", color_cierra:"#84cc16", oct_abre:3, oct_cierra:2 },
 ];
 
 function loadBtns() {
@@ -1672,330 +1672,182 @@ function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
   );
 }
 
+// ─── DESKTOP LAYOUT: 3 COLUMNAS con escala automática ────────────────────────
+// [Teclado Izq escalado] [Panel central: notas + acorde + fuelle] [Teclado Der escalado]
+// Los canvas se escalan con transform:scale para caber sin overflow.
+function DesktopBandLayout({
+  leftBtns, rightBtns, bellows, view,
+  pressedL, pressedR, heardIdsL, heardIdsR,
+  downL, upL, downR, upR,
+  OCT_L_OPEN, OCT_L_CLOSE, OCT_R_OPEN, OCT_R_CLOSE,
+  activeNotes, detected, heardNote, LAT,
+}) {
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(1);
 
-// ─── AUDIO BANDONEÓN — SOSTENIDO CON FILTRO (timbre cálido) ──────────────────
-// Devuelve { oscs, gains, filter } para poder detenerlos en onUp
-function startBandNote(eng, oct) {
-  try {
-    const ctx = getCtx(); if (!ctx) return null;
-    if (ctx.state === "suspended") ctx.resume();
-    const MIDI_B = {C:60,"C#":61,D:62,"D#":63,E:64,F:65,"F#":66,G:67,"G#":68,A:69,"A#":70,B:71};
-    const baseMidi = (MIDI_B[eng] ?? 60) + (oct - 4) * 12;
-    const baseFreq = 440 * Math.pow(2, (baseMidi - 69) / 12);
+  // Dimensiones reales de cada canvas (sin escalar)
+  const BTN = 44;
+  const rawW_L = leftBtns.length  ? Math.max(...leftBtns.map(b=>b.x))  + BTN + 16 : 750;
+  const rawH_L = leftBtns.length  ? Math.max(...leftBtns.map(b=>b.y))  + BTN + 20 : 400;
+  const rawW_R = rightBtns.length ? Math.max(...rightBtns.map(b=>b.x)) + BTN + 16 : 750;
+  const rawH_R = rightBtns.length ? Math.max(...rightBtns.map(b=>b.y)) + BTN + 20 : 400;
 
-    // Filtro lowpass — quita los agudos chirriantes (simula el fuelle)
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = 1800;
-    filter.Q.value = 0.8;
-    filter.connect(ctx.destination);
+  // Ancho del panel central fijo
+  const CENTER_W = 220;
+  const GAP = 12;
 
-    // Reverb simple con ConvolverNode o solo delay leve
-    const delay = ctx.createDelay(0.04);
-    delay.delayTime.value = 0.018;
-    const delayGain = ctx.createGain();
-    delayGain.gain.value = 0.12;
-    delay.connect(delayGain);
-    delayGain.connect(filter);
-
-    const nodes = [1, 1.5, 2, 3].map((ratio, i) => {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(filter);
-      gain.connect(delay);
-
-      // Mezcla sawtooth+triangle para timbre más cálido
-      osc.type = i === 0 ? "sawtooth" : i === 1 ? "triangle" : "sawtooth";
-      osc.frequency.value = baseFreq * ratio;
-
-      const vol = [0.28, 0.12, 0.07, 0.04][i];
-      // Attack suave (0.04s) — evita el "click" inicial
-      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(vol, ctx.currentTime + 0.04);
-      osc.start();
-      return { osc, gain };
+  useEffect(()=>{
+    if(!containerRef.current) return;
+    const obs = new ResizeObserver(()=>{
+      const totalW = containerRef.current.clientWidth;
+      // Espacio disponible para los dos teclados (descontando panel central y gaps)
+      const available = totalW - CENTER_W - GAP * 2;
+      const neededW   = rawW_L + rawW_R;
+      const rawH      = Math.max(rawH_L, rawH_R);
+      // Escala para que quepan en ancho; cap a 1 (no agrandar)
+      const scaleByW  = available > 0 ? available / neededW : 1;
+      // También chequear alto disponible (viewport - aprox 340px de controles)
+      const availH    = window.innerHeight - 340;
+      const scaleByH  = availH > 0 ? availH / rawH : 1;
+      const s = Math.min(1, scaleByW, scaleByH);
+      setScale(Math.max(0.35, s));
     });
+    obs.observe(containerRef.current);
+    return ()=>obs.disconnect();
+  },[rawW_L, rawW_R, rawH_L, rawH_R]);
 
-    return { nodes, filter, delay, delayGain, ctx };
-  } catch(e) { return null; }
-}
+  // Altura visual que ocupa cada canvas escalado
+  const visH_L = Math.ceil(rawH_L * scale);
+  const visH_R = Math.ceil(rawH_R * scale);
+  const visH   = Math.max(visH_L, visH_R);
+  const visW_L = Math.ceil(rawW_L * scale);
+  const visW_R = Math.ceil(rawW_R * scale);
 
-function stopBandNote(handle) {
-  if (!handle) return;
-  const { nodes, filter, delay, delayGain, ctx } = handle;
-  const t = ctx.currentTime;
-  // Release suave (0.12s) — evita el "click" al soltar
-  nodes.forEach(({ gain, osc }) => {
-    try {
-      gain.gain.cancelScheduledValues(t);
-      gain.gain.setValueAtTime(gain.gain.value, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-      osc.stop(t + 0.13);
-    } catch(e) {}
-  });
-}
+  // Canvas con transform:scale desde la esquina superior izquierda
+  const ScaledCanvas = ({buttons, bellows: bel, pressed, heardIds, onDown, onUp, octMap, rawW, rawH, label}) => (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}>
+      <div style={{fontSize:9,color:"#7a5030",marginBottom:4,letterSpacing:"0.12em",width:Math.ceil(rawW*scale)+"px",textAlign:"center"}}>
+        {label} · {buttons.length} botones
+      </div>
+      {/* Contenedor con las dimensiones visuales escaladas */}
+      <div style={{width:Math.ceil(rawW*scale)+"px", height:Math.ceil(rawH*scale)+"px", position:"relative", flexShrink:0}}>
+        {/* El canvas real, escalado desde su origen */}
+        <div style={{
+          position:"absolute", top:0, left:0,
+          width:rawW+"px", height:rawH+"px",
+          transformOrigin:"top left",
+          transform:`scale(${scale})`,
+        }}>
+          <div
+            onClick={()=>{}}
+            style={{
+              position:"relative", width:rawW, height:rawH,
+              background:"linear-gradient(145deg,#281a08,#140e04)",
+              border:"2px solid #6b4c1e",
+              borderRadius:16,
+              boxShadow:"0 8px 24px rgba(0,0,0,.7)",
+              touchAction:"none",
+            }}
+          >
+            {buttons.map(btn=>(
+              <BandBtn key={btn.id} btn={btn} bellows={bel}
+                pressed={pressed} isHeard={heardIds.includes(btn.id)}
+                onDown={onDown} onUp={onUp}
+                oct={octMap ? octMap[btn.id] : null}/>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-// ─── VOICINGS DEL BANDONEÓN ───────────────────────────────────────────────────
-// Dado un acorde, genera 3 opciones de digitación en el teclado físico.
-// Tónica siempre en mano izquierda (MI).
-// Variantes: [3ª+7ª], [3ª+5ª+7ª], [3ª+5ª+7ª+9ª]
-function getBandVoicings(chord, leftBtns, rightBtns, bellows) {
-  if (!chord) return [];
-  const { root, quality } = chord;
-  const formula = FORMULAS[quality] || FORMULAS["maj"];
-  const ivs = formula.intervals;
-
-  // Notas del acorde en inglés
-  const has = s => ivs.some(i => (i % 12) === s % 12);
-  const noteAt = semi => fromRoot(root, semi);
-
-  // Construir las 3 variantes de intervalos para MD
-  // V1: 3ª + 7ª (guía-notas esenciales)
-  // V2: 3ª + 5ª + 7ª
-  // V3: 3ª + 5ª + 7ª + 9ª (o tensión disponible)
-  const third  = has(3) ? noteAt(3) : has(4) ? noteAt(4) : null;
-  const fifth  = has(6) ? noteAt(6) : has(7) ? noteAt(7) : has(8) ? noteAt(8) : null;
-  const seventh= has(10) ? noteAt(10) : has(11) ? noteAt(11) : null;
-  const ninth  = has(2) ? noteAt(2) : null;
-  const sixth  = has(9) ? noteAt(9) : null;
-
-  const voicingDefs = [
-    { label:"Esencial",   desc:"Tónica + 3ª + 7ª",          rNotes:[third, seventh].filter(Boolean) },
-    { label:"Completo",   desc:"Tónica + 3ª + 5ª + 7ª",     rNotes:[third, fifth, seventh].filter(Boolean) },
-    { label:"Extendido",  desc:"Tónica + 3ª + 5ª + 7ª + 9ª",rNotes:[third, fifth, seventh, ninth||sixth].filter(Boolean) },
-  ];
-
-  // Para cada nota, buscar los botones físicos que la tienen en el fuelle actual
-  const findBtns = (noteEng, btns) => {
-    if (!noteEng) return [];
-    const noteLat = ENG_LAT[noteEng] || noteEng;
-    return btns.filter(b => {
-      const btnNote = bellows === "abre" ? b.abre : b.cierra;
-      return btnNote === noteLat;
-    });
-  };
-
-  // Mano izquierda: buscar tónica
-  const tonicaLat = ENG_LAT[root] || root;
-  const lBtns = leftBtns.filter(b => {
-    const btnNote = bellows === "abre" ? b.abre : b.cierra;
-    return btnNote === tonicaLat;
-  });
-
-  return voicingDefs.map(vd => {
-    // Botones de mano derecha para cada nota del voicing
-    const rBtnGroups = vd.rNotes.map(n => ({
-      note: n,
-      noteLat: ENG_LAT[n] || n,
-      btns: findBtns(n, rightBtns),
-    }));
-
-    // IDs a iluminar: tónica en MI + notas en MD
-    const leftIds  = lBtns.map(b => b.id);
-    const rightIds = rBtnGroups.flatMap(g => g.btns.map(b => b.id));
-
-    return {
-      label: vd.label,
-      desc:  vd.desc,
-      leftIds,
-      rightIds,
-      tonicaNote: root,
-      rNotes: vd.rNotes,
-      lBtns,
-      rBtnGroups,
-    };
-  });
-}
-
-// ─── PANEL BUSCADOR DE ACORDES ────────────────────────────────────────────────
-function ChordSearchPanel({ leftBtns, rightBtns, bellows, onHighlight }) {
-  const [input,          setInput]          = useState("");
-  const [chord,          setChord]          = useState(null);
-  const [voicings,       setVoicings]       = useState([]);
-  const [activeVoicing,  setActiveVoicing]  = useState(0);
-  const [error,          setError]          = useState("");
-
-  const analyze = useCallback(() => {
-    const c = parseChord(input.trim());
-    if (!c) { setError("No reconozco ese acorde. Probá: Dm7, G7, Cmaj7, Am7b5…"); setChord(null); setVoicings([]); return; }
-    setError("");
-    setChord(c);
-    const vs = getBandVoicings(c, leftBtns, rightBtns, bellows);
-    setVoicings(vs);
-    setActiveVoicing(0);
-    if (vs[0]) onHighlight(vs[0].leftIds, vs[0].rightIds);
-    // Sonar el acorde
-    playChord(c.notes);
-  }, [input, leftBtns, rightBtns, bellows, onHighlight]);
-
-  const selectVoicing = useCallback((idx) => {
-    setActiveVoicing(idx);
-    if (voicings[idx]) {
-      onHighlight(voicings[idx].leftIds, voicings[idx].rightIds);
-      // Reproducir las notas del voicing
-      const allNotes = [chord?.root, ...voicings[idx].rNotes].filter(Boolean);
-      playChord(allNotes);
-    }
-  }, [voicings, chord, onHighlight]);
-
-  // Limpiar highlight al cambiar fuelle
-  useEffect(() => {
-    if (voicings.length > 0 && voicings[activeVoicing]) {
-      const vs = getBandVoicings(chord, leftBtns, rightBtns, bellows);
-      setVoicings(vs);
-      if (vs[activeVoicing]) onHighlight(vs[activeVoicing].leftIds, vs[activeVoicing].rightIds);
-    }
-  }, [bellows, leftBtns, rightBtns]);
-
-  const EJEMPLOS = ["Dm7","G7","Cmaj7","Am7b5","E7alt","Bbmaj7"];
+  const showL = view==="ambas"||view==="izquierda";
+  const showR = view==="ambas"||view==="derecha";
 
   return (
-    <div style={{
-      marginBottom:12,
-      padding:"12px 14px",
-      background:"linear-gradient(135deg,#0a0f1e,#0d1525)",
-      border:"1.5px solid #2a3a5a",
-      borderRadius:14,
-    }}>
-      <div style={{fontSize:11,fontWeight:800,color:"#88aaff",marginBottom:8,letterSpacing:"0.1em"}}>
-        🎵 BUSCAR ACORDE EN EL TECLADO
-      </div>
+    <div ref={containerRef} style={{display:"flex", gap:GAP, alignItems:"flex-start", width:"100%", paddingBottom:8}}>
 
-      {/* Input */}
-      <div style={{display:"flex",gap:6,marginBottom:8}}>
-        <input
-          value={input}
-          onChange={e=>setInput(e.target.value)}
-          onKeyDown={e=>e.key==="Enter"&&analyze()}
-          placeholder="Ej: Dm7, G7, Cmaj7…"
-          style={{
-            flex:1, padding:"7px 12px", borderRadius:9,
-            background:"#080d18", border:"1.5px solid #3a4a6a",
-            color:"#e0e8ff", fontFamily:"'Courier New',monospace",
-            fontSize:13, fontWeight:700, outline:"none",
-          }}
-        />
-        <button onClick={analyze} style={{
-          padding:"7px 16px", borderRadius:9, border:"none",
-          background:"linear-gradient(135deg,#1e3a8a,#4a8af0)",
-          color:"#fff", fontWeight:800, fontSize:12, cursor:"pointer",
-          whiteSpace:"nowrap",
-        }}>Buscar ▶</button>
-      </div>
+      {/* ── TECLADO IZQUIERDO ── */}
+      {showL && (
+        <ScaledCanvas
+          buttons={leftBtns} bellows={bellows}
+          pressed={pressedL} heardIds={heardIdsL}
+          onDown={downL} onUp={upL}
+          octMap={bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE}
+          rawW={rawW_L} rawH={rawH_L}
+          label="MANO IZQUIERDA"/>
+      )}
 
-      {/* Ejemplos rápidos */}
-      <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>
-        {EJEMPLOS.map(ex=>(
-          <button key={ex} onClick={()=>{setInput(ex);}}
-            style={{padding:"2px 8px",borderRadius:6,border:"1px solid #2a3a5a",
-              background:"#0a0f1e",color:"#5a7aaa",fontFamily:"monospace",
-              fontSize:10,cursor:"pointer"}}>
-            {ex}
-          </button>
-        ))}
-      </div>
-
-      {error && <div style={{color:"#f87171",fontSize:11,marginBottom:6,padding:"4px 8px",background:"#1f0a0a",borderRadius:6}}>⚠ {error}</div>}
-
-      {/* Resultado del acorde */}
-      {chord && (
-        <div style={{marginBottom:8,padding:"8px 10px",background:"#080d18",borderRadius:10,border:"1px solid #2a3a5a"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,flexWrap:"wrap"}}>
-            <span style={{fontSize:20,fontWeight:900,color:nc(chord.root),fontFamily:"serif"}}>
-              {chord.root}<span style={{color:"#6a8aaa",fontSize:14}}>{chord.formula.symbol}</span>
-            </span>
-            <span style={{fontSize:11,color:"#5a7aaa",italic:true}}>{chord.formula.label}</span>
-            <div style={{display:"flex",gap:4,marginLeft:"auto",flexWrap:"wrap"}}>
-              {chord.notes.map(n=>(
-                <span key={n} style={{
-                  padding:"1px 7px",borderRadius:12,
-                  background:nc(n)+"22",border:`1px solid ${nc(n)}`,
-                  color:nc(n),fontWeight:700,fontSize:10,
-                }}>{n}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* 3 opciones de voicing */}
-          {voicings.length > 0 && (
-            <div>
-              <div style={{fontSize:9,color:"#4a6a8a",marginBottom:5,letterSpacing:"0.1em"}}>
-                OPCIONES DE DIGITACIÓN — tónica siempre en mano izquierda
-              </div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                {voicings.map((v, idx) => (
-                  <button key={idx} onClick={()=>selectVoicing(idx)} style={{
-                    padding:"6px 10px", borderRadius:9,
-                    border:`1.5px solid ${activeVoicing===idx?"#4a8af0":"#2a3a5a"}`,
-                    background: activeVoicing===idx ? "linear-gradient(135deg,#1e3a8a22,#4a8af022)" : "#080d18",
-                    color: activeVoicing===idx ? "#88aaff" : "#5a7aaa",
-                    fontFamily:"monospace", fontSize:10, cursor:"pointer",
-                    transition:"all .15s",
-                  }}>
-                    <div style={{fontWeight:800,marginBottom:2}}>{v.label}</div>
-                    <div style={{fontSize:8,opacity:.7}}>{v.desc}</div>
-                    {/* Notas del voicing */}
-                    <div style={{display:"flex",gap:2,marginTop:4,flexWrap:"wrap",justifyContent:"center"}}>
-                      {/* Tónica (MI) */}
-                      <span style={{
-                        width:18,height:18,borderRadius:"50%",
-                        background:nc(chord.root)+"44",border:`1.5px solid ${nc(chord.root)}`,
-                        display:"inline-flex",alignItems:"center",justifyContent:"center",
-                        fontSize:6,fontWeight:800,color:nc(chord.root),
-                      }}>{ENG_LAT[chord.root]||chord.root}</span>
-                      {v.rNotes.filter(Boolean).map((n,i)=>(
-                        <span key={i} style={{
-                          width:18,height:18,borderRadius:"50%",
-                          background:nc(n)+"33",border:`1.5px solid ${nc(n)}66`,
-                          display:"inline-flex",alignItems:"center",justifyContent:"center",
-                          fontSize:6,color:nc(n),
-                        }}>{ENG_LAT[n]||n}</span>
-                      ))}
-                    </div>
-                    {/* Cantidad de botones encontrados */}
-                    <div style={{fontSize:7,opacity:.5,marginTop:3}}>
-                      MI: {v.leftIds.length} btn · MD: {v.rightIds.length} btn
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Info del voicing activo */}
-              {voicings[activeVoicing] && (
-                <div style={{marginTop:8,padding:"6px 10px",background:"#06090f",borderRadius:8,border:"1px solid #1a2a3a"}}>
-                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                    <div>
-                      <div style={{fontSize:8,color:"#4488ff",fontWeight:700,marginBottom:3}}>← MANO IZQUIERDA</div>
-                      {voicings[activeVoicing].lBtns.length > 0
-                        ? voicings[activeVoicing].lBtns.map(b=>(
-                            <span key={b.id} style={{fontSize:9,color:"#88aaff",fontFamily:"monospace",marginRight:4}}>
-                              {b.id}:{bellows==="abre"?b.abre:b.cierra}
-                            </span>
-                          ))
-                        : <span style={{fontSize:9,color:"#4a3a2a"}}>No encontrado en fuelle {bellows}</span>
-                      }
-                    </div>
-                    <div>
-                      <div style={{fontSize:8,color:"#44aa88",fontWeight:700,marginBottom:3}}>MANO DERECHA →</div>
-                      {voicings[activeVoicing].rBtnGroups.map(g=>(
-                        <span key={g.note} style={{fontSize:9,color:nc(g.note),fontFamily:"monospace",marginRight:6}}>
-                          {g.noteLat}({g.btns.length})
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  {voicings[activeVoicing].leftIds.length === 0 && voicings[activeVoicing].rightIds.length === 0 && (
-                    <div style={{fontSize:9,color:"#f5a060",marginTop:4}}>
-                      ⚠ Ninguna nota encontrada en el mapa actual. Probá cambiar el fuelle (Abre/Cierra).
-                    </div>
-                  )}
-                </div>
-              )}
+      {/* ── PANEL CENTRAL ── */}
+      <div style={{
+        flex: showL && showR ? "0 0 "+CENTER_W+"px" : "1 1 auto",
+        minWidth: showL || showR ? CENTER_W+"px" : "auto",
+        display:"flex", flexDirection:"column", gap:10,
+        alignSelf:"stretch",
+        justifyContent:"flex-start",
+        paddingTop:20,
+      }}>
+        {/* Acorde detectado — grande y prominente */}
+        <div style={{
+          background:"#0c0c1a", border:"1px solid #2a2a4a",
+          borderRadius:12, padding:"12px 14px", textAlign:"center",
+          minHeight:80, display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"center",
+        }}>
+          {detected ? (
+            <>
+              <div style={{fontSize:10,color:"#4a4a6a",marginBottom:4,letterSpacing:"0.1em"}}>ACORDE DETECTADO</div>
+              <div style={{fontSize:36,fontWeight:900,color:"#88aaff",fontFamily:"serif",lineHeight:1}}>{detected}</div>
+            </>
+          ) : (
+            <div style={{fontSize:11,color:"#333",fontStyle:"italic"}}>
+              {activeNotes.length===1?"1 nota":"Presioná 2+ botones"}
             </div>
           )}
         </div>
+
+        {/* Notas activas */}
+        {(activeNotes.length>0||heardNote)&&(
+          <div style={{background:"#090912",border:"1px solid #1a1a2e",borderRadius:10,padding:"8px 10px"}}>
+            <div style={{fontSize:9,color:"#444",marginBottom:6,letterSpacing:"0.1em"}}>NOTAS ACTIVAS</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+              {heardNote&&(
+                <span style={{padding:"2px 7px",borderRadius:20,background:"#88aaff22",border:"1px solid #88aaff",color:"#88aaff",fontWeight:700,fontSize:10}}>
+                  🎙️ {heardNote}
+                </span>
+              )}
+              {activeNotes.map(n=>{
+                const notaPura=n.replace(/\d+$/,"");
+                const oct=(n.match(/\d+$/)||[""])[0];
+                const engKey=LAT[notaPura]||notaPura;
+                return(
+                  <span key={n} style={{padding:"2px 7px",borderRadius:20,background:nc(engKey)+"22",border:`1px solid ${nc(engKey)}`,color:nc(engKey),fontWeight:700,fontSize:10}}>
+                    {notaPura}<span style={{fontSize:"0.7em",opacity:.7,marginLeft:1}}>{oct}</span>
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Info instrumento */}
+        <div style={{padding:"7px 10px",background:"#0a0a12",border:"1px solid #1a1a2a",borderRadius:8,fontSize:10,color:"#444",lineHeight:1.5}}>
+          <b style={{color:"#5a3018"}}>Rheinische</b> · 71 botones<br/>
+          <span style={{color:"#34d399"}}>▷ Abre</span> / <span style={{color:"#f472b6"}}>◁ Cierra</span> = notas distintas
+        </div>
+      </div>
+
+      {/* ── TECLADO DERECHO ── */}
+      {showR && (
+        <ScaledCanvas
+          buttons={rightBtns} bellows={bellows}
+          pressed={pressedR} heardIds={heardIdsR}
+          onDown={downR} onUp={upR}
+          octMap={bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE}
+          rawW={rawW_R} rawH={rawH_R}
+          label="MANO DERECHA"/>
       )}
+
     </div>
   );
 }
@@ -2006,6 +1858,7 @@ function BandoneonTab() {
   const [rightBtns,   setRightBtns]   = useState([]);
   const [editMode,    setEditMode]    = useState(false);
 
+  // Mapas de octava derivados de los botones cargados
   const { OCT_L_OPEN, OCT_L_CLOSE, OCT_R_OPEN, OCT_R_CLOSE } = useMemo(
     () => buildOctMaps(leftBtns, rightBtns),
     [leftBtns, rightBtns]
@@ -2022,21 +1875,6 @@ function BandoneonTab() {
   const [cssText,     setCSSText]     = useState("");
   const [fromStorage, setFromStorage] = useState(false);
 
-  // Highlight de voicings buscados
-  const [highlightL,  setHighlightL]  = useState([]);
-  const [highlightR,  setHighlightR]  = useState([]);
-
-  const handleHighlight = useCallback((lIds, rIds) => {
-    setHighlightL(lIds);
-    setHighlightR(rIds);
-    // Limpiar highlight después de 4 segundos
-    setTimeout(() => { setHighlightL([]); setHighlightR([]); }, 4000);
-  }, []);
-
-  // Refs para audio sostenido — Map de btnId → handle de audio
-  const activeAudioL = useRef({});
-  const activeAudioR = useRef({});
-
   const LAT = {"DO":"C","DO#":"C#","RE":"D","RE#":"D#","MI":"E","FA":"F","FA#":"F#","SOL":"G","SOL#":"G#","LA":"A","LA#":"A#","SI":"B"};
   const ENG_TO_LAT = {"C":"DO","C#":"DO#","D":"RE","D#":"RE#","E":"MI","F":"FA","F#":"FA#","G":"SOL","G#":"SOL#","A":"LA","A#":"LA#","B":"SI"};
   const NOTES_ENG = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -2048,6 +1886,7 @@ function BandoneonTab() {
     return CHROMATIC_B.indexOf(m[n]??"");
   };
 
+  // Cargar al montar
   useEffect(()=>{
     const {left,right}=loadBtns();
     setLeftBtns(left); setRightBtns(right);
@@ -2055,159 +1894,195 @@ function BandoneonTab() {
   },[]);
 
   // Micrófono YIN
+  const NOTES_ENG_MEMO  = useMemo(()=>NOTES_ENG, []);
+  const ENG_TO_LAT_MEMO = useMemo(()=>ENG_TO_LAT,[]);
+
   useEffect(()=>{
     if(!isListening){setHeardNote("");return;}
-    let audioCtx=null, stream=null, rafId=null, alive=true;
+
+    // Refs para garantizar cleanup aunque el componente se desmonte
+    let audioCtx = null;
+    let stream   = null;
+    let rafId    = null;
+    let alive    = true;  // flag para cancelar tick si el efecto se limpió
+
     async function start(){
       try{
-        stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+        stream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
         if(!alive){stream.getTracks().forEach(t=>t.stop());return;}
-        const AC=window.AudioContext||(window.webkitAudioContext);
-        audioCtx=new AC();
+
+        const AC = window.AudioContext||(window.webkitAudioContext);
+        audioCtx = new AC();
         if(audioCtx.state==="suspended") await audioCtx.resume();
         if(!alive){audioCtx.close();stream.getTracks().forEach(t=>t.stop());return;}
-        const src=audioCtx.createMediaStreamSource(stream);
-        const analyser=audioCtx.createAnalyser();
-        analyser.fftSize=2048;
+
+        const src      = audioCtx.createMediaStreamSource(stream);
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
         src.connect(analyser);
-        const buf=new Float32Array(analyser.fftSize);
-        const detect=YIN({sampleRate:audioCtx.sampleRate||44100});
+
+        const buf    = new Float32Array(analyser.fftSize);
+        const detect = YIN({sampleRate: audioCtx.sampleRate||44100});
+
         function tick(){
-          if(!alive)return;
+          if(!alive) return;  // no seguir si el efecto fue limpiado
           analyser.getFloatTimeDomainData(buf);
-          const pitch=detect(buf);
-          if(pitch&&pitch>50&&pitch<2000){
-            const noteNum=12*(Math.log(pitch/440)/Math.log(2))+69;
-            const midiRnd=Math.round(noteNum);
-            const eng=NOTES_ENG[midiRnd%12];
-            const octave=Math.floor(midiRnd/12)-1;
-            const lat=ENG_TO_LAT[eng]||"DO";
-            setHeardNote(lat+octave);
-          } else { setHeardNote(""); }
-          rafId=requestAnimationFrame(tick);
+          const pitch = detect(buf);
+          if(pitch && pitch > 50 && pitch < 2000){
+            const noteNum  = 12*(Math.log(pitch/440)/Math.log(2))+69;
+            const midiRnd  = Math.round(noteNum);
+            const eng      = NOTES_ENG[midiRnd % 12];
+            const octave   = Math.floor(midiRnd / 12) - 1;
+            const lat      = ENG_TO_LAT[eng] || "DO";
+            setHeardNote(lat + octave);
+          } else {
+            setHeardNote("");
+          }
+          rafId = requestAnimationFrame(tick);
         }
         tick();
       }catch(err){
-        if(alive){setErrorAudio("Error de micrófono: "+(err?.message??"permisos denegados"));setIsListening(false);}
+        if(alive){
+          setErrorAudio("Error de micrófono: "+(err?.message??"permisos denegados"));
+          setIsListening(false);
+        }
       }
     }
+
     start();
+
     return()=>{
-      alive=false;
-      if(rafId)cancelAnimationFrame(rafId);
-      if(stream)stream.getTracks().forEach(t=>t.stop());
-      if(audioCtx&&audioCtx.state!=="closed")audioCtx.close();
+      alive = false;  // detiene el tick inmediatamente
+      if(rafId)    cancelAnimationFrame(rafId);
+      if(stream)   stream.getTracks().forEach(t=>t.stop());
+      if(audioCtx && audioCtx.state!=="closed") audioCtx.close();
     };
   },[isListening]);
 
+
   // IDs iluminados por mic
-  const heardIdsL=useMemo(()=>{
-    if(!heardNote)return[];
-    const octMapL=bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE;
-    return leftBtns.filter(b=>{
-      const nota=bellows==="abre"?b.abre:b.cierra;
-      return(nota+(octMapL[b.id]??""))===heardNote;
-    }).map(b=>b.id);
-  },[heardNote,bellows,leftBtns]);
-
-  const heardIdsR=useMemo(()=>{
-    if(!heardNote)return[];
-    const octMapR=bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE;
-    return rightBtns.filter(b=>{
-      const nota=bellows==="abre"?b.abre:b.cierra;
-      return(nota+(octMapR[b.id]??""))===heardNote;
-    }).map(b=>b.id);
-  },[heardNote,bellows,rightBtns]);
-
-  // Combinar highlight de voicings + mic para los IDs iluminados
-  const finalHeardL = useMemo(()=>[...new Set([...heardIdsL,...highlightL])],[heardIdsL,highlightL]);
-  const finalHeardR = useMemo(()=>[...new Set([...heardIdsR,...highlightR])],[heardIdsR,highlightR]);
+  // heardNote es "SOL3" (nota+octava) — iluminar solo el botón con esa nota en esa octava
+  const heardIdsL = useMemo(()=>{
+    if(!heardNote) return [];
+    const octMapL = bellows==="abre" ? OCT_L_OPEN : OCT_L_CLOSE;
+    return leftBtns
+      .filter(b=>{
+        const nota = bellows==="abre" ? b.abre : b.cierra;
+        return (nota + (octMapL[b.id]??"")) === heardNote;
+      })
+      .map(b=>b.id);
+  }, [heardNote,bellows,leftBtns]);
+  const heardIdsR = useMemo(()=>{
+    if(!heardNote) return [];
+    const octMapR = bellows==="abre" ? OCT_R_OPEN : OCT_R_CLOSE;
+    return rightBtns
+      .filter(b=>{
+        const nota = bellows==="abre" ? b.abre : b.cierra;
+        return (nota + (octMapR[b.id]??"")) === heardNote;
+      })
+      .map(b=>b.id);
+  }, [heardNote,bellows,rightBtns]);
 
   // Notas activas
-  const activeNotes=useMemo(()=>{
-    const octL=bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE;
-    const octR=bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE;
+  const activeNotes = useMemo(()=>{
+    const octL = bellows==="abre" ? OCT_L_OPEN : OCT_L_CLOSE;
+    const octR = bellows==="abre" ? OCT_R_OPEN : OCT_R_CLOSE;
     const all=[
       ...pressedL.map(id=>{
-        const b=leftBtns.find(x=>x.id===id);if(!b)return"";
+        const b=leftBtns.find(x=>x.id===id); if(!b) return "";
         const nota=LAT[bellows==="abre"?b.abre:b.cierra]??"";
-        return nota?nota+(octL[id]??""):"";
+        return nota ? nota+(octL[id]??"") : "";
       }),
       ...pressedR.map(id=>{
-        const b=rightBtns.find(x=>x.id===id);if(!b)return"";
+        const b=rightBtns.find(x=>x.id===id); if(!b) return "";
         const nota=LAT[bellows==="abre"?b.abre:b.cierra]??"";
-        return nota?nota+(octR[id]??""):"";
+        return nota ? nota+(octR[id]??"") : "";
       }),
     ].filter(n=>n.trim());
     return[...new Set(all)];
   },[pressedL,pressedR,bellows,leftBtns,rightBtns]);
 
   // Detección de acorde
-  const detected=useMemo(()=>{
+  const detected = useMemo(()=>{
     if(activeNotes.length<2)return null;
-    const noteOnly=activeNotes.map(n=>n.replace(/\d+$/,""));
+    // activeNotes ahora es "SOL3" — extraer solo la nota para detectar acorde
+    const noteOnly = activeNotes.map(n=>n.replace(/\d+$/,""));
     const idxs=noteOnly.map(n=>noteIdxB(n)).filter(i=>i>=0).sort((a,b)=>a-b);
     const root=CHROMATIC_B[idxs[0]];
     const ivs=idxs.map(i=>(i-idxs[0]+12)%12).sort((a,b)=>a-b);
     const has=i=>ivs.includes(i);
     let q="?";
-    if(has(4)&&has(7)&&has(11))q="△7";else if(has(3)&&has(7)&&has(10))q="m7";
-    else if(has(4)&&has(7)&&has(10))q="7";else if(has(3)&&has(6)&&has(9))q="°7";
-    else if(has(3)&&has(6)&&has(10))q="ø7";else if(has(4)&&has(7))q="△";
-    else if(has(3)&&has(7))q="m";else if(has(3)&&has(6))q="°";
-    const rootLat=ENG_TO_LAT[root]??root;
+    if(has(4)&&has(7)&&has(11))q="△7"; else if(has(3)&&has(7)&&has(10))q="m7";
+    else if(has(4)&&has(7)&&has(10))q="7"; else if(has(3)&&has(6)&&has(9))q="°7";
+    else if(has(3)&&has(6)&&has(10))q="ø7"; else if(has(4)&&has(7))q="△";
+    else if(has(3)&&has(7))q="m"; else if(has(3)&&has(6))q="°";
+    const rootLat = ENG_TO_LAT[root]??root;
     return`${rootLat}${q}`;
   },[activeNotes]);
 
-  const getOct=useCallback((btn,bellows)=>{
-    return bellows==="abre"
-      ?(btn.oct_abre??(btn.id.startsWith("L")?2:4))
-      :(btn.oct_cierra??(btn.id.startsWith("L")?2:4));
-  },[]);
+  const getOct = useCallback((btn, bellows) => {
+    // Usar oct_abre/oct_cierra del botón directamente (editables por el usuario)
+    return bellows === "abre"
+      ? (btn.oct_abre  ?? (btn.id.startsWith("L") ? 2 : 4))
+      : (btn.oct_cierra ?? (btn.id.startsWith("L") ? 2 : 4));
+  }, []);
 
-  // Handlers con audio SOSTENIDO
   const downL=useCallback((btn)=>{
-    if(activeAudioL.current[btn.id])return;
-    const oct=getOct(btn,bellows);
-    const note=bellows==="abre"?btn.abre:btn.cierra;
-    const eng=LAT[note]||note;
-    const handle=startBandNote(eng,oct);
-    if(handle)activeAudioL.current[btn.id]=handle;
+    const oct = getOct(btn, bellows);
+    const note = bellows==='abre' ? btn.abre : btn.cierra;
+    // Audio con octava real del instrumento
+    const eng = LAT[note]||note;
+    try{
+      const ctx=getCtx();if(!ctx)return;
+      if(ctx.state==="suspended")ctx.resume();
+      const MIDI_B={C:60,"C#":61,D:62,"D#":63,E:64,F:65,"F#":66,G:67,"G#":68,A:69,"A#":70,B:71};
+      [1,2,3].forEach((h,i)=>{
+        const osc=ctx.createOscillator(),gain=ctx.createGain();
+        osc.connect(gain);gain.connect(ctx.destination);
+        osc.type="sawtooth";
+        osc.frequency.value=440*Math.pow(2,((MIDI_B[eng]??60)+(oct-4)*12+(Math.log2(h)*12))/12);
+        const v=[0.22,0.10,0.05][i];
+        gain.gain.setValueAtTime(v,ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.0);
+        osc.start();osc.stop(ctx.currentTime+1.0);
+      });
+    }catch(e){}
     setPressedL(p=>[...new Set([...p,btn.id])]);
   },[bellows,getOct]);
-
-  const upL=useCallback((id)=>{
-    stopBandNote(activeAudioL.current[id]);
-    delete activeAudioL.current[id];
-    setPressedL(p=>p.filter(x=>x!==id));
-  },[]);
-
+  const upL  =useCallback((id) =>setPressedL(p=>p.filter(x=>x!==id)),[]);
   const downR=useCallback((btn)=>{
-    if(activeAudioR.current[btn.id])return;
-    const oct=getOct(btn,bellows);
-    const note=bellows==="abre"?btn.abre:btn.cierra;
-    const eng=LAT[note]||note;
-    const handle=startBandNote(eng,oct);
-    if(handle)activeAudioR.current[btn.id]=handle;
+    const oct = getOct(btn, bellows);
+    const note = bellows==='abre' ? btn.abre : btn.cierra;
+    const eng = LAT[note]||note;
+    try{
+      const ctx=getCtx();if(!ctx)return;
+      if(ctx.state==="suspended")ctx.resume();
+      const MIDI_B={C:60,"C#":61,D:62,"D#":63,E:64,F:65,"F#":66,G:67,"G#":68,A:69,"A#":70,B:71};
+      [1,2,3].forEach((h,i)=>{
+        const osc=ctx.createOscillator(),gain=ctx.createGain();
+        osc.connect(gain);gain.connect(ctx.destination);
+        osc.type="sawtooth";
+        osc.frequency.value=440*Math.pow(2,((MIDI_B[eng]??60)+(oct-4)*12+(Math.log2(h)*12))/12);
+        const v=[0.22,0.10,0.05][i];
+        gain.gain.setValueAtTime(v,ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.0);
+        osc.start();osc.stop(ctx.currentTime+1.0);
+      });
+    }catch(e){}
     setPressedR(p=>[...new Set([...p,btn.id])]);
   },[bellows,getOct]);
-
-  const upR=useCallback((id)=>{
-    stopBandNote(activeAudioR.current[id]);
-    delete activeAudioR.current[id];
-    setPressedR(p=>p.filter(x=>x!==id));
-  },[]);
+  const upR  =useCallback((id) =>setPressedR(p=>p.filter(x=>x!==id)),[]);
 
   const handleSave=useCallback((left,right)=>{
-    setLeftBtns(left);setRightBtns(right);
-    saveBtns(left,right);downloadCSV(left,right);
+    setLeftBtns(left); setRightBtns(right);
+    saveBtns(left,right); downloadCSV(left,right);
     setCSSText(generateCSS(left,right));
-    setEditMode(false);setShowSaved(true);setFromStorage(true);
+    setEditMode(false); setShowSaved(true); setFromStorage(true);
   },[]);
 
   const handleImport=useCallback((left,right)=>{
-    setLeftBtns(left);setRightBtns(right);
-    saveBtns(left,right);setFromStorage(true);setShowImport(false);
+    setLeftBtns(left); setRightBtns(right);
+    saveBtns(left,right); setFromStorage(true); setShowImport(false);
   },[]);
 
   const pill=(active,v="orange")=>({
@@ -2217,30 +2092,23 @@ function BandoneonTab() {
     color:active?(v==="orange"?"#0a0502":"#fff"):"#6a4020",
   });
 
-  const [isMobile,setIsMobile]=useState(false);
+  // Detectar móvil
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(()=>{
-    const check=()=>setIsMobile(window.innerWidth<640);
+    const check = () => setIsMobile(window.innerWidth < 640);
     check();
-    window.addEventListener("resize",check);
-    return()=>window.removeEventListener("resize",check);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   },[]);
 
-  if(!leftBtns.length)return<div style={{color:"#555",padding:20,fontSize:13}}>Cargando...</div>;
+  if (!leftBtns.length) return <div style={{color:"#555",padding:20,fontSize:13}}>Cargando...</div>;
 
-  if(editMode)return(
+  if (editMode) return (
     <BandEditor initialLeft={leftBtns} initialRight={rightBtns} onSave={handleSave} onCancel={()=>setEditMode(false)}/>
   );
 
-  return(
+  return (
     <div style={{fontFamily:"'Courier New',monospace"}}>
-
-      {/* ── BUSCADOR DE ACORDES ── */}
-      <ChordSearchPanel
-        leftBtns={leftBtns}
-        rightBtns={rightBtns}
-        bellows={bellows}
-        onHighlight={handleHighlight}
-      />
 
       {/* Barra herramientas */}
       <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",marginBottom:14,padding:"8px 12px",background:"#080810",border:"1px solid #1e1e2e",borderRadius:10}}>
@@ -2253,8 +2121,10 @@ function BandoneonTab() {
         <button onClick={()=>{setIsListening(false);setEditMode(true);}} style={{padding:"5px 13px",borderRadius:9,border:"1px solid #4466cc",background:"#1e2a4a",color:"#88aaff",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:"monospace"}}>✏️ Editar teclado</button>
         <button onClick={()=>setShowImport(true)} style={{padding:"5px 13px",borderRadius:9,border:"1px solid #2dd4bf44",background:"transparent",color:"#2dd4bf",fontWeight:700,fontSize:11,cursor:"pointer",fontFamily:"monospace"}}>↑ Importar CSV</button>
         {fromStorage&&(
-          <button onClick={()=>{clearBtns();const{left,right}=loadBtns();setLeftBtns(left);setRightBtns(right);setFromStorage(false);}}
-            style={{padding:"5px 10px",borderRadius:9,border:"1px solid #374151",background:"transparent",color:"#6b7280",fontSize:10,cursor:"pointer",fontFamily:"monospace"}}>
+          <button
+            onClick={()=>{clearBtns();const{left,right}=loadBtns();setLeftBtns(left);setRightBtns(right);setFromStorage(false);}}
+            style={{padding:"5px 10px",borderRadius:9,border:"1px solid #374151",
+              background:"transparent",color:"#6b7280",fontSize:10,cursor:"pointer",fontFamily:"monospace"}}>
             ⟳ Defaults
           </button>
         )}
@@ -2274,15 +2144,19 @@ function BandoneonTab() {
             <span style={{fontSize:8,color:"#6a4020",display:"block"}}>NOTA MIC</span>
             <span style={{fontSize:13,fontWeight:900,color:heardNote?"#88aaff":"#4a2e10"}}>
               {heardNote
-                ?heardNote.replace(/(\d+)$/,"")+" "+(heardNote.match(/\d+$/)||[""])[0]
-                :"..."}
+                ? heardNote.replace(/(\d+)$/, "") + " " + (heardNote.match(/\d+$/) || [""])[0]
+                : "..."}
             </span>
           </div>
         )}
-        <button onClick={()=>{setIsListening(p=>!p);setErrorAudio("");}}
-          style={{padding:"5px 12px",borderRadius:9,border:"none",fontFamily:"monospace",fontWeight:700,fontSize:10,cursor:"pointer",
+        <button
+          onClick={()=>{setIsListening(p=>!p);setErrorAudio("");}}
+          style={{
+            padding:"5px 12px",borderRadius:9,border:"none",
+            fontFamily:"monospace",fontWeight:700,fontSize:10,cursor:"pointer",
             background:isListening?"linear-gradient(135deg,#941c1c,#ef4444)":"linear-gradient(135deg,#134e4a,#2dd4bf)",
-            color:isListening?"#fff":"#0f172a"}}>
+            color:isListening?"#fff":"#0f172a",
+          }}>
           {isListening?"✕ Apagar Mic":"🎙️ Escuchar"}
         </button>
       </div>
@@ -2290,96 +2164,85 @@ function BandoneonTab() {
 
       {/* Controles fuelle/vista */}
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10,alignItems:"center"}}>
+        {/* Fuelle */}
         <div style={{display:"flex",background:"#100802",border:"1.5px solid #3a2010",borderRadius:10,padding:3,gap:2}}>
           {[["abre","▷ Abre"],["cierra","◁ Cierra"]].map(([b,l])=>(
             <button key={b} style={{...pill(bellows===b),padding:isMobile?"5px 10px":"5px 12px"}}
-              onClick={()=>{setBellows(b);setPressedL([]);setPressedR([]);
-                Object.values(activeAudioL.current).forEach(stopBandNote);
-                Object.values(activeAudioR.current).forEach(stopBandNote);
-                activeAudioL.current={};activeAudioR.current={};
-              }}>{l}</button>
+              onClick={()=>{setBellows(b);setPressedL([]);setPressedR([]);}}>{l}</button>
           ))}
         </div>
+        {/* Vista — en móvil solo mostrar si es "ambas" para ahorrar espacio */}
         <div style={{display:"flex",background:"#100802",border:"1.5px solid #2a3060",borderRadius:10,padding:3,gap:2}}>
           {[["ambas","Ambas"],["izquierda","IZQ"],["derecha","DER"]].map(([v,l])=>(
             <button key={v} style={{...pill(view===v,"blue"),padding:isMobile?"5px 8px":"5px 12px"}}
               onClick={()=>setView(v)}>{l}</button>
           ))}
         </div>
-        <button onClick={()=>{
-          setPressedL([]);setPressedR([]);
-          Object.values(activeAudioL.current).forEach(stopBandNote);
-          Object.values(activeAudioR.current).forEach(stopBandNote);
-          activeAudioL.current={};activeAudioR.current={};
-          setHighlightL([]);setHighlightR([]);
-        }}
+        <button onClick={()=>{setPressedL([]);setPressedR([]);}}
           style={{padding:"5px 9px",borderRadius:9,border:"1px solid #3a2010",background:"transparent",color:"#6a4020",fontFamily:"monospace",fontSize:10,cursor:"pointer",marginLeft:"auto"}}>
           ✕
         </button>
       </div>
 
-      {/* Notas + acorde */}
-      <div style={{minHeight:44,marginBottom:8}}>
-      {(activeNotes.length>0||heardNote)&&(
-        <div style={{marginBottom:10,padding:isMobile?"6px 10px":"7px 12px",background:"#0c0c1a",border:"1px solid #2a2a4a",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:5}}>
-          <div style={{display:"flex",gap:4,flexWrap:"wrap",flex:"1 1 auto"}}>
-            {heardNote&&(
-              <span style={{padding:"2px 8px",borderRadius:20,background:"#88aaff22",border:"1px solid #88aaff",color:"#88aaff",fontWeight:700,fontSize:isMobile?10:11}}>
-                🎙️ {heardNote}
-              </span>
-            )}
-            {activeNotes.map(n=>{
-              const notaPura=n.replace(/\d+$/,"");
-              const oct=(n.match(/\d+$/)||[""])[0];
-              const engKey=LAT[notaPura]||notaPura;
-              return(
-                <span key={n} style={{padding:"2px 8px",borderRadius:20,background:nc(engKey)+"22",border:`1px solid ${nc(engKey)}`,color:nc(engKey),fontWeight:700,fontSize:isMobile?10:11}}>
-                  {notaPura}<span style={{fontSize:"0.75em",opacity:.7,marginLeft:1}}>{oct}</span>
-                </span>
-              );
-            })}
-          </div>
-          {detected&&(
-            <div style={{textAlign:"right",flexShrink:0}}>
-              <div style={{fontSize:8,color:"#555"}}>Acorde</div>
-              <div style={{fontSize:isMobile?17:20,fontWeight:900,color:"#88aaff",fontFamily:"serif"}}>{detected}</div>
+      {/* ── LAYOUT PRINCIPAL: Móvil apilado / Desktop 3 columnas ── */}
+      {isMobile ? (
+        // ── MÓVIL: notas arriba, luego teclados apilados ──
+        <>
+          {/* Notas + acorde en móvil */}
+          <div style={{minHeight:44,marginBottom:8}}>
+          {(activeNotes.length>0||heardNote)&&(
+            <div style={{marginBottom:10,padding:"6px 10px",background:"#0c0c1a",border:"1px solid #2a2a4a",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:5}}>
+              <div style={{display:"flex",gap:4,flexWrap:"wrap",flex:"1 1 auto"}}>
+                {heardNote&&(<span style={{padding:"2px 8px",borderRadius:20,background:"#88aaff22",border:"1px solid #88aaff",color:"#88aaff",fontWeight:700,fontSize:10}}>🎙️ {heardNote}</span>)}
+                {activeNotes.map(n=>{
+                  const notaPura=n.replace(/\d+$/,"");
+                  const oct=(n.match(/\d+$/)||[""])[0];
+                  const engKey=LAT[notaPura]||notaPura;
+                  return(<span key={n} style={{padding:"2px 8px",borderRadius:20,background:nc(engKey)+"22",border:`1px solid ${nc(engKey)}`,color:nc(engKey),fontWeight:700,fontSize:10}}>{notaPura}<span style={{fontSize:"0.75em",opacity:.7,marginLeft:1}}>{oct}</span></span>);
+                })}
+              </div>
+              {detected&&(<div style={{textAlign:"right",flexShrink:0}}><div style={{fontSize:8,color:"#555"}}>Acorde</div><div style={{fontSize:17,fontWeight:900,color:"#88aaff",fontFamily:"serif"}}>{detected}</div></div>)}
             </div>
           )}
-        </div>
+          </div>
+          {/* Teclados apilados */}
+          <div style={{display:"flex",flexDirection:"column",gap:10,paddingBottom:8}}>
+            {(view==="ambas"||view==="izquierda")&&(
+              <div>
+                <div style={{fontSize:9,color:"#7a5030",marginBottom:5,letterSpacing:"0.12em",display:"flex",alignItems:"center",gap:6}}>
+                  <span>MANO IZQUIERDA · {leftBtns.length} botones</span>
+                  <span style={{opacity:.5,fontSize:8}}>↑ abre / cierra ↓</span>
+                </div>
+                <BandCanvas buttons={leftBtns} bellows={bellows} pressed={pressedL} heardIds={heardIdsL} onDown={downL} onUp={upL} mobile={true} octMap={bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE}/>
+              </div>
+            )}
+            {(view==="ambas"||view==="derecha")&&(
+              <div>
+                <div style={{fontSize:9,color:"#7a5030",marginBottom:5,letterSpacing:"0.12em"}}>MANO DERECHA · {rightBtns.length} botones</div>
+                <BandCanvas buttons={rightBtns} bellows={bellows} pressed={pressedR} heardIds={heardIdsR} onDown={downR} onUp={upR} mobile={true} octMap={bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE}/>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        // ── DESKTOP: 3 columnas [Izq] [Panel Central] [Der] ──
+        // Los teclados usan transform:scale() para caber en pantalla sin scroll
+        <DesktopBandLayout
+          leftBtns={leftBtns} rightBtns={rightBtns}
+          bellows={bellows} view={view}
+          pressedL={pressedL} pressedR={pressedR}
+          heardIdsL={heardIdsL} heardIdsR={heardIdsR}
+          downL={downL} upL={upL} downR={downR} upR={upR}
+          OCT_L_OPEN={OCT_L_OPEN} OCT_L_CLOSE={OCT_L_CLOSE}
+          OCT_R_OPEN={OCT_R_OPEN} OCT_R_CLOSE={OCT_R_CLOSE}
+          activeNotes={activeNotes} detected={detected}
+          heardNote={heardNote} LAT={LAT}
+        />
       )}
-      </div>
-
-      {/* Canvas */}
-      <div style={{display:"flex",flexDirection:isMobile?"column":"row",gap:isMobile?10:14,flexWrap:isMobile?"nowrap":"wrap",overflowX:isMobile?"hidden":"auto",paddingBottom:8}}>
-        {(view==="ambas"||view==="izquierda")&&(
-          <div style={{flex:isMobile?"none":"0 0 auto",width:isMobile?"100%":"auto"}}>
-            <div style={{fontSize:9,color:"#7a5030",marginBottom:5,letterSpacing:"0.12em",display:"flex",alignItems:"center",gap:6}}>
-              <span>MANO IZQUIERDA · {leftBtns.length} botones</span>
-              {isMobile&&<span style={{opacity:.5,fontSize:8}}>↑ abre / cierra ↓</span>}
-            </div>
-            <BandCanvas buttons={leftBtns} bellows={bellows}
-              pressed={pressedL} heardIds={finalHeardL}
-              onDown={downL} onUp={upL} mobile={isMobile}
-              octMap={bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE}/>
-          </div>
-        )}
-        {(view==="ambas"||view==="derecha")&&(
-          <div style={{flex:isMobile?"none":"0 0 auto",width:isMobile?"100%":"auto"}}>
-            <div style={{fontSize:9,color:"#7a5030",marginBottom:5,letterSpacing:"0.12em"}}>
-              MANO DERECHA · {rightBtns.length} botones
-            </div>
-            <BandCanvas buttons={rightBtns} bellows={bellows}
-              pressed={pressedR} heardIds={finalHeardR}
-              onDown={downR} onUp={upR} mobile={isMobile}
-              octMap={bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE}/>
-          </div>
-        )}
-      </div>
 
       <div style={{marginTop:10,padding:"7px 11px",background:"#0a0a12",border:"1px solid #1a1a2a",borderRadius:8,fontSize:11,color:"#555"}}>
         <b style={{color:"#7a5030"}}>Sistema Rheinische</b> · 71 botones · Bisonoro: nota diferente al{" "}
         <span style={{color:"#34d399"}}>abrir</span> y al <span style={{color:"#f472b6"}}>cerrar</span> el fuelle.
-        <span style={{color:"#4a6a4a",marginLeft:8}}>· Mantenés presionado para sostener la nota</span>
       </div>
 
       {showSaved&&<SavedModal cssText={cssText} onClose={()=>setShowSaved(false)}/>}
@@ -2387,6 +2250,7 @@ function BandoneonTab() {
     </div>
   );
 }
+
 
 // ─── APP PRINCIPAL ────────────────────────────────────────────────────────────
 export default function HarmoniaApp(){

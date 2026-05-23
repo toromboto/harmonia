@@ -129,7 +129,7 @@ const playChord=(notes)=>notes.forEach((n,i)=>setTimeout(()=>playTone(n,4,1.2),i
 
 // ─── TEORÍA ───────────────────────────────────────────────────────────────────
 const FORMULAS={
-  "maj": {intervals:[0,4,7],          label:"Mayor",      symbol:""    },
+  "maj": {intervals:[0,4,7],          label:"Mayor",      symbol:"△"   },
   "min": {intervals:[0,3,7],          label:"Menor",      symbol:"m"   },
   "7":   {intervals:[0,4,7,10],       label:"Dom. 7ª",    symbol:"7"   },
   "maj7":{intervals:[0,4,7,11],       label:"Mayor 7ª",   symbol:"△7"  },
@@ -169,7 +169,7 @@ const T_SEMI={"9":2,"b9":1,"#9":3,"11":5,"#11":6,"13":9,"b13":8,"6":9,"b6":8,"b7
 const tNote=(root,t)=>{const s=T_SEMI[t];return s!==undefined?fromRoot(root,s):null;};
 
 const MODE_BY_DEGREE=[
-  {name:"Jónico",   ivs:MODES["Jónico"],   q:"△7", tensions:["9","13"],         avoid:["11"]},
+  {name:"Jónico",   ivs:MODES["Jónico"],   q:"△7", tensions:["9","#11","13"],avoid:["11"]},
   {name:"Dórico",   ivs:MODES["Dórico"],   q:"m7", tensions:["9","11"],      avoid:["b9"]},
   {name:"Frigio",   ivs:MODES["Frigio"],   q:"m7", tensions:["11"],          avoid:["9","13"]},
   {name:"Lidio",    ivs:MODES["Lidio"],    q:"△7", tensions:["9","#11","13"],avoid:["11"]},
@@ -294,7 +294,7 @@ const parseChord=(input)=>{
     else if(rest.includes("aug")||rest.includes("+"))q="aug";
     else if(rest.includes("sus2"))q="sus2";
     else if(rest.includes("sus4")||rest.includes("sus"))q="sus4";
-    else if(/^m(?!aj|7|9)/.test(rest))q="min";
+    else if(rest.includes("m"))q="min";
     const formula=FORMULAS[q]||FORMULAS["maj"];
     const notes=formula.intervals.map(i=>fromRoot(root,i%12));
     return{root,quality:q,notes,formula,raw:s};
@@ -1743,6 +1743,9 @@ function DesktopBandLayout({
   OCT_L_OPEN, OCT_L_CLOSE, OCT_R_OPEN, OCT_R_CLOSE,
   activeNotes, detected, heardNote, LAT,
 }) {
+  // voicingHighlight: notas del voicing buscado que se marcan en el teclado
+  // formato: Set de strings "NOTA" en inglés (sin octava) ej: {"C","E","G"}
+  const [voicingHighlight, setVoicingHighlight] = useState(new Set());
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
 
@@ -1761,17 +1764,18 @@ function DesktopBandLayout({
     if(!containerRef.current) return;
     const obs = new ResizeObserver(()=>{
       const totalW = containerRef.current.clientWidth;
-      // Espacio disponible para los dos teclados (descontando panel central y gaps)
-      const available = totalW - CENTER_W - GAP * 2;
-      const neededW   = rawW_L + rawW_R;
-      const rawH      = Math.max(rawH_L, rawH_R);
-      // Escala para que quepan en ancho; cap a 1 (no agrandar)
-      const scaleByW  = available > 0 ? available / neededW : 1;
-      // También chequear alto disponible (viewport - aprox 340px de controles)
-      const availH    = window.innerHeight - 340;
-      const scaleByH  = availH > 0 ? availH / rawH : 1;
+      // Los teclados están rotados 90°:
+      // su ancho visual = rawH original, su alto visual = rawW original
+      // Necesitamos que los dos "anchos visuales" (rawH_L + rawH_R) quepan en totalW
+      const neededW  = rawH_L + rawH_R + GAP * 2;
+      const scaleByW = totalW > 0 ? (totalW * 0.95) / neededW : 1;
+      // Alto disponible: viewport menos controles (~300px)
+      const availH   = window.innerHeight - 300;
+      // Alto visual de un teclado rotado = rawW
+      const maxRawW  = Math.max(rawW_L, rawW_R);
+      const scaleByH = availH > 0 ? (availH * 0.55) / maxRawW : 1;
       const s = Math.min(1, scaleByW, scaleByH);
-      setScale(Math.max(0.35, s));
+      setScale(Math.max(0.3, s));
     });
     obs.observe(containerRef.current);
     return ()=>obs.disconnect();
@@ -1784,32 +1788,56 @@ function DesktopBandLayout({
   const visW_L = Math.ceil(rawW_L * scale);
   const visW_R = Math.ceil(rawW_R * scale);
 
-  // Canvas con transform:scale — SIN borde exterior
-  const ScaledCanvas = ({buttons, bellows: bel, pressed, heardIds, onDown, onUp, octMap, rawW, rawH, label}) => (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}>
-      <div style={{fontSize:9,color:"#5a3a18",marginBottom:4,letterSpacing:"0.14em",width:Math.ceil(rawW*scale)+"px",textAlign:"center",fontFamily:"monospace"}}>
-        {label} · {buttons.length}
-      </div>
-      <div style={{width:Math.ceil(rawW*scale)+"px", height:Math.ceil(rawH*scale)+"px", position:"relative", flexShrink:0}}>
-        <div style={{
-          position:"absolute", top:0, left:0,
-          width:rawW+"px", height:rawH+"px",
-          transformOrigin:"top left",
-          transform:`scale(${scale})`,
-        }}>
-          {/* Sin borde ni fondo de recuadro — solo los botones flotando */}
-          <div style={{position:"relative", width:rawW, height:rawH, touchAction:"none"}}>
-            {buttons.map(btn=>(
-              <BandBtn key={btn.id} btn={btn} bellows={bel}
-                pressed={pressed} isHeard={heardIds.includes(btn.id)}
-                onDown={onDown} onUp={onUp}
-                oct={octMap ? octMap[btn.id] : null}/>
-            ))}
+  // ── ScaledCanvas con rotación real del instrumento ──────────────────────────
+  // rotation: -90 para mano izquierda, +90 para mano derecha
+  // voicingHighlight: Set<string> de notas en inglés a resaltar (ej: {"C","E","G"})
+  const ScaledCanvas = ({buttons, bellows: bel, pressed, heardIds, onDown, onUp,
+    octMap, rawW, rawH, label, rotation=0}) => {
+
+    // Al rotar 90°: el ancho visual pasa a ser el alto original y viceversa
+    const rotated = rotation !== 0;
+    const visW = rotated ? Math.ceil(rawH * scale) : Math.ceil(rawW * scale);
+    const visH = rotated ? Math.ceil(rawW * scale) : Math.ceil(rawH * scale);
+
+    // Origen de transformación: centro del canvas para que la rotación sea correcta
+    const translateX = rotated ? (rawH * scale - rawW * scale) / 2 : 0;
+    const translateY = rotated ? -(rawH * scale - rawW * scale) / 2 : 0;
+
+    return (
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <div style={{fontSize:9,color:"#5a3a18",marginBottom:4,letterSpacing:"0.14em",
+          width:visW+"px",textAlign:"center",fontFamily:"monospace"}}>
+          {label} · {buttons.length}
+        </div>
+        <div style={{width:visW+"px", height:visH+"px", position:"relative", flexShrink:0, overflow:"hidden"}}>
+          <div style={{
+            position:"absolute",
+            top: rotated ? translateY+"px" : "0",
+            left: rotated ? translateX+"px" : "0",
+            width:rawW+"px", height:rawH+"px",
+            transformOrigin:"center center",
+            transform:`scale(${scale}) rotate(${rotation}deg)`,
+          }}>
+            <div style={{position:"relative", width:rawW, height:rawH, touchAction:"none"}}>
+              {buttons.map(btn=>{
+                // Nota de este botón en el estado actual del fuelle
+                const notaLat = bel==="abre" ? btn.abre : btn.cierra;
+                const notaEng = LAT[notaLat] || notaLat;
+                const isVoicing = voicingHighlight.has(notaEng);
+                return (
+                  <BandBtn key={btn.id} btn={btn} bellows={bel}
+                    pressed={pressed}
+                    isHeard={heardIds.includes(btn.id) || isVoicing}
+                    onDown={onDown} onUp={onUp}
+                    oct={octMap ? octMap[btn.id] : null}/>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Panel central: búsqueda de acorde + disposición sugerida + mini-biblioteca
   const CentralPanel = () => {
@@ -1908,12 +1936,15 @@ function DesktopBandLayout({
       notes.forEach(({eng, oct},i)=>{
         setTimeout(()=>playBandSound(eng, oct, 1.5), i*30);
       });
+      // Marcar estas notas en el teclado
+      setVoicingHighlight(new Set(notes.map(n=>n.eng)));
     };
 
     const handleAnalyze = () => {
       const r = parseCentral(input);
       setResult(r);
       if (r && r.voicings[0]) playVoicing(r.voicings[0].notes);
+      else setVoicingHighlight(new Set());
     };
 
     // Notas activas del teclado — mostrarlas siempre arriba
@@ -2011,40 +2042,47 @@ function DesktopBandLayout({
   const showL = view==="ambas"||view==="izquierda";
   const showR = view==="ambas"||view==="derecha";
 
+  // ── Layout: teclados arriba lado a lado (rotados), panel abajo ancho completo ──
+  // El teclado izquierdo gira -90° (como al sostener el instrumento)
+  // El teclado derecho gira +90°
+  // El scale se calcula sobre las dimensiones POST-rotación:
+  //   rotado: ancho visual = rawH, alto visual = rawW
+  const scaleL = scale;
+  const scaleR = scale;
+
   return (
-    <div ref={containerRef} style={{display:"flex", gap:GAP, alignItems:"flex-start", width:"100%", paddingBottom:8}}>
+    <div ref={containerRef} style={{width:"100%", paddingBottom:8}}>
 
-      {/* ── TECLADO IZQUIERDO ── */}
-      {showL && (
-        <ScaledCanvas
-          buttons={leftBtns} bellows={bellows}
-          pressed={pressedL} heardIds={heardIdsL}
-          onDown={downL} onUp={upL}
-          octMap={bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE}
-          rawW={rawW_L} rawH={rawH_L}
-          label="MANO IZQUIERDA"/>
-      )}
+      {/* ── FILA SUPERIOR: los dos teclados rotados ── */}
+      <div style={{display:"flex", gap:GAP*2, justifyContent:"center",
+        alignItems:"flex-end", marginBottom:12, flexWrap:"nowrap"}}>
 
-      {/* ── PANEL CENTRAL ── */}
-      <div style={{
-        flex: showL && showR ? "0 0 "+CENTER_W+"px" : "1 1 auto",
-        minWidth: showL || showR ? CENTER_W+"px" : "auto",
-        alignSelf:"stretch",
-        paddingTop:16,
-      }}>
-        <CentralPanel/>
+        {showL && (
+          <ScaledCanvas
+            buttons={leftBtns} bellows={bellows}
+            pressed={pressedL} heardIds={heardIdsL}
+            onDown={downL} onUp={upL}
+            octMap={bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE}
+            rawW={rawW_L} rawH={rawH_L}
+            label="← IZQ" rotation={-90}/>
+        )}
+
+        {showR && (
+          <ScaledCanvas
+            buttons={rightBtns} bellows={bellows}
+            pressed={pressedR} heardIds={heardIdsR}
+            onDown={downR} onUp={upR}
+            octMap={bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE}
+            rawW={rawW_R} rawH={rawH_R}
+            label="DER →" rotation={90}/>
+        )}
+
       </div>
 
-      {/* ── TECLADO DERECHO ── */}
-      {showR && (
-        <ScaledCanvas
-          buttons={rightBtns} bellows={bellows}
-          pressed={pressedR} heardIds={heardIdsR}
-          onDown={downR} onUp={upR}
-          octMap={bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE}
-          rawW={rawW_R} rawH={rawH_R}
-          label="MANO DERECHA"/>
-      )}
+      {/* ── PANEL INFERIOR: notas activas + buscador de voicings ── */}
+      <div style={{width:"100%"}}>
+        <CentralPanel/>
+      </div>
 
     </div>
   );

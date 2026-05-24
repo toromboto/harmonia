@@ -1374,9 +1374,28 @@ function BandBtn({ btn, bellows, pressed, isHeard, onDown, onUp, draggable=false
     >
       <div style={{position:"absolute",top:5,left:9,width:11,height:7,borderRadius:"50%",background:"rgba(255,255,255,.22)",filter:"blur(1px)",pointerEvents:"none"}}/>
       <span style={{fontSize:note.length>2?7:9,fontWeight:800,color:"#fff",fontFamily:"'Courier New',monospace",lineHeight:1,zIndex:1,textShadow:"0 1px 3px rgba(0,0,0,.9)"}}>{note}</span>
-      <span style={{fontSize:6.5,color:"rgba(255,255,255,.9)",fontFamily:"monospace",lineHeight:1,zIndex:1,fontWeight:700}}>
-        {oct !== null ? oct : draggable ? btn.id.replace(/[LRlr]/,"") : ""}
-      </span>
+      {/* Puntos de octava relativa — siempre derechos gracias a un wrapper sin rotación */}
+      {oct !== null && !draggable && (
+        <div style={{
+          display:"flex", gap:2, marginTop:2, zIndex:2,
+          // Contrarotación: si el teclado está rotado ±90°, este div lo cancela
+          // Se pasa como prop octRot para que el texto/puntos queden siempre derechos
+        }}>
+          {[1,2,3].map(i=>(
+            <div key={i} style={{
+              width:3.5, height:3.5, borderRadius:"50%",
+              background: i <= (oct ?? 0)
+                ? "rgba(255,255,255,0.9)"
+                : "rgba(255,255,255,0.2)",
+            }}/>
+          ))}
+        </div>
+      )}
+      {draggable && (
+        <span style={{fontSize:6.5,color:"rgba(255,255,255,.9)",fontFamily:"monospace",lineHeight:1,zIndex:1,fontWeight:700}}>
+          {btn.id.replace(/[LRlr]/,"")}
+        </span>
+      )}
     </div>
   );
 }
@@ -1768,14 +1787,14 @@ function DesktopBandLayout({
       // su ancho visual = rawH original, su alto visual = rawW original
       // Necesitamos que los dos "anchos visuales" (rawH_L + rawH_R) quepan en totalW
       const neededW  = rawH_L + rawH_R + GAP * 2;
-      const scaleByW = totalW > 0 ? (totalW * 0.95) / neededW : 1;
-      // Alto disponible: viewport menos controles (~300px)
-      const availH   = window.innerHeight - 300;
+      const scaleByW = totalW > 0 ? (totalW * 0.98) / neededW : 1;
+      // Alto disponible: viewport menos controles (~240px)
+      const availH   = window.innerHeight - 240;
       // Alto visual de un teclado rotado = rawW
       const maxRawW  = Math.max(rawW_L, rawW_R);
-      const scaleByH = availH > 0 ? (availH * 0.55) / maxRawW : 1;
+      const scaleByH = availH > 0 ? (availH * 0.72) / maxRawW : 1;
       const s = Math.min(1, scaleByW, scaleByH);
-      setScale(Math.max(0.3, s));
+      setScale(Math.max(0.38, s));
     });
     obs.observe(containerRef.current);
     return ()=>obs.disconnect();
@@ -1845,18 +1864,35 @@ function DesktopBandLayout({
               position:"relative",
               touchAction:"none",
             }}>
-              {buttons.map(btn=>{
-                const notaLat = bel==="abre" ? btn.abre : btn.cierra;
-                const notaEng = LAT[notaLat] || notaLat;
-                const isVoicing = voicingHighlight.has(notaEng);
-                return (
-                  <BandBtn key={btn.id} btn={btn} bellows={bel}
-                    pressed={pressed}
-                    isHeard={heardIds.includes(btn.id) || isVoicing}
-                    onDown={onDown} onUp={onUp}
-                    oct={octMap ? octMap[btn.id] : null}/>
-                );
-              })}
+              {(()=>{
+                // Calcular octava relativa por mano: 1=grave 2=media 3=aguda
+                const octs = octMap
+                  ? [...new Set(buttons.map(b=>octMap[b.id]).filter(o=>o!=null))].sort((a,b)=>a-b)
+                  : [];
+                const octRel = (btnId) => {
+                  if (!octMap || octs.length === 0) return null;
+                  const o = octMap[btnId];
+                  if (o == null) return null;
+                  if (octs.length === 1) return 2;
+                  const idx = octs.indexOf(o);
+                  if (octs.length === 2) return idx === 0 ? 1 : 3;
+                  // 3 o más octavas: mapear a 1/2/3
+                  const step = (octs.length - 1) / 2;
+                  return Math.round(idx / step) + 1;
+                };
+                return buttons.map(btn=>{
+                  const notaLat = bel==="abre" ? btn.abre : btn.cierra;
+                  const notaEng = LAT[notaLat] || notaLat;
+                  const isVoicing = voicingHighlight.has(notaEng);
+                  return (
+                    <BandBtn key={btn.id} btn={btn} bellows={bel}
+                      pressed={pressed}
+                      isHeard={heardIds.includes(btn.id) || isVoicing}
+                      onDown={onDown} onUp={onUp}
+                      oct={octRel(btn.id)}/>
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>

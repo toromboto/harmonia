@@ -1765,6 +1765,40 @@ function DesktopBandLayout({
   // voicingHighlight: notas del voicing buscado que se marcan en el teclado
   // formato: Set de strings "NOTA" en inglés (sin octava) ej: {"C","E","G"}
   const [voicingHighlight, setVoicingHighlight] = useState(new Set());
+
+  // ── Control de posición de teclados — persistido en localStorage ──────────
+  const LAYOUT_KEY = "bandoneon_layout_v1";
+  const defaultLayout = {
+    rotL:-90, scaleL:100, mirLH:false, mirLV:false,
+    rotR:90,  scaleR:100, mirRH:false, mirRV:false,
+  };
+  const [layout, setLayout] = useState(()=>{
+    try {
+      const saved = localStorage.getItem(LAYOUT_KEY);
+      return saved ? {...defaultLayout, ...JSON.parse(saved)} : defaultLayout;
+    } catch { return defaultLayout; }
+  });
+  const [showLayoutCtrl, setShowLayoutCtrl] = useState(false);
+
+  const updateLayout = (key, val) => {
+    setLayout(prev => {
+      const next = {...prev, [key]: val};
+      try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  const applyPreset = (preset) => {
+    const presets = {
+      normal:    {rotL:0,   scaleL:100, mirLH:false, mirLV:false, rotR:0,   scaleR:100, mirRH:false, mirRV:false},
+      rotados:   {rotL:-90, scaleL:100, mirLH:false, mirLV:false, rotR:90,  scaleR:100, mirRH:false, mirRV:false},
+      espejados: {rotL:-90, scaleL:100, mirLH:true,  mirLV:false, rotR:90,  scaleR:100, mirRH:true,  mirRV:false},
+      vertical:  {rotL:0,   scaleL:85,  mirLH:false, mirLV:false, rotR:0,   scaleR:85,  mirRH:false, mirRV:false},
+    };
+    const next = {...defaultLayout, ...presets[preset]};
+    setLayout(next);
+    try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(next)); } catch {}
+  };
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
 
@@ -1812,13 +1846,15 @@ function DesktopBandLayout({
   // Al rotar 90°: el contenedor externo toma las dimensiones invertidas
   // (lo que era ancho pasa a ser alto y viceversa).
   const ScaledCanvas = ({buttons, bellows: bel, pressed, heardIds, onDown, onUp,
-    octMap, rawW, rawH, label, rotation=0}) => {
+    octMap, rawW, rawH, label, rotation=0, scalePct=100, mirH=false, mirV=false}) => {
 
+    // Scale final = scale del ResizeObserver × scalePct del usuario
+    const finalScale = scale * (scalePct / 100);
     const rotated = rotation !== 0;
 
-    // Dimensiones escaladas (antes de rotar)
-    const scaledW = rawW * scale;
-    const scaledH = rawH * scale;
+    // Dimensiones escaladas (antes de rotar) — usando finalScale
+    const scaledW = rawW * finalScale;
+    const scaledH = rawH * finalScale;
 
     // Dimensiones del contenedor externo (las que ve el layout)
     // Al rotar 90°: el ancho visual = scaledH, el alto visual = scaledW
@@ -1853,14 +1889,14 @@ function DesktopBandLayout({
             width: Math.ceil(scaledW)+"px",
             height: Math.ceil(scaledH)+"px",
             transformOrigin:"center center",
-            transform: rotated ? `rotate(${rotation}deg)` : "none",
+            transform: `rotate(${rotation}deg) scaleX(${mirH?-1:1}) scaleY(${mirV?-1:1})`,
           }}>
             {/* Canvas real en tamaño original, escalado con zoom CSS */}
             <div style={{
               width: rawW+"px",
               height: rawH+"px",
               transformOrigin:"top left",
-              transform:`scale(${scale})`,
+              transform:`scale(${finalScale})`,
               position:"relative",
               touchAction:"none",
             }}>
@@ -1909,47 +1945,51 @@ function DesktopBandLayout({
     // Voicings predefinidos por tipo de acorde (en semitonos desde la raíz)
     // Cada voicing tiene nombre + intervalos desde la fundamental
     const VOICINGS = {
+      // NOTA: la tónica (intervalo 0) siempre es una opción válida.
+      // "Sin raíz" omite la tónica por elección estilística, pero
+      // "Con raíz" siempre la incluye. Ambas opciones se muestran.
       "△": [
-        {nombre:"Cerrado",   ivs:[0,4,7],        desc:"Tríada en posición cerrada"},
-        {nombre:"1ª inv.",   ivs:[4,7,12],       desc:"Terce en el bajo"},
-        {nombre:"2ª inv.",   ivs:[7,12,16],      desc:"Quinta en el bajo"},
-        {nombre:"Abierto",   ivs:[0,7,16],       desc:"Quinta + décima"},
+        {nombre:"Cerrado",    ivs:[0,4,7],        desc:"Raíz·3ª·5ª"},
+        {nombre:"1ª inv.",    ivs:[4,7,12],       desc:"3ª en el bajo"},
+        {nombre:"2ª inv.",    ivs:[7,12,16],      desc:"5ª en el bajo"},
+        {nombre:"Abierto",    ivs:[0,7,16],       desc:"Raíz·5ª·10ª"},
       ],
       "m": [
-        {nombre:"Cerrado",   ivs:[0,3,7],        desc:"Tríada menor cerrada"},
-        {nombre:"1ª inv.",   ivs:[3,7,12],       desc:"Tercera menor en el bajo"},
-        {nombre:"2ª inv.",   ivs:[7,12,15],      desc:"Quinta en el bajo"},
-        {nombre:"Abierto",   ivs:[0,7,15],       desc:"Quinta + décima menor"},
+        {nombre:"Cerrado",    ivs:[0,3,7],        desc:"Raíz·3ªm·5ª"},
+        {nombre:"1ª inv.",    ivs:[3,7,12],       desc:"3ªm en el bajo"},
+        {nombre:"2ª inv.",    ivs:[7,12,15],      desc:"5ª en el bajo"},
+        {nombre:"Abierto",    ivs:[0,7,15],       desc:"Raíz·5ª·10ªm"},
       ],
       "7": [
-        {nombre:"Guía-notas", ivs:[4,10],        desc:"3ª + 7ª (tritono)"},
-        {nombre:"Drop-2",    ivs:[0,4,7,10],     desc:"Posición cerrada"},
-        {nombre:"Sin raíz",  ivs:[4,7,10],       desc:"3ª·5ª·7ª sin fundamental"},
-        {nombre:"Shell",     ivs:[0,10,16],      desc:"Raíz·7ª·3ª (oct alta)"},
+        {nombre:"Con raíz",   ivs:[0,4,7,10],     desc:"Raíz·3ª·5ª·7ªm"},
+        {nombre:"Guía-notas", ivs:[0,4,10],       desc:"Raíz·3ª·7ª (tritono)"},
+        {nombre:"Sin raíz",   ivs:[4,7,10],       desc:"3ª·5ª·7ª sin fundamental"},
+        {nombre:"Shell",      ivs:[0,10,16],      desc:"Raíz·7ªm·3ª (oct alta)"},
       ],
       "△7": [
-        {nombre:"Guía-notas", ivs:[4,11],        desc:"3ª + 7ª mayor"},
-        {nombre:"Drop-2",    ivs:[0,4,7,11],     desc:"Posición cerrada"},
-        {nombre:"Sin raíz",  ivs:[4,7,11],       desc:"3ª·5ª·7ª mayor"},
-        {nombre:"Shell",     ivs:[0,11,16],      desc:"Raíz·△7·3ª (oct alta)"},
+        {nombre:"Con raíz",   ivs:[0,4,7,11],     desc:"Raíz·3ª·5ª·7ª△"},
+        {nombre:"Guía-notas", ivs:[0,4,11],       desc:"Raíz·3ª·7ª△"},
+        {nombre:"Sin raíz",   ivs:[4,7,11],       desc:"3ª·5ª·7ª△ sin fundamental"},
+        {nombre:"Shell",      ivs:[0,11,16],      desc:"Raíz·7ª△·3ª (oct alta)"},
       ],
       "m7": [
-        {nombre:"Guía-notas", ivs:[3,10],        desc:"3ª menor + 7ª menor"},
-        {nombre:"Drop-2",    ivs:[0,3,7,10],     desc:"Posición cerrada"},
-        {nombre:"Sin raíz",  ivs:[3,7,10],       desc:"3ª·5ª·7ª sin fundamental"},
-        {nombre:"Shell",     ivs:[0,10,15],      desc:"Raíz·7ª·3ª menor (oct alta)"},
+        {nombre:"Con raíz",   ivs:[0,3,7,10],     desc:"Raíz·3ªm·5ª·7ªm"},
+        {nombre:"Guía-notas", ivs:[0,3,10],       desc:"Raíz·3ªm·7ªm"},
+        {nombre:"Sin raíz",   ivs:[3,7,10],       desc:"3ªm·5ª·7ªm sin fundamental"},
+        {nombre:"Shell",      ivs:[0,10,15],      desc:"Raíz·7ªm·3ªm (oct alta)"},
       ],
       "m7b5": [
-        {nombre:"Guía-notas", ivs:[3,10],        desc:"3ª menor + 7ª menor"},
-        {nombre:"Cerrado",   ivs:[0,3,6,10],     desc:"Semidisminuido cerrado"},
-        {nombre:"Sin raíz",  ivs:[3,6,10],       desc:"3ª·5ªb·7ª"},
+        {nombre:"Con raíz",   ivs:[0,3,6,10],     desc:"Raíz·3ªm·5ªb·7ªm"},
+        {nombre:"Guía-notas", ivs:[0,3,10],       desc:"Raíz·3ªm·7ªm"},
+        {nombre:"Sin raíz",   ivs:[3,6,10],       desc:"3ªm·5ªb·7ªm sin fundamental"},
       ],
       "°7": [
-        {nombre:"Simétrico", ivs:[0,3,6,9],      desc:"Divisiones simétricas"},
-        {nombre:"Sin raíz",  ivs:[3,6,9],        desc:"3 notas del °7"},
+        {nombre:"Con raíz",   ivs:[0,3,6,9],      desc:"Raíz·3ªm·5ªb·7ªbb (simétrico)"},
+        {nombre:"Sin raíz",   ivs:[3,6,9],        desc:"3 notas del °7 sin fundamental"},
       ],
       "default": [
-        {nombre:"Todas",     ivs:[0,4,7],        desc:"Disposición básica"},
+        {nombre:"Con raíz",   ivs:[0,4,7],        desc:"Disposición con raíz"},
+        {nombre:"Sin raíz",   ivs:[4,7],          desc:"Sólo 3ª y 5ª"},
       ],
     };
 
@@ -2103,20 +2143,103 @@ function DesktopBandLayout({
   const showL = view==="ambas"||view==="izquierda";
   const showR = view==="ambas"||view==="derecha";
 
-  // ── Layout: teclados arriba lado a lado (rotados), panel abajo ancho completo ──
-  // El teclado izquierdo gira -90° (como al sostener el instrumento)
-  // El teclado derecho gira +90°
-  // El scale se calcula sobre las dimensiones POST-rotación:
-  //   rotado: ancho visual = rawH, alto visual = rawW
-  const scaleL = scale;
-  const scaleR = scale;
+  // Helper para calcular transform del teclado según configuración de layout
+  const canvasTransform = (rot, scalePct, mirH, mirV) =>
+    `rotate(${rot}deg) scale(${scalePct/100}) scaleX(${mirH?-1:1}) scaleY(${mirV?-1:1})`;
+
+  // Slider reutilizable para el panel de control
+  const Slider = ({label, val, min, max, keyName}) => (
+    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+      <span style={{fontSize:10,color:"#7a5030",width:44,flexShrink:0}}>{label}</span>
+      <input type="range" min={min} max={max} value={val}
+        onChange={e=>updateLayout(keyName, parseInt(e.target.value))}
+        style={{flex:1,accentColor:"#f5c060",height:3,cursor:"pointer"}}/>
+      <span style={{fontSize:10,color:"#f5c060",width:34,textAlign:"right",fontFamily:"monospace"}}>
+        {val}{keyName.startsWith("rot")?"°":"%"}
+      </span>
+    </div>
+  );
+
+  const MirBtn = ({label, keyName}) => (
+    <button onClick={()=>updateLayout(keyName,!layout[keyName])}
+      style={{
+        fontSize:10,padding:"2px 8px",borderRadius:5,cursor:"pointer",fontFamily:"monospace",
+        border:`1px solid ${layout[keyName]?"#f5c060":"#3a2010"}`,
+        background:layout[keyName]?"#2a1804":"transparent",
+        color:layout[keyName]?"#f5c060":"#6a4020",
+      }}>{label}</button>
+  );
 
   return (
     <div ref={containerRef} style={{width:"100%", paddingBottom:8}}>
 
-      {/* ── FILA SUPERIOR: los dos teclados rotados ── */}
+      {/* ── PANEL DE CONTROL DE LAYOUT ── */}
+      <div style={{marginBottom:10}}>
+        <button onClick={()=>setShowLayoutCtrl(p=>!p)}
+          style={{fontSize:10,padding:"3px 10px",borderRadius:6,
+            border:"1px solid #3a2010",background:"transparent",
+            color:showLayoutCtrl?"#f5c060":"#6a4020",fontFamily:"monospace",cursor:"pointer"}}>
+          ⚙ Posición teclados {showLayoutCtrl?"▲":"▼"}
+        </button>
+
+        {showLayoutCtrl&&(
+          <div style={{marginTop:8,padding:"10px 14px",background:"#100802",
+            border:"1px solid #3a2010",borderRadius:10,display:"flex",gap:16,flexWrap:"wrap"}}>
+
+            {/* Mano izquierda */}
+            <div style={{flex:"1 1 180px",minWidth:160}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#34d399",marginBottom:6,
+                fontFamily:"monospace",letterSpacing:"0.1em"}}>← IZQ</div>
+              <Slider label="rotación" val={layout.rotL} min={-180} max={180} keyName="rotL"/>
+              <Slider label="escala"   val={layout.scaleL} min={40} max={150} keyName="scaleL"/>
+              <div style={{display:"flex",gap:5,marginTop:4}}>
+                <MirBtn label="↔ H" keyName="mirLH"/>
+                <MirBtn label="↕ V" keyName="mirLV"/>
+              </div>
+            </div>
+
+            {/* Mano derecha */}
+            <div style={{flex:"1 1 180px",minWidth:160}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#f472b6",marginBottom:6,
+                fontFamily:"monospace",letterSpacing:"0.1em"}}>DER →</div>
+              <Slider label="rotación" val={layout.rotR} min={-180} max={180} keyName="rotR"/>
+              <Slider label="escala"   val={layout.scaleR} min={40} max={150} keyName="scaleR"/>
+              <div style={{display:"flex",gap:5,marginTop:4}}>
+                <MirBtn label="↔ H" keyName="mirRH"/>
+                <MirBtn label="↕ V" keyName="mirRV"/>
+              </div>
+            </div>
+
+            {/* Presets */}
+            <div style={{flex:"1 1 140px",minWidth:120}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#888",marginBottom:6,
+                fontFamily:"monospace",letterSpacing:"0.1em"}}>PRESETS</div>
+              {[["normal","horizontal"],["rotados","±90° (instrumento)"],
+                ["espejados","espejados"],["vertical","apilado"]].map(([k,l])=>(
+                <button key={k} onClick={()=>applyPreset(k)}
+                  style={{display:"block",width:"100%",textAlign:"left",
+                    fontSize:10,padding:"3px 8px",marginBottom:3,borderRadius:5,
+                    border:"1px solid #3a2010",background:"transparent",
+                    color:"#7a5030",fontFamily:"monospace",cursor:"pointer"}}>
+                  {l}
+                </button>
+              ))}
+              <button onClick={()=>applyPreset("rotados")}
+                style={{display:"block",width:"100%",textAlign:"left",
+                  fontSize:10,padding:"3px 8px",marginBottom:3,borderRadius:5,
+                  border:"1px solid #f5c06055",background:"#1a0e04",
+                  color:"#f5c060",fontFamily:"monospace",cursor:"pointer",marginTop:4}}>
+                ⟳ reset
+              </button>
+            </div>
+
+          </div>
+        )}
+      </div>
+
+      {/* ── TECLADOS ── */}
       <div style={{display:"flex", gap:GAP*2, justifyContent:"center",
-        alignItems:"flex-end", marginBottom:12, flexWrap:"nowrap"}}>
+        alignItems:"flex-start", marginBottom:12, flexWrap:"nowrap"}}>
 
         {showL && (
           <ScaledCanvas
@@ -2125,7 +2248,11 @@ function DesktopBandLayout({
             onDown={downL} onUp={upL}
             octMap={bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE}
             rawW={rawW_L} rawH={rawH_L}
-            label="← IZQ" rotation={-90}/>
+            label="← IZQ"
+            rotation={layout.rotL}
+            scalePct={layout.scaleL}
+            mirH={layout.mirLH}
+            mirV={layout.mirLV}/>
         )}
 
         {showR && (
@@ -2135,7 +2262,11 @@ function DesktopBandLayout({
             onDown={downR} onUp={upR}
             octMap={bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE}
             rawW={rawW_R} rawH={rawH_R}
-            label="DER →" rotation={90}/>
+            label="DER →"
+            rotation={layout.rotR}
+            scalePct={layout.scaleR}
+            mirH={layout.mirRH}
+            mirV={layout.mirRV}/>
         )}
 
       </div>

@@ -22,7 +22,41 @@ const noteIdx = n => {
   return e?CHROMATIC.indexOf(e[0]):-1;
 };
 const fromRoot = (root,semi) => CHROMATIC[(noteIdx(root)+semi+120)%12];
-const buildScale = (root,ivs) => ivs.map(i=>fromRoot(root,i));
+const buildScale = (root,ivs) => {
+  // Para escalas de 7 notas: usar spelling diatónico correcto
+  // (una nota por letra de la escala, sin repetir C D E F G A B)
+  const CHROMATIC_SHARP = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const CHROMATIC_FLAT  = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
+  // Notas que prefieren bemoles como raíz
+  const FLAT_KEYS = new Set(["F","Bb","Eb","Ab","Db","Gb"]);
+  const useFlat = FLAT_KEYS.has(root);
+  const SCALE = useFlat ? CHROMATIC_FLAT : CHROMATIC_SHARP;
+  const ri = CHROMATIC_SHARP.indexOf(root) !== -1
+    ? CHROMATIC_SHARP.indexOf(root)
+    : CHROMATIC_FLAT.indexOf(root);
+
+  if (ivs.length !== 7) {
+    // Para escalas no diatónicas (pentatónicas, blues, etc.) usar el método simple
+    return ivs.map(i => SCALE[(ri+i+120)%12]);
+  }
+
+  // Para escalas de 7 notas: garantizar una letra por grado
+  const LETTERS = ["C","D","E","F","G","A","B"];
+  const rootLetter = root.replace(/[#b]/,"");
+  const rootLetterIdx = LETTERS.indexOf(rootLetter);
+
+  return ivs.map((interval, degree) => {
+    const targetLetter = LETTERS[(rootLetterIdx + degree) % 7];
+    const chromIdx = (ri + interval + 120) % 12;
+    // Buscar la nota con la letra correcta
+    for (const spelling of [CHROMATIC_SHARP, CHROMATIC_FLAT]) {
+      const note = spelling[chromIdx];
+      if (note.replace(/[#b]/,"") === targetLetter) return note;
+    }
+    // Fallback: doble alteración (raro) — usar nota cromática simple
+    return SCALE[chromIdx];
+  });
+};
 
 const LAT={"DO":"C","DO#":"C#","RE":"D","RE#":"D#","MI":"E","FA":"F","FA#":"F#","SOL":"G","SOL#":"G#","LA":"A","LA#":"A#","SI":"B"};
 const ENG_LAT=Object.fromEntries(Object.entries(LAT).map(([k,v])=>[v,k]));
@@ -129,7 +163,7 @@ const playChord=(notes)=>notes.forEach((n,i)=>setTimeout(()=>playTone(n,4,1.2),i
 
 // ─── TEORÍA ───────────────────────────────────────────────────────────────────
 const FORMULAS={
-  "maj": {intervals:[0,4,7],          label:"Mayor",      symbol:"△"   },
+  "maj": {intervals:[0,4,7],          label:"Mayor",      symbol:""    },
   "min": {intervals:[0,3,7],          label:"Menor",      symbol:"m"   },
   "7":   {intervals:[0,4,7,10],       label:"Dom. 7ª",    symbol:"7"   },
   "maj7":{intervals:[0,4,7,11],       label:"Mayor 7ª",   symbol:"△7"  },
@@ -1944,52 +1978,61 @@ function DesktopBandLayout({
 
     // Voicings predefinidos por tipo de acorde (en semitonos desde la raíz)
     // Cada voicing tiene nombre + intervalos desde la fundamental
+    // ── VOICINGS con distribución por manos ─────────────────────────────────
+    // Cada voicing tiene:
+    //   left:  notas para mano izquierda (bajo) — siempre incluye raíz como opción
+    //   right: notas para mano derecha (cuerpo del acorde + tensiones)
+    //   nombre, desc: etiqueta y descripción
+    //
+    // Intervalos en semitonos desde la raíz.
+    // La raíz (0) SIEMPRE aparece en izquierda. Es la base de toda construcción.
+    // La mano derecha despliega el acorde completo con sus tensiones.
     const VOICINGS = {
-      // NOTA: la tónica (intervalo 0) siempre es una opción válida.
-      // "Sin raíz" omite la tónica por elección estilística, pero
-      // "Con raíz" siempre la incluye. Ambas opciones se muestran.
       "△": [
-        {nombre:"Cerrado",    ivs:[0,4,7],        desc:"Raíz·3ª·5ª"},
-        {nombre:"1ª inv.",    ivs:[4,7,12],       desc:"3ª en el bajo"},
-        {nombre:"2ª inv.",    ivs:[7,12,16],      desc:"5ª en el bajo"},
-        {nombre:"Abierto",    ivs:[0,7,16],       desc:"Raíz·5ª·10ª"},
+        {nombre:"Básico",     left:[0],       right:[4,7],          desc:"IZQ: raíz · DER: 3ª·5ª"},
+        {nombre:"Con quinta", left:[0,7],     right:[4,7,12],       desc:"IZQ: raíz·5ª · DER: 3ª·5ª·8ª"},
+        {nombre:"Abierto",    left:[0],       right:[7,16,19],      desc:"IZQ: raíz · DER: 5ª·10ª·12ª"},
+        {nombre:"1ª inv.",    left:[4],       right:[7,12,16],      desc:"IZQ: 3ª en bajo · DER: 5ª·8ª·10ª"},
       ],
       "m": [
-        {nombre:"Cerrado",    ivs:[0,3,7],        desc:"Raíz·3ªm·5ª"},
-        {nombre:"1ª inv.",    ivs:[3,7,12],       desc:"3ªm en el bajo"},
-        {nombre:"2ª inv.",    ivs:[7,12,15],      desc:"5ª en el bajo"},
-        {nombre:"Abierto",    ivs:[0,7,15],       desc:"Raíz·5ª·10ªm"},
+        {nombre:"Básico",     left:[0],       right:[3,7],          desc:"IZQ: raíz · DER: 3ªm·5ª"},
+        {nombre:"Con quinta", left:[0,7],     right:[3,7,12],       desc:"IZQ: raíz·5ª · DER: 3ªm·5ª·8ª"},
+        {nombre:"Abierto",    left:[0],       right:[7,15,19],      desc:"IZQ: raíz · DER: 5ª·10ªm·12ª"},
+        {nombre:"1ª inv.",    left:[3],       right:[7,12,15],      desc:"IZQ: 3ªm en bajo · DER: 5ª·8ª·10ªm"},
       ],
       "7": [
-        {nombre:"Con raíz",   ivs:[0,4,7,10],     desc:"Raíz·3ª·5ª·7ªm"},
-        {nombre:"Guía-notas", ivs:[0,4,10],       desc:"Raíz·3ª·7ª (tritono)"},
-        {nombre:"Sin raíz",   ivs:[4,7,10],       desc:"3ª·5ª·7ª sin fundamental"},
-        {nombre:"Shell",      ivs:[0,10,16],      desc:"Raíz·7ªm·3ª (oct alta)"},
+        {nombre:"Tango/Jazz", left:[0,7],     right:[4,10,14],      desc:"IZQ: raíz·5ª · DER: 3ª·7ªm·9ª"},
+        {nombre:"Con raíz",   left:[0],       right:[4,7,10],       desc:"IZQ: raíz · DER: 3ª·5ª·7ªm"},
+        {nombre:"Shell",      left:[0,10],    right:[4,7,14],       desc:"IZQ: raíz·7ªm · DER: 3ª·5ª·9ª"},
+        {nombre:"Sin quinta", left:[0],       right:[4,10,14],      desc:"IZQ: raíz · DER: 3ª·7ªm·9ª (guía-notas)"},
+        {nombre:"Con 9ª",     left:[0,7],     right:[4,10,14,21],   desc:"IZQ: raíz·5ª · DER: 3ª·7ªm·9ª·13ª"},
       ],
       "△7": [
-        {nombre:"Con raíz",   ivs:[0,4,7,11],     desc:"Raíz·3ª·5ª·7ª△"},
-        {nombre:"Guía-notas", ivs:[0,4,11],       desc:"Raíz·3ª·7ª△"},
-        {nombre:"Sin raíz",   ivs:[4,7,11],       desc:"3ª·5ª·7ª△ sin fundamental"},
-        {nombre:"Shell",      ivs:[0,11,16],      desc:"Raíz·7ª△·3ª (oct alta)"},
+        {nombre:"Clásico",    left:[0,7],     right:[4,11,14],      desc:"IZQ: raíz·5ª · DER: 3ª·7ª△·9ª"},
+        {nombre:"Con raíz",   left:[0],       right:[4,7,11],       desc:"IZQ: raíz · DER: 3ª·5ª·7ª△"},
+        {nombre:"Shell",      left:[0,11],    right:[4,7,14],       desc:"IZQ: raíz·7ª△ · DER: 3ª·5ª·9ª"},
+        {nombre:"Con #11",    left:[0,7],     right:[4,11,14,18],   desc:"IZQ: raíz·5ª · DER: 3ª·7ª△·9ª·#11"},
+        {nombre:"Sin quinta", left:[0],       right:[4,11,14],      desc:"IZQ: raíz · DER: 3ª·7ª△·9ª"},
       ],
       "m7": [
-        {nombre:"Con raíz",   ivs:[0,3,7,10],     desc:"Raíz·3ªm·5ª·7ªm"},
-        {nombre:"Guía-notas", ivs:[0,3,10],       desc:"Raíz·3ªm·7ªm"},
-        {nombre:"Sin raíz",   ivs:[3,7,10],       desc:"3ªm·5ª·7ªm sin fundamental"},
-        {nombre:"Shell",      ivs:[0,10,15],      desc:"Raíz·7ªm·3ªm (oct alta)"},
+        {nombre:"Tango/Jazz", left:[0,7],     right:[3,10,14],      desc:"IZQ: raíz·5ª · DER: 3ªm·7ªm·9ª"},
+        {nombre:"Con raíz",   left:[0],       right:[3,7,10],       desc:"IZQ: raíz · DER: 3ªm·5ª·7ªm"},
+        {nombre:"Shell",      left:[0,10],    right:[3,7,14],       desc:"IZQ: raíz·7ªm · DER: 3ªm·5ª·9ª"},
+        {nombre:"Con 11ª",    left:[0,7],     right:[3,10,14,17],   desc:"IZQ: raíz·5ª · DER: 3ªm·7ªm·9ª·11ª"},
+        {nombre:"Sin quinta", left:[0],       right:[3,10,14],      desc:"IZQ: raíz · DER: 3ªm·7ªm·9ª"},
       ],
       "m7b5": [
-        {nombre:"Con raíz",   ivs:[0,3,6,10],     desc:"Raíz·3ªm·5ªb·7ªm"},
-        {nombre:"Guía-notas", ivs:[0,3,10],       desc:"Raíz·3ªm·7ªm"},
-        {nombre:"Sin raíz",   ivs:[3,6,10],       desc:"3ªm·5ªb·7ªm sin fundamental"},
+        {nombre:"Clásico",    left:[0,6],     right:[3,10,14],      desc:"IZQ: raíz·5ªb · DER: 3ªm·7ªm·9ª"},
+        {nombre:"Con raíz",   left:[0],       right:[3,6,10],       desc:"IZQ: raíz · DER: 3ªm·5ªb·7ªm"},
+        {nombre:"Shell",      left:[0,10],    right:[3,6,14],       desc:"IZQ: raíz·7ªm · DER: 3ªm·5ªb·9ª"},
       ],
       "°7": [
-        {nombre:"Con raíz",   ivs:[0,3,6,9],      desc:"Raíz·3ªm·5ªb·7ªbb (simétrico)"},
-        {nombre:"Sin raíz",   ivs:[3,6,9],        desc:"3 notas del °7 sin fundamental"},
+        {nombre:"Simétrico",  left:[0,6],     right:[3,9,15],       desc:"IZQ: raíz·5ªb · DER: 3ªm·6ªb·9ªb (simétrico)"},
+        {nombre:"Con raíz",   left:[0],       right:[3,6,9],        desc:"IZQ: raíz · DER: 3ªm·5ªb·7ªbb"},
       ],
       "default": [
-        {nombre:"Con raíz",   ivs:[0,4,7],        desc:"Disposición con raíz"},
-        {nombre:"Sin raíz",   ivs:[4,7],          desc:"Sólo 3ª y 5ª"},
+        {nombre:"Básico",     left:[0],       right:[4,7],          desc:"IZQ: raíz · DER: 3ª·5ª"},
+        {nombre:"Con quinta", left:[0,7],     right:[4,7,12],       desc:"IZQ: raíz·5ª · DER: 3ª·5ª·8ª"},
       ],
     };
 
@@ -2022,13 +2065,32 @@ function DesktopBandLayout({
       else if (rest.includes("m"))   q="m";
       const rootIdx = CHR.indexOf(root);
       const voicingSet = VOICINGS[q] || VOICINGS["default"];
-      const voicings = voicingSet.map(v=>({
+
+      const noteFromSemi = (semi) => {
+        const noteEng = CHR[(rootIdx + semi + 120) % 12];
+        // oct: left empieza en oct2, right en oct3
+        return { eng: noteEng, lat: ENG_LAT2[noteEng] || noteEng, semi };
+      };
+
+      const voicings = voicingSet.map(v => ({
         ...v,
-        notes: v.ivs.map(i=>{
-          const noteEng = CHR[(rootIdx+i)%12];
-          const oct = 4 + Math.floor((rootIdx+i)/12);
-          return {eng:noteEng, lat:ENG_LAT2[noteEng]||noteEng, oct, semi:i};
-        }),
+        // Mano izquierda: notas graves (oct 1-2)
+        notesLeft: v.left.map(semi => ({
+          ...noteFromSemi(semi),
+          oct: semi <= 7 ? 2 : 3,
+          mano: "izq",
+        })),
+        // Mano derecha: cuerpo del acorde (oct 3-4-5)
+        notesRight: v.right.map((semi, i) => ({
+          ...noteFromSemi(semi),
+          oct: semi < 12 ? 3 : semi < 19 ? 4 : 5,
+          mano: "der",
+        })),
+        // Todas las notas juntas para highlight en teclado
+        notes: [...v.left, ...v.right].map(semi => ({
+          ...noteFromSemi(semi),
+          oct: semi <= 7 ? 2 : semi < 12 ? 3 : semi < 19 ? 4 : 5,
+        })),
       }));
       return {rootEng:root, rootLat:ENG_LAT2[root]||root, q, voicings};
     };
@@ -2102,32 +2164,78 @@ function DesktopBandLayout({
         {/* Resultado: voicings */}
         {result && (
           <div style={{background:"#09090f",borderRadius:10,padding:"8px 10px",border:"1px solid #1a1a28"}}>
-            <div style={{fontSize:9,color:"#88aaff",fontWeight:700,fontFamily:"serif",marginBottom:6,textAlign:"center"}}>
-              {result.rootLat}<span style={{opacity:.7}}>{result.q}</span>
+            {/* Título del acorde */}
+            <div style={{fontSize:11,color:"#88aaff",fontWeight:700,fontFamily:"serif",
+              marginBottom:8,textAlign:"center",letterSpacing:"0.05em"}}>
+              {result.rootLat}<span style={{opacity:.7,fontSize:10}}>{result.q}</span>
             </div>
-            {result.voicings.map((v,vi)=>(
-              <div key={vi}
-                onClick={()=>playVoicing(v.notes)}
-                style={{marginBottom:vi<result.voicings.length-1?6:0,padding:"5px 7px",borderRadius:7,
-                  border:"1px solid #1a1a30",background:vi===0?"#0e0e1e":"transparent",cursor:"pointer"}}
-              >
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
-                  <span style={{fontSize:8,fontWeight:700,color:vi===0?"#88aaff":"#444",fontFamily:"monospace",letterSpacing:"0.08em"}}>{v.nombre}</span>
-                  <span style={{fontSize:7,color:"#333",fontStyle:"italic"}}>{v.desc}</span>
-                  <span style={{fontSize:8,color:"#333"}}>▶</span>
-                </div>
-                <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-                  {v.notes.map((n,ni)=>(
-                    <div key={ni} style={{display:"flex",flexDirection:"column",alignItems:"center",
-                      padding:"3px 5px",borderRadius:5,
-                      background:nc(n.eng)+"18",border:`1px solid ${nc(n.eng)}44`}}>
-                      <span style={{fontSize:9,fontWeight:800,color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}</span>
-                      <span style={{fontSize:7,color:"#333"}}>{n.oct}</span>
+
+            {result.voicings.map((v,vi)=>{
+              const isActive = vi === 0;
+              return (
+                <div key={vi}
+                  onClick={()=>playVoicing(v.notes)}
+                  style={{marginBottom:5,padding:"6px 8px",borderRadius:8,
+                    border:`1px solid ${isActive?"#2a2a50":"#141420"}`,
+                    background:isActive?"#0d0d1e":"transparent",cursor:"pointer",
+                    transition:"background 0.15s"}}>
+
+                  {/* Cabecera del voicing */}
+                  <div style={{display:"flex",justifyContent:"space-between",
+                    alignItems:"center",marginBottom:6}}>
+                    <span style={{fontSize:9,fontWeight:700,
+                      color:isActive?"#88aaff":"#555",fontFamily:"monospace"}}>
+                      {v.nombre}
+                    </span>
+                    <span style={{fontSize:8,color:"#333",cursor:"pointer"}}>▶</span>
+                  </div>
+
+                  {/* Distribución por manos */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:5}}>
+
+                    {/* Mano izquierda */}
+                    <div style={{background:"#08080e",borderRadius:6,padding:"4px 6px",
+                      borderLeft:"2px solid #34d39944"}}>
+                      <div style={{fontSize:7,color:"#34d399",marginBottom:3,
+                        fontFamily:"monospace",letterSpacing:"0.08em"}}>← IZQ (bajo)</div>
+                      <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                        {v.notesLeft.map((n,ni)=>(
+                          <div key={ni} style={{display:"flex",flexDirection:"column",
+                            alignItems:"center",padding:"2px 4px",borderRadius:4,
+                            background:nc(n.eng)+"22",border:`1px solid ${nc(n.eng)}55`}}>
+                            <span style={{fontSize:9,fontWeight:800,
+                              color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}</span>
+                            <span style={{fontSize:6,color:"#444"}}>{n.oct}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
+
+                    {/* Mano derecha */}
+                    <div style={{background:"#08080e",borderRadius:6,padding:"4px 6px",
+                      borderLeft:"2px solid #f472b644"}}>
+                      <div style={{fontSize:7,color:"#f472b6",marginBottom:3,
+                        fontFamily:"monospace",letterSpacing:"0.08em"}}>DER → (acorde)</div>
+                      <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                        {v.notesRight.map((n,ni)=>(
+                          <div key={ni} style={{display:"flex",flexDirection:"column",
+                            alignItems:"center",padding:"2px 4px",borderRadius:4,
+                            background:nc(n.eng)+"22",border:`1px solid ${nc(n.eng)}55`}}>
+                            <span style={{fontSize:9,fontWeight:800,
+                              color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}</span>
+                            <span style={{fontSize:6,color:"#444"}}>{n.oct}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Descripción */}
+                  <div style={{fontSize:7,color:"#333",marginTop:4,fontStyle:"italic",
+                    fontFamily:"monospace"}}>{v.desc}</div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

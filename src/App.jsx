@@ -163,53 +163,93 @@ const playChord=(notes)=>notes.forEach((n,i)=>setTimeout(()=>playTone(n,4,1.2),i
 
 // ─── TEORÍA ───────────────────────────────────────────────────────────────────
 const FORMULAS={
-  "maj": {intervals:[0,4,7],          label:"Mayor",      symbol:""    },
-  "min": {intervals:[0,3,7],          label:"Menor",      symbol:"m"   },
-  "7":   {intervals:[0,4,7,10],       label:"Dom. 7ª",    symbol:"7"   },
-  "maj7":{intervals:[0,4,7,11],       label:"Mayor 7ª",   symbol:"△7"  },
-  "min7":{intervals:[0,3,7,10],       label:"Menor 7ª",   symbol:"m7"  },
-  "dim": {intervals:[0,3,6],          label:"Disminuido", symbol:"°"   },
-  "dim7":{intervals:[0,3,6,9],        label:"Dim. 7ª",    symbol:"°7"  },
-  "m7b5":{intervals:[0,3,6,10],       label:"Semidism.",  symbol:"ø7"  },
-  "aug": {intervals:[0,4,8],          label:"Aumentado",  symbol:"+"   },
-  "sus2":{intervals:[0,2,7],          label:"Sus2",       symbol:"sus2"},
-  "sus4":{intervals:[0,5,7],          label:"Sus4",       symbol:"sus4"},
-  "9":   {intervals:[0,4,7,10,2],     label:"Dom. 9ª",    symbol:"9"   },
-  "maj9":{intervals:[0,4,7,11,2],     label:"Mayor 9ª",   symbol:"△9"  },
-  "min9":{intervals:[0,3,7,10,2],     label:"Menor 9ª",   symbol:"m9"  },
-  "13":  {intervals:[0,4,7,10,2,9],   label:"Dom. 13ª",   symbol:"13"  },
-  "7b9": {intervals:[0,4,7,10,1],     label:"Dom. b9",    symbol:"7b9" },
-  "7#9": {intervals:[0,4,7,10,3],     label:"Dom. #9",    symbol:"7#9" },
-  "7alt":{intervals:[0,4,7,10,1,3,8], label:"Alt.",       symbol:"7alt"},
+  "maj":     {intervals:[0,4,7],          label:"Mayor",          symbol:""        },
+  "min":     {intervals:[0,3,7],          label:"Menor",          symbol:"m"       },
+  "7":       {intervals:[0,4,7,10],       label:"Dom. 7ª",        symbol:"7"       },
+  "maj7":    {intervals:[0,4,7,11],       label:"Mayor 7ª",       symbol:"maj7"    },
+  "min7":    {intervals:[0,3,7,10],       label:"Menor 7ª",       symbol:"m7"      },
+  "dim":     {intervals:[0,3,6],          label:"Disminuido",     symbol:"°"       },
+  "dim7":    {intervals:[0,3,6,9],        label:"Dim. 7ª",        symbol:"dim7"    },
+  "m7b5":    {intervals:[0,3,6,10],       label:"Semidism.",      symbol:"m7b5"    },
+  "mmaj7":   {intervals:[0,3,7,11],       label:"m(maj7)",        symbol:"m(maj7)" },
+  "maj7s5":  {intervals:[0,4,8,11],       label:"maj7#5",         symbol:"maj7#5"  },
+  "aug":     {intervals:[0,4,8],          label:"Aumentado",      symbol:"+"       },
+  "sus2":    {intervals:[0,2,7],          label:"Sus2",           symbol:"sus2"    },
+  "sus4":    {intervals:[0,5,7],          label:"Sus4",           symbol:"sus4"    },
+  "9":       {intervals:[0,4,7,10,2],     label:"Dom. 9ª",        symbol:"9"       },
+  "maj9":    {intervals:[0,4,7,11,2],     label:"Mayor 9ª",       symbol:"maj9"    },
+  "min9":    {intervals:[0,3,7,10,2],     label:"Menor 9ª",       symbol:"m9"      },
+  "13":      {intervals:[0,4,7,10,2,9],   label:"Dom. 13ª",       symbol:"13"      },
+  "7b9":     {intervals:[0,4,7,10,1],     label:"Dom. b9",        symbol:"7b9"     },
+  "7s9":     {intervals:[0,4,7,10,3],     label:"Dom. #9",        symbol:"7#9"     },
+  "7alt":    {intervals:[0,4,7,10,1,3,8], label:"Alt.",           symbol:"7alt"    },
 };
 
 const MODES={
-  "Jónico":     [0,2,4,5,7,9,11],
-  "Dórico":     [0,2,3,5,7,9,10],
-  "Frigio":     [0,1,3,5,7,8,10],
-  "Lidio":      [0,2,4,6,7,9,11],
-  "Mixolidio":  [0,2,4,5,7,9,10],
-  "Eólico":     [0,2,3,5,7,8,10],
-  "Locrio":     [0,1,3,5,6,8,10],
-  "Locrio #2":  [0,2,3,5,6,8,10],
-  "Lidio b7":   [0,2,4,6,7,9,10],
-  "Alterada":   [0,1,3,4,6,8,10],
-  "Frigio Dom.":[0,1,4,5,7,8,10],
-  "Disminuida": [0,2,3,5,6,8,9,11],
-  "Blues":      [0,3,5,6,7,10],
+  // Modos del Mayor (Jónico)
+  "Jónico":        [0,2,4,5,7,9,11],
+  "Dórico":        [0,2,3,5,7,9,10],
+  "Frigio":        [0,1,3,5,7,8,10],
+  "Lidio":         [0,2,4,6,7,9,11],
+  "Mixolidio":     [0,2,4,5,7,9,10],
+  "Eólico":        [0,2,3,5,7,8,10],  // = Menor Natural
+  "Locrio":        [0,1,3,5,6,8,10],
+  // Modos del Menor Armónico
+  "Menor Arm.":    [0,2,3,5,7,8,11],  // i — m(maj7)
+  "Locrio #6":     [0,2,3,5,6,9,10],  // ii — m7b5
+  "Jónico #5":     [0,2,4,5,8,9,11],  // bIII — maj7#5
+  "Dórico #4":     [0,2,3,6,7,9,10],  // iv — m7
+  "Frigio Dom.":   [0,1,4,5,7,8,10],  // V — 7 (tensiones alteradas b9 #9 b13)
+  "Lidio #2":      [0,3,4,6,7,9,11],  // bVI — maj7
+  "Ultra Locrio":  [0,1,3,4,6,8,9],   // vii° — dim7
+  // Modos del Menor Melódico (Jazz Minor)
+  "Menor Mel.":    [0,2,3,5,7,9,11],  // i — m(maj7)
+  "Dórico b2":     [0,1,3,5,7,9,10],  // ii — m7
+  "Lidio Aum.":    [0,2,4,6,8,9,11],  // bIII — maj7#5
+  "Lidio Dom.":    [0,2,4,6,7,9,10],  // IV — 7
+  "Mixolidio b6":  [0,2,4,5,7,8,10],  // V — 7
+  "Locrio #2":     [0,2,3,5,6,8,10],  // vi/ii — m7b5 (jazz preferred)
+  "Alterada":      [0,1,3,4,6,8,10],  // vii — 7alt
+  // Otros
+  "Lidio b7":      [0,2,4,6,7,9,10],
+  "Disminuida":    [0,2,3,5,6,8,9,11],
+  "Blues":         [0,3,5,6,7,10],
 };
 
 const T_SEMI={"9":2,"b9":1,"#9":3,"11":5,"#11":6,"13":9,"b13":8,"6":9,"b6":8,"b7":10,"7":11};
 const tNote=(root,t)=>{const s=T_SEMI[t];return s!==undefined?fromRoot(root,s):null;};
 
+// Grados diatónicos — Tonalidad MAYOR (cifrado romano en mayúsculas)
 const MODE_BY_DEGREE=[
-  {name:"Jónico",   ivs:MODES["Jónico"],   q:"△7", tensions:["9","#11","13"],avoid:["11"]},
-  {name:"Dórico",   ivs:MODES["Dórico"],   q:"m7", tensions:["9","11"],      avoid:["b9"]},
-  {name:"Frigio",   ivs:MODES["Frigio"],   q:"m7", tensions:["11"],          avoid:["9","13"]},
-  {name:"Lidio",    ivs:MODES["Lidio"],    q:"△7", tensions:["9","#11","13"],avoid:["11"]},
-  {name:"Mixolidio",ivs:MODES["Mixolidio"],q:"7",  tensions:["9","13"],      avoid:["11"]},
-  {name:"Eólico",   ivs:MODES["Eólico"],   q:"m7", tensions:["9","11"],      avoid:[]},
-  {name:"Locrio",   ivs:MODES["Locrio"],   q:"ø7", tensions:["11","b13"],    avoid:["b9"]},
+  {name:"Jónico",   ivs:MODES["Jónico"],   q:"maj7",tensions:["9","13"],       avoid:["11"], degree:"I"  },
+  {name:"Dórico",   ivs:MODES["Dórico"],   q:"m7",  tensions:["9","11"],       avoid:["b9"], degree:"II" },
+  {name:"Frigio",   ivs:MODES["Frigio"],   q:"m7",  tensions:["11"],           avoid:["9","13"],degree:"III"},
+  {name:"Lidio",    ivs:MODES["Lidio"],    q:"maj7",tensions:["9","#11","13"],  avoid:[],     degree:"IV" },
+  {name:"Mixolidio",ivs:MODES["Mixolidio"],q:"7",   tensions:["9","13"],       avoid:["11"], degree:"V"  },
+  {name:"Eólico",   ivs:MODES["Eólico"],   q:"m7",  tensions:["9","11"],       avoid:[],     degree:"VI" },
+  {name:"Locrio",   ivs:MODES["Locrio"],   q:"m7b5",tensions:["11","b13"],     avoid:["b9"], degree:"VII"},
+];
+
+// Grados diatónicos — Tonalidad MENOR NATURAL (cifrado romano en minúsculas)
+const MODE_BY_DEGREE_MINOR=[
+  {name:"Eólico",      ivs:MODES["Eólico"],      q:"m7",   tensions:["9","11"],         avoid:[],          degree:"i"   },
+  {name:"Locrio",      ivs:MODES["Locrio"],      q:"m7b5", tensions:["11","b13"],        avoid:["b9"],      degree:"ii"  },
+  {name:"Jónico",      ivs:MODES["Jónico"],      q:"maj7", tensions:["9","13"],          avoid:["11"],      degree:"bIII"},
+  {name:"Dórico",      ivs:MODES["Dórico"],      q:"m7",   tensions:["9","11"],          avoid:["b9"],      degree:"iv"  },
+  {name:"Frigio",      ivs:MODES["Frigio"],      q:"m7",   tensions:["11"],              avoid:["9","13"],  degree:"v"   },
+  {name:"Lidio",       ivs:MODES["Lidio"],       q:"maj7", tensions:["9","#11","13"],    avoid:[],          degree:"bVI" },
+  {name:"Mixolidio",   ivs:MODES["Mixolidio"],   q:"7",    tensions:["9","13"],          avoid:["11"],      degree:"bVII"},
+];
+
+// Grados — Menor ARMÓNICO
+const MODE_BY_DEGREE_HARM=[
+  {name:"Menor Arm.",  ivs:MODES["Menor Arm."],  q:"mmaj7",tensions:["9","11"],          avoid:[],          degree:"i"   },
+  {name:"Locrio #6",   ivs:MODES["Locrio #6"],   q:"m7b5", tensions:["11","13"],         avoid:["b9"],      degree:"ii"  },
+  {name:"Jónico #5",   ivs:MODES["Jónico #5"],   q:"maj7s5",tensions:["9","11"],         avoid:[],          degree:"bIII"},
+  {name:"Dórico #4",   ivs:MODES["Dórico #4"],   q:"m7",   tensions:["9","#11","13"],    avoid:[],          degree:"iv"  },
+  {name:"Frigio Dom.", ivs:MODES["Frigio Dom."],  q:"7",    tensions:["b9","#9","b13"],   avoid:["9","13"],  degree:"V"   },
+  {name:"Lidio #2",    ivs:MODES["Lidio #2"],     q:"maj7", tensions:["#9","#11","13"],   avoid:[],          degree:"bVI" },
+  {name:"Ultra Locrio",ivs:MODES["Ultra Locrio"], q:"dim7", tensions:[],                 avoid:[],          degree:"vii°"},
 ];
 
 const HF={
@@ -295,13 +335,28 @@ const COF=[
 ];
 const MSI=[0,2,4,5,7,9,11];
 const DN=["I","II","III","IV","V","VI","VII"];
-const DQ=["△7","m7","m7","△7","7","m7","ø7"];
+const DQ=["maj7","m7","m7","maj7","7","m7","m7b5"]; // calidades correctas del Mayor
 const DL=["Tónica","Supertónica","Mediante","Subdominante","Dominante","Relativa m.","Sensible"];
+// Calidades del Menor Natural
+const DN_MIN=["i","ii","bIII","iv","v","bVI","bVII"];
+const DQ_MIN=["m7","m7b5","maj7","m7","m7","maj7","7"];
+const DL_MIN=["Tónica","Supertónica","Mediante","Subdominante","Dominante","Submediante","Subtónica"];
 
-const getMSD=(root)=>{
+const getMSD=(root, minor=false)=>{
   const ri=noteIdx(root);if(ri===-1)return null;
+  if(minor){
+    const MINOR_SCALE=[0,2,3,5,7,8,10];
+    const notes=MINOR_SCALE.map(i=>CHROMATIC[(ri+i+120)%12]);
+    return{notes,isMinor:true,diatonic:notes.map((n,i)=>({
+      note:n,degree:DN_MIN[i],quality:DQ_MIN[i],label:DL_MIN[i],
+      full:`${n}${DQ_MIN[i]}`,mode:MODE_BY_DEGREE_MINOR[i],
+    }))};
+  }
   const notes=MSI.map(i=>CHROMATIC[(ri+i)%12]);
-  return{notes,diatonic:notes.map((n,i)=>({note:n,degree:DN[i],quality:DQ[i],label:DL[i],full:`${n}${DQ[i]}`}))};
+  return{notes,isMinor:false,diatonic:notes.map((n,i)=>({
+    note:n,degree:DN[i],quality:DQ[i],label:DL[i],
+    full:`${n}${DQ[i]}`,mode:MODE_BY_DEGREE[i],
+  }))};
 };
 
 const parseChord=(input)=>{
@@ -314,8 +369,8 @@ const parseChord=(input)=>{
     if(rest.includes("m7b5")||rest.includes("ø"))q="m7b5";
     else if(rest.includes("dim7")||rest.includes("°7"))q="dim7";
     else if(rest.includes("dim")||rest.includes("°"))q="dim";
-    else if(rest.includes("maj7")||rest.includes("△7")||rest.includes("∆7"))q="maj7";
-    else if(rest.includes("maj9")||rest.includes("△9"))q="maj9";
+    else if(rest.includes("maj7")||rest.includes("maj7")||rest.includes("∆7"))q="maj7";
+    else if(rest.includes("maj9")||rest.includes("maj9"))q="maj9";
     else if(rest.includes("maj"))q="maj7";
     else if(rest.includes("m9"))q="min9";
     else if(rest.includes("m7"))q="min7";
@@ -336,19 +391,86 @@ const parseChord=(input)=>{
 };
 
 const computeProg=(chords)=>{
+  // ── PASO 1: Detectar si la progresión es Mayor o Menor ──────────────────
+  // Basado en el manual de referencia armónica
+  const quals = chords.map(c=>c.quality);
+  const roots = chords.map(c=>c.root);
+
+  // Cadencia ii m7b5 → V7 → i (cualquier menor) = definitivamente Menor
+  let isMinor = false;
+  for(let i=0;i<chords.length-1;i++){
+    const cur=chords[i], nxt=chords[i+1];
+    // ii m7b5 seguido de V7
+    if(cur.quality==="m7b5" && nxt.quality==="7"){
+      const expectedV = CHROMATIC[(noteIdx(cur.root)+2+120)%12]; // raíz de V = raíz de ii + 2st
+      if(nxt.root===expectedV || enh(nxt.root)===expectedV) isMinor=true;
+    }
+    // V7 resolviendo a acorde menor (una 4ª justa arriba)
+    if(nxt.quality==="min" || nxt.quality==="min7" || nxt.quality==="mmaj7"){
+      const expectedI = CHROMATIC[(noteIdx(cur.root)+5+120)%12];
+      if(cur.quality==="7" && (nxt.root===expectedI||enh(nxt.root)===expectedI)) isMinor=true;
+    }
+  }
+  // El último acorde (reposo) es menor = Menor
+  const lastQ = chords[chords.length-1]?.quality;
+  if(lastQ==="min"||lastQ==="min7"||lastQ==="mmaj7") isMinor=true;
+
+  // ── PASO 2: Calcular scores para encontrar la tónica ────────────────────
+  const MINOR_SCALE = [0,2,3,5,7,8,10]; // Eólico
   const scores={};
-  COF.forEach(({note})=>{
-    const ri=noteIdx(note);if(ri===-1)return;
-    let sc=0;const scale=MSI.map(i=>CHROMATIC[(ri+i)%12]);
-    chords.forEach(({root})=>{if(scale.includes(root))sc+=2;if(scale.includes(enh(root)))sc+=2;});
-    scores[note]=sc;
-  });
+
+  if(isMinor){
+    // Buscar tónica menor: la nota que mejor explica los acordes como menor natural
+    COF.forEach(({note,minor})=>{
+      // Usar la relativa menor de cada tonalidad mayor del COF
+      const minRoot = minor.replace("m","");
+      const ri = noteIdx(minRoot); if(ri===-1)return;
+      let sc=0;
+      const scale = MINOR_SCALE.map(i=>CHROMATIC[(ri+i+120)%12]);
+      chords.forEach(({root})=>{
+        if(scale.includes(root)||scale.includes(enh(root))) sc+=2;
+      });
+      scores[minRoot] = sc;
+    });
+  } else {
+    COF.forEach(({note})=>{
+      const ri=noteIdx(note);if(ri===-1)return;
+      let sc=0;const scale=MSI.map(i=>CHROMATIC[(ri+i)%12]);
+      chords.forEach(({root})=>{if(scale.includes(root))sc+=2;if(scale.includes(enh(root)))sc+=2;});
+      scores[note]=sc;
+    });
+  }
+
   const key=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
-  const ki=noteIdx(key);const sn=MSI.map(i=>CHROMATIC[(ki+i)%12]);
-  return chords.map(({root,quality,raw,notes})=>{
-    const ri=sn.indexOf(root)!==-1?sn.indexOf(root):sn.indexOf(enh(root));
-    return{raw,root,quality,notes,degree:ri>=0?DN[ri]:"?",key,fn:getFns(quality)[0]};
-  });
+  const ki=noteIdx(key);
+
+  if(isMinor){
+    // Usar escala menor natural para asignar grados
+    const sn = MINOR_SCALE.map(i=>CHROMATIC[(ki+i+120)%12]);
+    const mbd = MODE_BY_DEGREE_MINOR;
+    return chords.map(({root,quality,raw,notes})=>{
+      const ri = sn.indexOf(root)!==-1?sn.indexOf(root):sn.indexOf(enh(root));
+      const degreeInfo = ri>=0 ? mbd[ri] : null;
+      return{raw,root,quality,notes,
+        degree:degreeInfo?degreeInfo.degree:"?",
+        key, isMinor:true,
+        fn:getFns(quality)[0],
+        mode:degreeInfo?.name||"",
+      };
+    });
+  } else {
+    const sn=MSI.map(i=>CHROMATIC[(ki+i)%12]);
+    return chords.map(({root,quality,raw,notes})=>{
+      const ri=sn.indexOf(root)!==-1?sn.indexOf(root):sn.indexOf(enh(root));
+      const degreeInfo = ri>=0 ? MODE_BY_DEGREE[ri] : null;
+      return{raw,root,quality,notes,
+        degree:degreeInfo?degreeInfo.degree:"?",
+        key, isMinor:false,
+        fn:getFns(quality)[0],
+        mode:degreeInfo?.name||"",
+      };
+    });
+  }
 };
 
 // ─── BIBLIOTECA DE PROGRESIONES ───────────────────────────────────────────────
@@ -746,6 +868,7 @@ const Circulo=({highlighted=[],onSelect=null,selectedKey=null})=>{
       note:n,degree:DN[i],quality:DQ[i],
       mode:MODE_BY_DEGREE[i],
       tensions:(MODE_BY_DEGREE[i].tensions||[]).map(t=>({label:t,note:tNote(n,t)})),
+      avoid:(MODE_BY_DEGREE[i].avoid||[]),
     }));
   },[selectedKey]);
 
@@ -2007,7 +2130,7 @@ function DesktopBandLayout({
         {nombre:"Sin quinta", left:[0],       right:[4,10,14],      desc:"IZQ: raíz · DER: 3ª·7ªm·9ª (guía-notas)"},
         {nombre:"Con 9ª",     left:[0,7],     right:[4,10,14,21],   desc:"IZQ: raíz·5ª · DER: 3ª·7ªm·9ª·13ª"},
       ],
-      "△7": [
+      "maj7": [
         {nombre:"Clásico",    left:[0,7],     right:[4,11,14],      desc:"IZQ: raíz·5ª · DER: 3ª·7ª△·9ª"},
         {nombre:"Con raíz",   left:[0],       right:[4,7,11],       desc:"IZQ: raíz · DER: 3ª·5ª·7ª△"},
         {nombre:"Shell",      left:[0,11],    right:[4,7,14],       desc:"IZQ: raíz·7ª△ · DER: 3ª·5ª·9ª"},
@@ -2059,7 +2182,7 @@ function DesktopBandLayout({
       let q = "△";
       if (rest.includes("m7b5")||rest.includes("ø"))  q="m7b5";
       else if (rest.includes("dim7")||rest.includes("°7")) q="°7";
-      else if (rest.includes("△7")||rest.includes("maj7")||rest.includes("∆7")) q="△7";
+      else if (rest.includes("maj7")||rest.includes("maj7")||rest.includes("∆7")) q="maj7";
       else if (rest.includes("m7"))  q="m7";
       else if (rest.includes("7"))   q="7";
       else if (rest.includes("m"))   q="m";
@@ -2552,9 +2675,9 @@ function BandoneonTab() {
     const ivs=idxs.map(i=>(i-idxs[0]+12)%12).sort((a,b)=>a-b);
     const has=i=>ivs.includes(i);
     let q="?";
-    if(has(4)&&has(7)&&has(11))q="△7"; else if(has(3)&&has(7)&&has(10))q="m7";
+    if(has(4)&&has(7)&&has(11))q="maj7"; else if(has(3)&&has(7)&&has(10))q="m7";
     else if(has(4)&&has(7)&&has(10))q="7"; else if(has(3)&&has(6)&&has(9))q="°7";
-    else if(has(3)&&has(6)&&has(10))q="ø7"; else if(has(4)&&has(7))q="△";
+    else if(has(3)&&has(6)&&has(10))q="m7b5"; else if(has(4)&&has(7))q="△";
     else if(has(3)&&has(7))q="m"; else if(has(3)&&has(6))q="°";
     const rootLat = ENG_TO_LAT[root]??root;
     return`${rootLat}${q}`;
@@ -2786,9 +2909,204 @@ function BandoneonTab() {
 }
 
 
+// ─── VITRAL TAB — Sistema de Colores Tonales ─────────────────────────────────
+function VitralTab(){
+  const NOTAS_V=[
+    {eng:"C", lat:"DO",  color:"#1E50DC", natural:true },
+    {eng:"C#",lat:"DO#", color:"#2378B4", natural:false},
+    {eng:"D", lat:"RE",  color:"#28A03C", natural:true },
+    {eng:"D#",lat:"RE#", color:"#28B464", natural:false},
+    {eng:"E", lat:"MI",  color:"#82501E", natural:true },
+    {eng:"F", lat:"FA",  color:"#C8B98C", natural:true },
+    {eng:"F#",lat:"FA#", color:"#D7C050", natural:false},
+    {eng:"G", lat:"SOL", color:"#E6C814", natural:true },
+    {eng:"G#",lat:"SOL#",color:"#DC781E", natural:false},
+    {eng:"A", lat:"LA",  color:"#D22828", natural:true },
+    {eng:"A#",lat:"LA#", color:"#A5286E", natural:false},
+    {eng:"B", lat:"SI",  color:"#7828B4", natural:true },
+  ];
+
+  const PASOS_V=[
+    {idx:[0,1,2,3,4,5,6,7,8,9,10,11],roles:["","","","","","","","","","","",""],
+     desc:"Las 12 notas del sistema cromático · hacé clic para escuchar cada una"},
+    {idx:[0,2,4,5,7,9,11],roles:["I","II","III","IV","V","VI","VII"],
+     desc:"Escala de Do Mayor · 7 notas · 7 colores · la paleta de la tonalidad"},
+    {idx:[9,11,0,2,4,5,7],roles:["i","ii","bIII","iv","v","bVI","bVII"],
+     desc:"Escala de La Menor natural · el carácter oscuro del modo eólico"},
+    {idx:[2,5,9,0],roles:["Raíz","3ªm","5ª","7ªm"],
+     desc:"Dm7 · Re menor 7ª · cuatro colores que definen este acorde"},
+    {idx:[7,11,2,5],roles:["Raíz","3ª","5ª","7ªm"],
+     desc:"G7 · Sol dominante · el acorde de máxima tensión tonal"},
+    {idx:[0,4,7,11],roles:["Raíz","3ª","5ª","7ª"],
+     desc:"Cmaj7 · Do mayor séptima · luminoso y estable"},
+  ];
+
+  const [pasoV, setPasoV] = useState(0);
+  const [hoverV, setHoverV] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(()=>{
+    setRevealed(false);
+    const t = setTimeout(()=>setRevealed(true), 50);
+    return ()=>clearTimeout(t);
+  },[pasoV]);
+
+  const paso = PASOS_V[pasoV];
+  const activas = new Set(paso.idx);
+
+  const txtClr = (hex)=>{
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return (r*299+g*587+b*114)/1000>128?"#1a1a1a":"#ffffff";
+  };
+
+  const ALT_NAT = 180;
+  const ALT_ALT = 148;
+
+  return(
+    <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",paddingBottom:"2rem"}}>
+
+      {/* Header */}
+      <div style={{textAlign:"center",padding:"1.5rem 0 1rem"}}>
+        <p style={{fontFamily:"'Courier New',monospace",fontSize:10,letterSpacing:".2em",
+          color:"#3a2e0a",marginBottom:".6rem"}}>HARMONÍA · INTRODUCCIÓN</p>
+        <h1 style={{fontFamily:"'Libre Baskerville',serif",fontWeight:400,
+          fontSize:"clamp(1.4rem,3vw,2.2rem)",letterSpacing:".06em",
+          color:"#d4a030",marginBottom:".3rem"}}>
+          Sistema de Colores Tonales
+        </h1>
+        <p style={{fontStyle:"italic",fontSize:".9rem",color:"#5a4820",letterSpacing:".03em"}}>
+          Cada nota tiene un color único e invariable — la base visual de Harmonía
+        </p>
+      </div>
+
+      {/* Vitrales */}
+      <div style={{display:"flex",gap:6,justifyContent:"center",
+        alignItems:"flex-end",padding:"0 .5rem",flexWrap:"nowrap",overflow:"hidden"}}>
+        {NOTAS_V.map((n,i)=>{
+          const activa = activas.has(i);
+          const esHover = hoverV===i;
+          const alt = n.natural ? ALT_NAT : ALT_ALT;
+          const ancho = n.natural ? 52 : 36;
+          return(
+            <div key={i}
+              onMouseEnter={()=>setHoverV(i)}
+              onMouseLeave={()=>setHoverV(null)}
+              onClick={()=>playTone(n.eng,4,.8)}
+              style={{
+                width:ancho,height:alt,flexShrink:0,
+                borderRadius:"999px 999px 50% 50%",
+                position:"relative",cursor:"pointer",
+                background:`linear-gradient(180deg,${n.color}ee 0%,${n.color}99 55%,${n.color}55 100%)`,
+                border:`1px solid ${n.color}${activa?"aa":"33"}`,
+                boxShadow: activa
+                  ? `0 0 ${esHover?40:28}px ${n.color}${esHover?"99":"55"}, inset 0 0 14px rgba(0,0,0,.3)`
+                  : "none",
+                filter: activa ? "brightness(1) saturate(1)" : "brightness(.15) saturate(.15)",
+                opacity: revealed ? 1 : 0,
+                transform: `translateY(${revealed?(esHover?-10:0):20}px) scale(${esHover?1.04:1})`,
+                transition:`transform .25s cubic-bezier(.34,1.56,.64,1), filter .3s, opacity .4s, box-shadow .3s`,
+                transitionDelay: revealed ? `${i*40}ms` : "0ms",
+              }}>
+              {/* Reflejo */}
+              <div style={{position:"absolute",top:0,left:"15%",right:"15%",height:"35%",
+                background:"linear-gradient(180deg,rgba(255,255,255,.28) 0%,transparent 100%)",
+                borderRadius:"50% 50% 0 0",pointerEvents:"none"}}/>
+              {/* Etiqueta */}
+              <div style={{position:"absolute",bottom:12,left:0,right:0,
+                textAlign:"center",display:"flex",flexDirection:"column",
+                alignItems:"center",gap:1}}>
+                <span style={{fontFamily:"'Libre Baskerville',serif",
+                  fontSize:n.natural?12:10,fontWeight:700,
+                  color:txtClr(n.color),
+                  textShadow:"0 1px 6px rgba(0,0,0,.9)",lineHeight:1}}>
+                  {n.eng}
+                </span>
+                <span style={{fontFamily:"monospace",fontSize:7,
+                  color:txtClr(n.color),opacity:.7,letterSpacing:".04em"}}>
+                  {n.lat}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Marco base */}
+      <div style={{height:10,
+        background:"linear-gradient(90deg,transparent,#3a2808 15%,#6a4a10 50%,#3a2808 85%,transparent)",
+        borderRadius:"0 0 8px 8px",margin:"0 .5rem",position:"relative"}}>
+        <div style={{position:"absolute",top:0,left:"5%",right:"5%",height:2,
+          background:"linear-gradient(90deg,transparent,rgba(200,144,0,.5),transparent)"}}/>
+      </div>
+
+      {/* Selectores de contexto */}
+      <div style={{marginTop:"1.5rem",textAlign:"center"}}>
+        <p style={{fontFamily:"monospace",fontSize:9,letterSpacing:".18em",
+          color:"#3a2e0a",marginBottom:"1rem"}}>EXPLORAR EN CONTEXTO</p>
+        <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginBottom:"1.2rem"}}>
+          {["Cromática","Mayor (C)","Menor (Am)","Dm7","G7","Cmaj7"].map((label,i)=>(
+            <button key={i} onClick={()=>setPasoV(i)}
+              style={{padding:"5px 14px",borderRadius:99,cursor:"pointer",
+                fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:".82rem",
+                letterSpacing:".03em",
+                border:`1px solid ${pasoV===i?"#8a6020":"#2a1e06"}`,
+                background:pasoV===i?"#1a1000":"transparent",
+                color:pasoV===i?"#c89030":"#4a3a10",
+                transition:"all .2s"}}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Dots de escala/acorde */}
+      {pasoV>0&&(
+        <div style={{display:"flex",gap:10,justifyContent:"center",
+          flexWrap:"wrap",margin:"0 0 1rem"}}>
+          {paso.idx.map((ni,ri)=>{
+            const n=NOTAS_V[ni];
+            return(
+              <div key={ri} onClick={()=>playTone(n.eng,4,.8)}
+                style={{display:"flex",flexDirection:"column",alignItems:"center",
+                  gap:4,cursor:"pointer"}}>
+                <div style={{width:48,height:48,borderRadius:"50%",
+                  background:n.color,
+                  boxShadow:`0 0 18px ${n.color}66`,
+                  display:"flex",flexDirection:"column",alignItems:"center",
+                  justifyContent:"center",gap:1}}>
+                  <span style={{fontFamily:"'Libre Baskerville',serif",
+                    fontSize:13,fontWeight:700,color:txtClr(n.color),lineHeight:1}}>
+                    {n.eng}
+                  </span>
+                  <span style={{fontFamily:"monospace",fontSize:7,
+                    color:txtClr(n.color),opacity:.7}}>{n.lat}</span>
+                </div>
+                <span style={{fontFamily:"monospace",fontSize:8,
+                  color:"#4a3a10",letterSpacing:".06em"}}>{paso.roles[ri]}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Barra de mezcla */}
+      <div style={{height:8,borderRadius:99,maxWidth:560,margin:"0 auto .8rem",
+        opacity:.75,boxShadow:"0 2px 16px rgba(0,0,0,.4)",
+        background:`linear-gradient(90deg,${paso.idx.map(i=>NOTAS_V[i].color).join(",")})`}}/>
+
+      {/* Descripción */}
+      <p style={{textAlign:"center",fontStyle:"italic",color:"#4a3a18",
+        fontSize:".85rem",letterSpacing:".02em",margin:0}}>
+        {paso.desc}
+      </p>
+
+    </div>
+  );
+}
+
 // ─── APP PRINCIPAL ────────────────────────────────────────────────────────────
 export default function HarmoniaApp(){
-  const[tab,setTab]=useState("chord");
+  const[tab,setTab]=useState("colors");
   const[navOpen,setNavOpen]=useState(false);
   const[chordInput,setChordInput]=useState("Dm7");
   const[chord,setChord]=useState(null);
@@ -2820,12 +3138,12 @@ export default function HarmoniaApp(){
   const toggleFn=useCallback(i=>setOpenFns(p=>p.includes(i)?p.filter(x=>x!==i):[...p,i]),[]);
 
   const TABS=[
+    {id:"colors",    label:"Colores",    icon:"🎨"},
     {id:"chord",     label:"Acorde",     icon:"🎼"},
     {id:"prog",      label:"Progresión", icon:"🔗"},
     {id:"biblioteca",label:"Biblioteca", icon:"📚"},
     {id:"bandoneon", label:"Bandoneón",  icon:"🎵"},
     {id:"circle",    label:"Quintas",    icon:"⭕"},
-    {id:"colors",    label:"Colores",    icon:"🎨"},
     {id:"modos",     label:"Modos",      icon:"📐"},
   ];
 
@@ -3361,49 +3679,8 @@ export default function HarmoniaApp(){
               </div>
             )}
 
-            {/* ══ COLORES ══ */}
-            {tab==="colors"&&(
-              <div className="stagger">
-                <div className="mb-4">
-                  <h2 className="text-xl font-bold mb-1" style={{fontFamily:"'Libre Baskerville',serif"}}>🎨 Sistema Cromático Tonal</h2>
-                  <p className="text-xs text-gray-500">Cada nota tiene un color único. Tocá para escuchar.</p>
-                </div>
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  {Object.entries(NC).filter(([n])=>n.length===1).map(([note,hex])=>(
-                    <div key={note} className="rounded-xl p-4 border cursor-pointer"
-                      style={{background:hex+"11",borderColor:hex+"44"}}
-                      onClick={()=>playTone(note,4,0.7)}>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full border-2" style={{background:hex,borderColor:hex}}/>
-                        <div>
-                          <p className="text-xl font-bold" style={{color:hex,fontFamily:"'Libre Baskerville',serif"}}>{note}</p>
-                          <p className="text-xs font-mono text-gray-600">{hex}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Notas alteradas</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {["C#","D#","F#","G#","A#"].map(note=>{
-                    const hex=NC[note];
-                    return(
-                      <div key={note} className="rounded-xl p-4 border cursor-pointer"
-                        style={{background:hex+"11",borderColor:hex+"44"}}
-                        onClick={()=>playTone(note,4,0.7)}>
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full" style={{background:`linear-gradient(135deg,${hex},${hex}88)`}}/>
-                          <div>
-                            <p className="font-bold" style={{color:hex}}>{note} / {ENHARMONIC[note]}</p>
-                            <p className="text-xs font-mono text-gray-600">{hex}</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            {/* ══ COLORES — VITRAL ══ */}
+            {tab==="colors"&&<VitralTab/>}
 
           </div>
         </div>

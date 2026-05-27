@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { YIN } from "pitchfinder";
 
 // ─── COLORES TONALES ──────────────────────────────────────────────────────────
-const NC = {
+const NC_DEFAULT = {
   C:"#1E50DC", D:"#28A03C", E:"#82501E", F:"#C8B98C",
   G:"#E6C814", A:"#D22828", B:"#7828B4",
   "C#":"#2378B4","Db":"#2378B4",
@@ -11,6 +11,28 @@ const NC = {
   "G#":"#DC781E","Ab":"#DC781E",
   "A#":"#A5286E","Bb":"#A5286E",
 };
+const PALETTE_KEY = "harmonia_palette_v1";
+const EDIT_HASH   = "murcielago"; // contraseña del editor
+
+// Carga la paleta desde localStorage (si existe) o usa la default
+function loadPalette() {
+  try {
+    const saved = localStorage.getItem(PALETTE_KEY);
+    if (!saved) return {...NC_DEFAULT};
+    const parsed = JSON.parse(saved);
+    // Merge: default como base + cambios guardados
+    const merged = {...NC_DEFAULT, ...parsed};
+    // Sincronizar enarmónicos
+    ["C#","D#","F#","G#","A#"].forEach(s => {
+      const enh = {"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"}[s];
+      if (merged[s]) merged[enh] = merged[s];
+    });
+    return merged;
+  } catch { return {...NC_DEFAULT}; }
+}
+
+// NC mutable — se recarga cuando el editor guarda
+let NC = loadPalette();
 const nc = (n) => NC[n?.replace(/[0-9]/g,"").trim()] || "#888";
 
 const CHROMATIC  = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -2912,18 +2934,18 @@ function BandoneonTab() {
 // ─── VITRAL TAB — Sistema de Colores Tonales ─────────────────────────────────
 function VitralTab(){
   const NOTAS_V=[
-    {eng:"C", lat:"DO",  color:"#1E50DC", natural:true },
-    {eng:"C#",lat:"DO#", color:"#2378B4", natural:false},
-    {eng:"D", lat:"RE",  color:"#28A03C", natural:true },
-    {eng:"D#",lat:"RE#", color:"#28B464", natural:false},
-    {eng:"E", lat:"MI",  color:"#82501E", natural:true },
-    {eng:"F", lat:"FA",  color:"#C8B98C", natural:true },
-    {eng:"F#",lat:"FA#", color:"#D7C050", natural:false},
-    {eng:"G", lat:"SOL", color:"#E6C814", natural:true },
-    {eng:"G#",lat:"SOL#",color:"#DC781E", natural:false},
-    {eng:"A", lat:"LA",  color:"#D22828", natural:true },
-    {eng:"A#",lat:"LA#", color:"#A5286E", natural:false},
-    {eng:"B", lat:"SI",  color:"#7828B4", natural:true },
+    {eng:"C", lat:"DO",  natural:true },
+    {eng:"C#",lat:"DO#", natural:false},
+    {eng:"D", lat:"RE",  natural:true },
+    {eng:"D#",lat:"RE#", natural:false},
+    {eng:"E", lat:"MI",  natural:true },
+    {eng:"F", lat:"FA",  natural:true },
+    {eng:"F#",lat:"FA#", natural:false},
+    {eng:"G", lat:"SOL", natural:true },
+    {eng:"G#",lat:"SOL#",natural:false},
+    {eng:"A", lat:"LA",  natural:true },
+    {eng:"A#",lat:"LA#", natural:false},
+    {eng:"B", lat:"SI",  natural:true },
   ];
 
   const PASOS_V=[
@@ -2941,15 +2963,29 @@ function VitralTab(){
      desc:"Cmaj7 · Do mayor séptima · luminoso y estable"},
   ];
 
-  const [pasoV, setPasoV] = useState(0);
-  const [hoverV, setHoverV] = useState(null);
+  const CHROMATIC_V = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const ENH_MAP = {"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"};
+
+  const [pasoV, setPasoV]       = useState(0);
+  const [hoverV, setHoverV]     = useState(null);
   const [revealed, setRevealed] = useState(false);
+
+  // ── Editor protegido ──
+  const [showPassInput, setShowPassInput] = useState(false);
+  const [passInput, setPassInput]         = useState("");
+  const [passError, setPassError]         = useState(false);
+  const [editMode, setEditMode]           = useState(false);
+  const [palette, setPalette]             = useState(()=>loadPalette());
+  const [saved, setSaved]                 = useState(false);
+
+  // Forzar re-render global cuando se guarda
+  const [palVersion, setPalVersion]       = useState(0);
 
   useEffect(()=>{
     setRevealed(false);
     const t = setTimeout(()=>setRevealed(true), 50);
     return ()=>clearTimeout(t);
-  },[pasoV]);
+  },[pasoV, palVersion]);
 
   const paso = PASOS_V[pasoV];
   const activas = new Set(paso.idx);
@@ -2957,6 +2993,48 @@ function VitralTab(){
   const txtClr = (hex)=>{
     const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
     return (r*299+g*587+b*114)/1000>128?"#1a1a1a":"#ffffff";
+  };
+
+  const getColor = (eng) => palette[eng] || NC_DEFAULT[eng] || "#888";
+
+  const handlePassSubmit = () => {
+    if (passInput.toLowerCase() === EDIT_HASH) {
+      setEditMode(true); setShowPassInput(false);
+      setPassInput(""); setPassError(false);
+    } else {
+      setPassError(true);
+      setTimeout(()=>setPassError(false), 1500);
+    }
+  };
+
+  const handleColorChange = (eng, hex) => {
+    setPalette(prev => {
+      const next = {...prev, [eng]: hex};
+      // Sincronizar enarmónico
+      if (ENH_MAP[eng]) next[ENH_MAP[eng]] = hex;
+      return next;
+    });
+  };
+
+  const handleSave = () => {
+    // Guardar solo las diferencias respecto al default
+    const diff = {};
+    CHROMATIC_V.forEach(eng => {
+      if (palette[eng] && palette[eng] !== NC_DEFAULT[eng]) diff[eng] = palette[eng];
+    });
+    try { localStorage.setItem(PALETTE_KEY, JSON.stringify(diff)); } catch(e){}
+    // Actualizar NC global para que afecte toda la app
+    NC = loadPalette();
+    setSaved(true);
+    setPalVersion(v=>v+1);
+    setTimeout(()=>setSaved(false), 2000);
+  };
+
+  const handleReset = () => {
+    localStorage.removeItem(PALETTE_KEY);
+    NC = {...NC_DEFAULT};
+    setPalette({...NC_DEFAULT});
+    setPalVersion(v=>v+1);
   };
 
   const ALT_NAT = 180;
@@ -2983,23 +3061,23 @@ function VitralTab(){
       <div style={{display:"flex",gap:6,justifyContent:"center",
         alignItems:"flex-end",padding:"0 .5rem",flexWrap:"nowrap",overflow:"hidden"}}>
         {NOTAS_V.map((n,i)=>{
+          const color = getColor(n.eng);
           const activa = activas.has(i);
           const esHover = hoverV===i;
           const alt = n.natural ? ALT_NAT : ALT_ALT;
-          const ancho = n.natural ? 52 : 36;
           return(
             <div key={i}
               onMouseEnter={()=>setHoverV(i)}
               onMouseLeave={()=>setHoverV(null)}
               onClick={()=>playTone(n.eng,4,.8)}
               style={{
-                width:ancho,height:alt,flexShrink:0,
+                width:n.natural?52:36, height:alt, flexShrink:0,
                 borderRadius:"999px 999px 50% 50%",
-                position:"relative",cursor:"pointer",
-                background:`linear-gradient(180deg,${n.color}ee 0%,${n.color}99 55%,${n.color}55 100%)`,
-                border:`1px solid ${n.color}${activa?"aa":"33"}`,
+                position:"relative", cursor:"pointer",
+                background:`linear-gradient(180deg,${color}ee 0%,${color}99 55%,${color}55 100%)`,
+                border:`1px solid ${color}${activa?"aa":"33"}`,
                 boxShadow: activa
-                  ? `0 0 ${esHover?40:28}px ${n.color}${esHover?"99":"55"}, inset 0 0 14px rgba(0,0,0,.3)`
+                  ? `0 0 ${esHover?40:28}px ${color}${esHover?"99":"55"}, inset 0 0 14px rgba(0,0,0,.3)`
                   : "none",
                 filter: activa ? "brightness(1) saturate(1)" : "brightness(.15) saturate(.15)",
                 opacity: revealed ? 1 : 0,
@@ -3007,22 +3085,20 @@ function VitralTab(){
                 transition:`transform .25s cubic-bezier(.34,1.56,.64,1), filter .3s, opacity .4s, box-shadow .3s`,
                 transitionDelay: revealed ? `${i*40}ms` : "0ms",
               }}>
-              {/* Reflejo */}
               <div style={{position:"absolute",top:0,left:"15%",right:"15%",height:"35%",
                 background:"linear-gradient(180deg,rgba(255,255,255,.28) 0%,transparent 100%)",
                 borderRadius:"50% 50% 0 0",pointerEvents:"none"}}/>
-              {/* Etiqueta */}
               <div style={{position:"absolute",bottom:12,left:0,right:0,
                 textAlign:"center",display:"flex",flexDirection:"column",
                 alignItems:"center",gap:1}}>
                 <span style={{fontFamily:"'Libre Baskerville',serif",
                   fontSize:n.natural?12:10,fontWeight:700,
-                  color:txtClr(n.color),
+                  color:txtClr(color),
                   textShadow:"0 1px 6px rgba(0,0,0,.9)",lineHeight:1}}>
                   {n.eng}
                 </span>
                 <span style={{fontFamily:"monospace",fontSize:7,
-                  color:txtClr(n.color),opacity:.7,letterSpacing:".04em"}}>
+                  color:txtClr(color),opacity:.7,letterSpacing:".04em"}}>
                   {n.lat}
                 </span>
               </div>
@@ -3034,16 +3110,15 @@ function VitralTab(){
       {/* Marco base */}
       <div style={{height:10,
         background:"linear-gradient(90deg,transparent,#3a2808 15%,#6a4a10 50%,#3a2808 85%,transparent)",
-        borderRadius:"0 0 8px 8px",margin:"0 .5rem",position:"relative"}}>
-        <div style={{position:"absolute",top:0,left:"5%",right:"5%",height:2,
-          background:"linear-gradient(90deg,transparent,rgba(200,144,0,.5),transparent)"}}/>
+        borderRadius:"0 0 8px 8px",margin:"0 .5rem .8rem"}}>
+        <div style={{height:2,background:"linear-gradient(90deg,transparent,rgba(200,144,0,.5),transparent)"}}/>
       </div>
 
       {/* Selectores de contexto */}
-      <div style={{marginTop:"1.5rem",textAlign:"center"}}>
+      <div style={{textAlign:"center",marginBottom:"1.2rem"}}>
         <p style={{fontFamily:"monospace",fontSize:9,letterSpacing:".18em",
           color:"#3a2e0a",marginBottom:"1rem"}}>EXPLORAR EN CONTEXTO</p>
-        <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginBottom:"1.2rem"}}>
+        <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
           {["Cromática","Mayor (C)","Menor (Am)","Dm7","G7","Cmaj7"].map((label,i)=>(
             <button key={i} onClick={()=>setPasoV(i)}
               style={{padding:"5px 14px",borderRadius:99,cursor:"pointer",
@@ -3059,46 +3134,180 @@ function VitralTab(){
         </div>
       </div>
 
-      {/* Dots de escala/acorde */}
+      {/* Dots */}
       {pasoV>0&&(
-        <div style={{display:"flex",gap:10,justifyContent:"center",
-          flexWrap:"wrap",margin:"0 0 1rem"}}>
+        <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",marginBottom:"1rem"}}>
           {paso.idx.map((ni,ri)=>{
             const n=NOTAS_V[ni];
+            const color=getColor(n.eng);
             return(
               <div key={ri} onClick={()=>playTone(n.eng,4,.8)}
-                style={{display:"flex",flexDirection:"column",alignItems:"center",
-                  gap:4,cursor:"pointer"}}>
-                <div style={{width:48,height:48,borderRadius:"50%",
-                  background:n.color,
-                  boxShadow:`0 0 18px ${n.color}66`,
-                  display:"flex",flexDirection:"column",alignItems:"center",
-                  justifyContent:"center",gap:1}}>
+                style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer"}}>
+                <div style={{width:48,height:48,borderRadius:"50%",background:color,
+                  boxShadow:`0 0 18px ${color}66`,
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1}}>
                   <span style={{fontFamily:"'Libre Baskerville',serif",
-                    fontSize:13,fontWeight:700,color:txtClr(n.color),lineHeight:1}}>
-                    {n.eng}
-                  </span>
-                  <span style={{fontFamily:"monospace",fontSize:7,
-                    color:txtClr(n.color),opacity:.7}}>{n.lat}</span>
+                    fontSize:13,fontWeight:700,color:txtClr(color),lineHeight:1}}>{n.eng}</span>
+                  <span style={{fontFamily:"monospace",fontSize:7,color:txtClr(color),opacity:.7}}>{n.lat}</span>
                 </div>
-                <span style={{fontFamily:"monospace",fontSize:8,
-                  color:"#4a3a10",letterSpacing:".06em"}}>{paso.roles[ri]}</span>
+                <span style={{fontFamily:"monospace",fontSize:8,color:"#4a3a10",letterSpacing:".06em"}}>
+                  {paso.roles[ri]}
+                </span>
               </div>
             );
           })}
         </div>
       )}
 
-      {/* Barra de mezcla */}
-      <div style={{height:8,borderRadius:99,maxWidth:560,margin:"0 auto .8rem",
-        opacity:.75,boxShadow:"0 2px 16px rgba(0,0,0,.4)",
-        background:`linear-gradient(90deg,${paso.idx.map(i=>NOTAS_V[i].color).join(",")})`}}/>
+      {/* Barra mezcla */}
+      <div style={{height:8,borderRadius:99,maxWidth:560,margin:"0 auto .8rem",opacity:.75,
+        boxShadow:"0 2px 16px rgba(0,0,0,.4)",
+        background:`linear-gradient(90deg,${paso.idx.map(i=>getColor(NOTAS_V[i].eng)).join(",")})`}}/>
 
-      {/* Descripción */}
       <p style={{textAlign:"center",fontStyle:"italic",color:"#4a3a18",
-        fontSize:".85rem",letterSpacing:".02em",margin:0}}>
-        {paso.desc}
-      </p>
+        fontSize:".85rem",letterSpacing:".02em",marginBottom:"1.5rem"}}>{paso.desc}</p>
+
+      {/* ── EDITOR DE PALETA ── */}
+      {!editMode && !showPassInput && (
+        <div style={{textAlign:"center"}}>
+          <button onClick={()=>setShowPassInput(true)}
+            style={{fontSize:9,fontFamily:"monospace",letterSpacing:".15em",
+              color:"#2a1e06",background:"transparent",border:"none",
+              cursor:"pointer",opacity:.4,padding:"4px 8px"}}>
+            · · ·
+          </button>
+        </div>
+      )}
+
+      {/* Input contraseña */}
+      {showPassInput && !editMode && (
+        <div style={{textAlign:"center",marginTop:"1rem"}}>
+          <div style={{display:"inline-flex",gap:8,alignItems:"center",
+            padding:"8px 12px",borderRadius:10,
+            background:"#0a0a0a",border:"1px solid #2a1e06"}}>
+            <input
+              type="password"
+              value={passInput}
+              onChange={e=>setPassInput(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&handlePassSubmit()}
+              placeholder="contraseña"
+              autoFocus
+              style={{
+                background:"transparent",border:"none",outline:"none",
+                color:passError?"#cc3333":"#c89030",
+                fontFamily:"monospace",fontSize:12,letterSpacing:".1em",
+                width:120,
+              }}/>
+            <button onClick={handlePassSubmit}
+              style={{background:"transparent",border:"1px solid #3a2808",
+                color:"#6a4020",borderRadius:5,padding:"2px 8px",
+                fontSize:10,cursor:"pointer",fontFamily:"monospace"}}>
+              →
+            </button>
+            <button onClick={()=>{setShowPassInput(false);setPassInput("");}}
+              style={{background:"transparent",border:"none",
+                color:"#3a2808",fontSize:12,cursor:"pointer"}}>
+              ✕
+            </button>
+          </div>
+          {passError&&<p style={{color:"#cc3333",fontSize:10,marginTop:4,fontFamily:"monospace"}}>
+            contraseña incorrecta
+          </p>}
+        </div>
+      )}
+
+      {/* Panel editor */}
+      {editMode && (
+        <div style={{marginTop:"1rem",padding:"1rem 1.2rem",
+          background:"#080800",border:"1px solid #3a2808",borderRadius:14}}>
+
+          <div style={{display:"flex",justifyContent:"space-between",
+            alignItems:"center",marginBottom:"1rem"}}>
+            <p style={{fontFamily:"monospace",fontSize:10,letterSpacing:".15em",
+              color:"#6a4020"}}>EDITOR DE PALETA · ACCESO RESTRINGIDO</p>
+            <button onClick={()=>setEditMode(false)}
+              style={{background:"transparent",border:"none",color:"#3a2808",
+                fontSize:14,cursor:"pointer"}}>✕</button>
+          </div>
+
+          {/* Grid de colores editables */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:8,marginBottom:"1rem"}}>
+            {NOTAS_V.map((n,i)=>{
+              const color = palette[n.eng] || NC_DEFAULT[n.eng];
+              const isModified = color !== NC_DEFAULT[n.eng];
+              return(
+                <div key={i} style={{
+                  padding:"8px",borderRadius:8,
+                  border:`1px solid ${isModified?"#6a4020":"#1a1200"}`,
+                  background:"#0a0800",
+                  display:"flex",flexDirection:"column",gap:5,
+                }}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    {/* Color picker */}
+                    <input type="color" value={color}
+                      onChange={e=>handleColorChange(n.eng, e.target.value)}
+                      style={{width:32,height:32,padding:1,borderRadius:6,
+                        border:`2px solid ${color}`,cursor:"pointer",
+                        background:"transparent"}}/>
+                    <div>
+                      <div style={{fontFamily:"'Libre Baskerville',serif",
+                        fontWeight:700,fontSize:13,color:color}}>{n.eng}</div>
+                      <div style={{fontFamily:"monospace",fontSize:8,
+                        color:"#4a3a10",letterSpacing:".06em"}}>{n.lat}</div>
+                    </div>
+                    {/* Indicador de modificado */}
+                    {isModified&&<div style={{width:5,height:5,borderRadius:"50%",
+                      background:"#c89030",marginLeft:"auto",flexShrink:0}}/>}
+                  </div>
+                  <div style={{fontFamily:"monospace",fontSize:8,
+                    color:"#3a2808",letterSpacing:".06em"}}>{color}</div>
+                  {/* Preview del vitral mini */}
+                  <div style={{height:24,borderRadius:"99px 99px 40% 40%",
+                    background:`linear-gradient(180deg,${color}cc,${color}66)`,
+                    border:`1px solid ${color}55`}}/>
+                  {/* Reset individual */}
+                  {isModified&&(
+                    <button onClick={()=>handleColorChange(n.eng, NC_DEFAULT[n.eng])}
+                      style={{fontSize:8,fontFamily:"monospace",color:"#4a2a08",
+                        background:"transparent",border:"none",cursor:"pointer",
+                        letterSpacing:".06em",textAlign:"left"}}>
+                      ↺ restaurar
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Botones de acción */}
+          <div style={{display:"flex",gap:8,justifyContent:"flex-end",flexWrap:"wrap"}}>
+            <button onClick={handleReset}
+              style={{padding:"6px 14px",borderRadius:8,cursor:"pointer",
+                fontFamily:"monospace",fontSize:10,letterSpacing:".08em",
+                border:"1px solid #3a2808",background:"transparent",color:"#6a4020"}}>
+              ↺ restaurar todo
+            </button>
+            <button onClick={handleSave}
+              style={{padding:"6px 18px",borderRadius:8,cursor:"pointer",
+                fontFamily:"monospace",fontSize:10,letterSpacing:".08em",
+                border:"none",
+                background:saved
+                  ?"linear-gradient(135deg,#0d4a18,#2dd4bf)"
+                  :"linear-gradient(135deg,#4a2a00,#c89030)",
+                color:saved?"#fff":"#0a0500",
+                fontWeight:700,
+                transition:"background .3s"}}>
+              {saved ? "✓ guardado" : "💾 guardar paleta"}
+            </button>
+          </div>
+
+          <p style={{marginTop:".6rem",fontSize:9,color:"#2a1e06",
+            fontFamily:"monospace",letterSpacing:".06em"}}>
+            Los cambios guardados se aplican en toda la app inmediatamente.
+            El punto dorado indica notas modificadas respecto al original.
+          </p>
+        </div>
+      )}
 
     </div>
   );

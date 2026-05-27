@@ -3069,7 +3069,7 @@ function VitralTab(){
             <div key={i}
               onMouseEnter={()=>setHoverV(i)}
               onMouseLeave={()=>setHoverV(null)}
-              onClick={()=>playTone(n.eng,4,.8)}
+              onClick={()=>{const ctx=getCtx();if(ctx&&ctx.state==="suspended")ctx.resume();playTone(n.eng,4,.8);}}
               style={{
                 width:n.natural?52:36, height:alt, flexShrink:0,
                 borderRadius:"999px 999px 50% 50%",
@@ -3143,7 +3143,7 @@ function VitralTab(){
             return(
               <div key={ri} onClick={()=>playTone(n.eng,4,.8)}
                 style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer"}}>
-                <div style={{width:48,height:48,borderRadius:"50%",background:color,
+                <div onClick={()=>{const ctx=getCtx();if(ctx&&ctx.state==="suspended")ctx.resume();playTone(n.eng,4,.8);}} style={{width:48,height:48,borderRadius:"50%",background:color,
                   boxShadow:`0 0 18px ${color}66`,
                   display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1}}>
                   <span style={{fontFamily:"'Libre Baskerville',serif",
@@ -3169,12 +3169,16 @@ function VitralTab(){
 
       {/* ── EDITOR DE PALETA ── */}
       {!editMode && !showPassInput && (
-        <div style={{textAlign:"center"}}>
+        <div style={{textAlign:"center",marginTop:"1rem"}}>
           <button onClick={()=>setShowPassInput(true)}
-            style={{fontSize:9,fontFamily:"monospace",letterSpacing:".15em",
-              color:"#2a1e06",background:"transparent",border:"none",
-              cursor:"pointer",opacity:.4,padding:"4px 8px"}}>
-            · · ·
+            style={{fontSize:11,fontFamily:"monospace",letterSpacing:".2em",
+              color:"#6a4a18",background:"transparent",
+              border:"1px solid #2a1a06",borderRadius:99,
+              cursor:"pointer",padding:"4px 16px",
+              opacity:.6,transition:"opacity .2s"}}
+            onMouseEnter={e=>e.target.style.opacity=1}
+            onMouseLeave={e=>e.target.style.opacity=.6}>
+            ✎ editar paleta
           </button>
         </div>
       )}

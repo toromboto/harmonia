@@ -1349,82 +1349,151 @@ const STORAGE_KEY_L = "bandoneon_left_v1";
 const STORAGE_KEY_R = "bandoneon_right_v1";
 
 const DEFS_L = [
-  { id:"L01", row:0, x:208, y:46,  abre:"SOL#", cierra:"SOL#", color_abre:"#ff6a00", color_cierra:"#ff6a00", oct_abre:0, oct_cierra:2 },
-  { id:"L02", row:0, x:308, y:40,  abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a", oct_abre:0, oct_cierra:0 },
-  { id:"L03", row:0, x:416, y:42,  abre:"DO#",  cierra:"RE#",  color_abre:"#01c7fc", color_cierra:"#84cc16", oct_abre:1, oct_cierra:0 },
-  { id:"L04", row:0, x:526, y:58,  abre:"FA",   cierra:"RE#",  color_abre:"#d38301", color_cierra:"#84cc16", oct_abre:1, oct_cierra:2 },
-  { id:"L05", row:0, x:640, y:78,  abre:"SOL#", cierra:"SOL",  color_abre:"#ff6a00", color_cierra:"#fefb41", oct_abre:2, oct_cierra:2 },
-  { id:"L06", row:1, x:64,  y:126, abre:"MI",   cierra:"RE",   color_abre:"#583300", color_cierra:"#587934", oct_abre:0, oct_cierra:0 },
-  { id:"L07", row:1, x:162, y:106, abre:"LA",   cierra:"RE",   color_abre:"#a62c17", color_cierra:"#587934", oct_abre:2, oct_cierra:1 },
-  { id:"L08", row:1, x:258, y:96,  abre:"SOL",  cierra:"LA#",  color_abre:"#fefb41", color_cierra:"#e63b7a", oct_abre:1, oct_cierra:1 },
-  { id:"L09", row:1, x:358, y:98,  abre:"RE#",  cierra:"DO",   color_abre:"#84cc16", color_cierra:"#285ff4", oct_abre:1, oct_cierra:2 },
-  { id:"L10", row:1, x:472, y:108, abre:"FA",   cierra:"DO#",  color_abre:"#d38301", color_cierra:"#01c7fc", oct_abre:3, oct_cierra:2 },
-  { id:"L11", row:1, x:576, y:108, abre:"LA#",  cierra:"DO",   color_abre:"#e63b7a", color_cierra:"#285ff4", oct_abre:1, oct_cierra:1 },
-  { id:"L12", row:1, x:680, y:142, abre:"FA",   cierra:"FA#",  color_abre:"#d38301", color_cierra:"#feb43f", oct_abre:0, oct_cierra:2 },
-  { id:"L13", row:2, x:110, y:172, abre:"RE",   cierra:"SOL",  color_abre:"#587934", color_cierra:"#fefb41", oct_abre:1, oct_cierra:0 },
-  { id:"L14", row:2, x:210, y:156, abre:"LA",   cierra:"SOL",  color_abre:"#a62c17", color_cierra:"#fefb41", oct_abre:1, oct_cierra:1 },
-  { id:"L15", row:2, x:302, y:154, abre:"DO",   cierra:"SI",   color_abre:"#285ff4", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:1 },
-  { id:"L16", row:2, x:410, y:162, abre:"MI",   cierra:"RE",   color_abre:"#583300", color_cierra:"#587934", oct_abre:2, oct_cierra:2 },
-  { id:"L17", row:2, x:528, y:164, abre:"DO",   cierra:"FA",   color_abre:"#285ff4", color_cierra:"#d38301", oct_abre:1, oct_cierra:2 },
-  { id:"L18", row:2, x:618, y:170, abre:"SOL",  cierra:"FA#",  color_abre:"#fefb41", color_cierra:"#feb43f", oct_abre:0, oct_cierra:0 },
-  { id:"L19", row:3, x:66,  y:252, abre:"MI",   cierra:"LA",   color_abre:"#583300", color_cierra:"#a62c17", oct_abre:1, oct_cierra:1 },
-  { id:"L20", row:3, x:158, y:230, abre:"SOL#", cierra:"MI",   color_abre:"#ff6a00", color_cierra:"#583300", oct_abre:1, oct_cierra:1 },
-  { id:"L21", row:3, x:254, y:222, abre:"SI",   cierra:"LA",   color_abre:"#5e30eb", color_cierra:"#a62c17", oct_abre:1, oct_cierra:1 },
-  { id:"L22", row:3, x:354, y:218, abre:"RE",   cierra:"DO#",  color_abre:"#587934", color_cierra:"#01c7fc", oct_abre:2, oct_cierra:2 },
-  { id:"L23", row:3, x:458, y:224, abre:"FA#",  cierra:"MI",   color_abre:"#feb43f", color_cierra:"#583300", oct_abre:2, oct_cierra:2 },
-  { id:"L24", row:3, x:560, y:234, abre:"DO#",  cierra:"SOL#", color_abre:"#00a1d8", color_cierra:"#ff6a00", oct_abre:2, oct_cierra:1 },
-  { id:"L25", row:3, x:646, y:246, abre:"FA#",  cierra:"SI",   color_abre:"#feb43f", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:0 },
-  { id:"L26", row:4, x:26,  y:328, abre:"RE",   cierra:"MI",   color_abre:"#587934", color_cierra:"#754400", oct_abre:0, oct_cierra:0 },
-  { id:"L27", row:4, x:110, y:308, abre:"SI",   cierra:"MI",   color_abre:"#5e30eb", color_cierra:"#583300", oct_abre:0, oct_cierra:1 },
-  { id:"L28", row:4, x:204, y:294, abre:"SOL",  cierra:"SOL#", color_abre:"#705200", color_cierra:"#ecac22", oct_abre:2, oct_cierra:2 },
-  { id:"L29", row:4, x:298, y:288, abre:"LA",   cierra:"LA",   color_abre:"#a62c17", color_cierra:"#a62c17", oct_abre:2, oct_cierra:0 },
-  { id:"L30", row:4, x:390, y:286, abre:"RE#",  cierra:"SI",   color_abre:"#84cc16", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:0 },
-  { id:"L31", row:4, x:496, y:296, abre:"FA#",  cierra:"FA",   color_abre:"#feb43f", color_cierra:"#d38301", oct_abre:1, oct_cierra:0 },
-  { id:"L32", row:4, x:590, y:306, abre:"RE#",  cierra:"DO#",  color_abre:"#84cc16", color_cierra:"#01c7fc", oct_abre:0, oct_cierra:0 },
-  { id:"L33", row:4, x:674, y:324, abre:"DO",   cierra:"FA",   color_abre:"#285ff4", color_cierra:"#d38301", oct_abre:0, oct_cierra:0 },
-];
-
+  id,row,x,y,abre,cierra,color_abre,color_cierra,oct_abre,oct_cierra
+L01,0,208,46,SOL#,SOL#,#ff6a00,#ff6a00,0,2
+L02,0,308,40,LA#,LA#,#e63b7a,#e63b7a,0,0
+L03,0,416,42,DO#,RE#,#01c7fc,#84cc16,1,0
+L04,0,526,58,FA,RE#,#d38301,#84cc16,1,2
+L05,0,640,78,SOL#,SOL,#ff6a00,#fefb41,3,3
+L06,1,64,126,MI,RE,#583300,#587934,0,0
+L07,1,162,106,LA,RE,#a62c17,#587934,1,2
+L08,1,258,96,SOL,LA#,#fefb41,#e63b7a,2,1
+L09,1,358,98,RE#,DO,#84cc16,#285ff4,2,2
+L10,1,472,108,FA,DO#,#d38301,#01c7fc,3,2
+L11,1,576,108,LA#,DO,#e63b7a,#285ff4,2,2
+L12,1,680,142,FA,FA#,#d38301,#feb43f,0,0
+L13,2,110,172,RE,SOL,#587934,#fefb41,2,0
+L14,2,210,156,LA,SOL,#a62c17,#fefb41,2,2
+L15,2,302,154,DO,SI,#285ff4,#5e30eb,3,2
+L16,2,410,162,MI,RE,#583300,#587934,3,3
+L17,2,528,164,DO,FA,#285ff4,#d38301,1,2
+L18,2,618,170,SOL,FA#,#fefb41,#feb43f,0,0
+L19,3,66,252,MI,LA,#583300,#a62c17,1,1
+L20,3,158,230,SOL#,MI,#ff6a00,#583300,2,2
+L21,3,254,222,SI,SOL#,#5e30eb,#a62c17,2,2
+L22,3,354,218,RE,DO#,#587934,#01c7fc,2,3
+L23,3,458,224,FA#,MI,#feb43f,#583300,2,3
+L24,3,560,234,DO#,SOL#,#00a1d8,#ff6a00,3,2
+L25,3,646,246,FA#,SI,#feb43f,#5e30eb,1,0
+L26,4,26,328,RE,MI,#587934,#754400,0,0
+L27,4,110,308,SI,MI,#5e30eb,#583300,1,1
+L28,4,204,294,SOL,SOL#,#705200,#ecac22,3,3
+L29,4,298,288,LA,LA,#a62c17,#a62c17,3,3
+L30,4,390,286,RE#,SI,#84cc16,#5e30eb,3,3
+L31,4,496,296,FA#,FA,#feb43f,#d38301,2,2
+L32,4,590,306,RE#,DO#,#84cc16,#01c7fc,0,0
+L33,4,674,324,DO,FA,#285ff4,#d38301,0,0
+R01,0,174,0,SI,SI,#5e30eb,#5e30eb,1,2
+R02,0,274,0,SOL#,SOL#,#ff6a00,#ff6a00,4,4
+R03,0,376,0,SOL,FA#,#fefb41,#ffc777,1,4
+R04,0,484,0,FA,FA,#a96800,#a96800,4,2
+R05,0,220,38,LA,SOL,#a62c17,#fefb41,4,1
+R06,0,326,38,FA#,LA#,#ffc777,#e63b7a,4,3
+R07,0,432,40,MI,DO,#583300,#285ff4,4,4
+R08,1,128,46,DO#,DO,#01c7fc,#285ff4,2,2
+R09,1,528,50,RE#,RE#,#84cc16,#84cc16,4,4
+R10,1,88,104,DO,RE,#285ff4,#587934,2,2
+R11,1,178,98,RE,DO#,#587934,#01c7fc,2,2
+R12,1,280,86,SOL,SOL#,#fefb41,#ff6a00,2,2
+R13,1,388,86,LA#,LA#,#e63b7a,#e63b7a,3,2
+R14,1,484,94,DO,MI,#285ff4,#583300,4,3
+R15,1,572,114,RE,RE,#587934,#587934,4,4
+R16,2,42,188,SI,DO,#5e30eb,#285ff4,2,3
+R17,2,136,168,MI,DO#,#583300,#01c7fc,2,3
+R18,2,236,156,DO#,FA#,#01c7fc,#ffc777,3,3
+R19,2,342,148,FA#,SI,#ffc777,#5e30eb,2,1
+R20,2,436,156,LA,SI,#a62c17,#5e30eb,2,3
+R21,2,530,164,DO,RE,#285ff4,#587934,3,3
+R22,2,612,184,MI,SOL,#583300,#fefb41,3,4
+R23,2,0,262,LA,RE,#a62c17,#587934,1,3
+R24,2,94,246,FA,FA,#a96800,#a96800,2,3
+R25,3,188,232,LA#,MI,#e63b7a,#583300,2,2
+R26,3,284,224,SOL#,LA,#ff6a00,#a62c17,2,2
+R27,3,386,224,SI,DO#,#5e30eb,#01c7fc,3,4
+R28,3,478,232,RE,MI,#587934,#583300,3,4
+R29,3,570,246,SOL#,LA,#ff6a00,#a62c17,3,3
+R30,3,654,266,SI,DO#,#5e30eb,#01c7fc,3,4
+R31,3,26,328,LA#,LA#,#e63b7a,#e63b7a,1,1
+R32,3,122,312,RE#,RE#,#84cc16,#84cc16,2,3
+R33,4,220,298,FA,FA,#a96800,#a96800,3,4
+R34,4,316,296,RE#,MI,#84cc16,#583300,3,4
+R35,4,412,300,FA#,SOL#,#ffc777,#ff6a00,3,3
+R36,4,500,308,LA,SI,#a62c17,#5e30eb,3,3
+R37,4,594,322,DO#,MI,#01c7fc,#583300,4,4
+R38,4,680,346,SOL,RE#,#fefb41,#84cc16,3,2
 const DEFS_R = [
-  { id:"R01", row:0, x:174, y:0,   abre:"SI",   cierra:"SI",   color_abre:"#5e30eb", color_cierra:"#5e30eb", oct_abre:1, oct_cierra:2 },
-  { id:"R02", row:0, x:274, y:0,   abre:"SOL#", cierra:"SOL#", color_abre:"#ff6a00", color_cierra:"#ff6a00", oct_abre:4, oct_cierra:4 },
-  { id:"R03", row:0, x:376, y:0,   abre:"SOL",  cierra:"FA#",  color_abre:"#fefb41", color_cierra:"#ffc777", oct_abre:1, oct_cierra:4 },
-  { id:"R04", row:0, x:484, y:0,   abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800", oct_abre:4, oct_cierra:2 },
-  { id:"R05", row:0, x:220, y:38,  abre:"LA",   cierra:"SOL",  color_abre:"#a62c17", color_cierra:"#fefb41", oct_abre:4, oct_cierra:1 },
-  { id:"R06", row:0, x:326, y:38,  abre:"FA#",  cierra:"LA#",  color_abre:"#ffc777", color_cierra:"#e63b7a", oct_abre:4, oct_cierra:3 },
-  { id:"R07", row:0, x:432, y:40,  abre:"MI",   cierra:"DO",   color_abre:"#583300", color_cierra:"#285ff4", oct_abre:4, oct_cierra:4 },
-  { id:"R08", row:1, x:128, y:46,  abre:"DO#",  cierra:"DO",   color_abre:"#01c7fc", color_cierra:"#285ff4", oct_abre:2, oct_cierra:2 },
-  { id:"R09", row:1, x:528, y:50,  abre:"RE#",  cierra:"RE#",  color_abre:"#84cc16", color_cierra:"#84cc16", oct_abre:4, oct_cierra:4 },
-  { id:"R10", row:1, x:88,  y:104, abre:"DO",   cierra:"RE",   color_abre:"#285ff4", color_cierra:"#587934", oct_abre:2, oct_cierra:2 },
-  { id:"R11", row:1, x:178, y:98,  abre:"RE",   cierra:"DO#",  color_abre:"#587934", color_cierra:"#01c7fc", oct_abre:2, oct_cierra:2 },
-  { id:"R12", row:1, x:280, y:86,  abre:"SOL",  cierra:"SOL#", color_abre:"#fefb41", color_cierra:"#ff6a00", oct_abre:2, oct_cierra:2 },
-  { id:"R13", row:1, x:388, y:86,  abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a", oct_abre:3, oct_cierra:2 },
-  { id:"R14", row:1, x:484, y:94,  abre:"DO",   cierra:"MI",   color_abre:"#285ff4", color_cierra:"#583300", oct_abre:4, oct_cierra:3 },
-  { id:"R15", row:1, x:572, y:114, abre:"RE",   cierra:"RE",   color_abre:"#587934", color_cierra:"#587934", oct_abre:4, oct_cierra:4 },
-  { id:"R16", row:2, x:42,  y:188, abre:"SI",   cierra:"DO",   color_abre:"#5e30eb", color_cierra:"#285ff4", oct_abre:2, oct_cierra:3 },
-  { id:"R17", row:2, x:136, y:168, abre:"MI",   cierra:"DO#",  color_abre:"#583300", color_cierra:"#01c7fc", oct_abre:2, oct_cierra:3 },
-  { id:"R18", row:2, x:236, y:156, abre:"DO#",  cierra:"FA#",  color_abre:"#01c7fc", color_cierra:"#ffc777", oct_abre:3, oct_cierra:3 },
-  { id:"R19", row:2, x:342, y:148, abre:"FA#",  cierra:"SI",   color_abre:"#ffc777", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:1 },
-  { id:"R20", row:2, x:436, y:156, abre:"LA",   cierra:"SI",   color_abre:"#a62c17", color_cierra:"#5e30eb", oct_abre:2, oct_cierra:3 },
-  { id:"R21", row:2, x:530, y:164, abre:"DO",   cierra:"RE",   color_abre:"#285ff4", color_cierra:"#587934", oct_abre:3, oct_cierra:3 },
-  { id:"R22", row:2, x:612, y:184, abre:"MI",   cierra:"SOL",  color_abre:"#583300", color_cierra:"#fefb41", oct_abre:3, oct_cierra:4 },
-  { id:"R23", row:2, x:0,   y:262, abre:"LA",   cierra:"RE",   color_abre:"#a62c17", color_cierra:"#587934", oct_abre:1, oct_cierra:3 },
-  { id:"R24", row:2, x:94,  y:246, abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800", oct_abre:2, oct_cierra:3 },
-  { id:"R25", row:3, x:188, y:232, abre:"LA#",  cierra:"MI",   color_abre:"#e63b7a", color_cierra:"#583300", oct_abre:2, oct_cierra:2 },
-  { id:"R26", row:3, x:284, y:224, abre:"SOL#", cierra:"LA",   color_abre:"#ff6a00", color_cierra:"#a62c17", oct_abre:2, oct_cierra:2 },
-  { id:"R27", row:3, x:386, y:224, abre:"SI",   cierra:"DO#",  color_abre:"#5e30eb", color_cierra:"#01c7fc", oct_abre:3, oct_cierra:4 },
-  { id:"R28", row:3, x:478, y:232, abre:"RE",   cierra:"MI",   color_abre:"#587934", color_cierra:"#583300", oct_abre:3, oct_cierra:4 },
-  { id:"R29", row:3, x:570, y:246, abre:"SOL#", cierra:"LA",   color_abre:"#ff6a00", color_cierra:"#a62c17", oct_abre:3, oct_cierra:3 },
-  { id:"R30", row:3, x:654, y:266, abre:"SI",   cierra:"DO#",  color_abre:"#5e30eb", color_cierra:"#01c7fc", oct_abre:3, oct_cierra:4 },
-  { id:"R31", row:3, x:26,  y:328, abre:"LA#",  cierra:"LA#",  color_abre:"#e63b7a", color_cierra:"#e63b7a", oct_abre:1, oct_cierra:1 },
-  { id:"R32", row:3, x:122, y:312, abre:"RE#",  cierra:"RE#",  color_abre:"#84cc16", color_cierra:"#84cc16", oct_abre:2, oct_cierra:3 },
-  { id:"R33", row:4, x:220, y:298, abre:"FA",   cierra:"FA",   color_abre:"#a96800", color_cierra:"#a96800", oct_abre:3, oct_cierra:4 },
-  { id:"R34", row:4, x:316, y:296, abre:"RE#",  cierra:"MI",   color_abre:"#84cc16", color_cierra:"#583300", oct_abre:3, oct_cierra:4 },
-  { id:"R35", row:4, x:412, y:300, abre:"FA#",  cierra:"SOL#", color_abre:"#ffc777", color_cierra:"#ff6a00", oct_abre:3, oct_cierra:3 },
-  { id:"R36", row:4, x:500, y:308, abre:"LA",   cierra:"SI",   color_abre:"#a62c17", color_cierra:"#5e30eb", oct_abre:3, oct_cierra:3 },
-  { id:"R37", row:4, x:594, y:322, abre:"DO#",  cierra:"MI",   color_abre:"#01c7fc", color_cierra:"#583300", oct_abre:4, oct_cierra:4 },
-  { id:"R38", row:4, x:680, y:346, abre:"SOL",  cierra:"RE#",  color_abre:"#fefb41", color_cierra:"#84cc16", oct_abre:3, oct_cierra:2 },
-];
-
+  id,row,x,y,abre,cierra,color_abre,color_cierra,oct_abre,oct_cierra
+L01,0,208,46,SOL#,SOL#,#ff6a00,#ff6a00,0,2
+L02,0,308,40,LA#,LA#,#e63b7a,#e63b7a,0,0
+L03,0,416,42,DO#,RE#,#01c7fc,#84cc16,1,0
+L04,0,526,58,FA,RE#,#d38301,#84cc16,1,2
+L05,0,640,78,SOL#,SOL,#ff6a00,#fefb41,3,3
+L06,1,64,126,MI,RE,#583300,#587934,0,0
+L07,1,162,106,LA,RE,#a62c17,#587934,1,2
+L08,1,258,96,SOL,LA#,#fefb41,#e63b7a,2,1
+L09,1,358,98,RE#,DO,#84cc16,#285ff4,2,2
+L10,1,472,108,FA,DO#,#d38301,#01c7fc,3,2
+L11,1,576,108,LA#,DO,#e63b7a,#285ff4,2,2
+L12,1,680,142,FA,FA#,#d38301,#feb43f,0,0
+L13,2,110,172,RE,SOL,#587934,#fefb41,2,0
+L14,2,210,156,LA,SOL,#a62c17,#fefb41,2,2
+L15,2,302,154,DO,SI,#285ff4,#5e30eb,3,2
+L16,2,410,162,MI,RE,#583300,#587934,3,3
+L17,2,528,164,DO,FA,#285ff4,#d38301,1,2
+L18,2,618,170,SOL,FA#,#fefb41,#feb43f,0,0
+L19,3,66,252,MI,LA,#583300,#a62c17,1,1
+L20,3,158,230,SOL#,MI,#ff6a00,#583300,2,2
+L21,3,254,222,SI,SOL#,#5e30eb,#a62c17,2,2
+L22,3,354,218,RE,DO#,#587934,#01c7fc,2,3
+L23,3,458,224,FA#,MI,#feb43f,#583300,2,3
+L24,3,560,234,DO#,SOL#,#00a1d8,#ff6a00,3,2
+L25,3,646,246,FA#,SI,#feb43f,#5e30eb,1,0
+L26,4,26,328,RE,MI,#587934,#754400,0,0
+L27,4,110,308,SI,MI,#5e30eb,#583300,1,1
+L28,4,204,294,SOL,SOL#,#705200,#ecac22,3,3
+L29,4,298,288,LA,LA,#a62c17,#a62c17,3,3
+L30,4,390,286,RE#,SI,#84cc16,#5e30eb,3,3
+L31,4,496,296,FA#,FA,#feb43f,#d38301,2,2
+L32,4,590,306,RE#,DO#,#84cc16,#01c7fc,0,0
+L33,4,674,324,DO,FA,#285ff4,#d38301,0,0
+R01,0,174,0,SI,SI,#5e30eb,#5e30eb,1,2
+R02,0,274,0,SOL#,SOL#,#ff6a00,#ff6a00,4,4
+R03,0,376,0,SOL,FA#,#fefb41,#ffc777,1,4
+R04,0,484,0,FA,FA,#a96800,#a96800,4,2
+R05,0,220,38,LA,SOL,#a62c17,#fefb41,4,1
+R06,0,326,38,FA#,LA#,#ffc777,#e63b7a,4,3
+R07,0,432,40,MI,DO,#583300,#285ff4,4,4
+R08,1,128,46,DO#,DO,#01c7fc,#285ff4,2,2
+R09,1,528,50,RE#,RE#,#84cc16,#84cc16,4,4
+R10,1,88,104,DO,RE,#285ff4,#587934,2,2
+R11,1,178,98,RE,DO#,#587934,#01c7fc,2,2
+R12,1,280,86,SOL,SOL#,#fefb41,#ff6a00,2,2
+R13,1,388,86,LA#,LA#,#e63b7a,#e63b7a,3,2
+R14,1,484,94,DO,MI,#285ff4,#583300,4,3
+R15,1,572,114,RE,RE,#587934,#587934,4,4
+R16,2,42,188,SI,DO,#5e30eb,#285ff4,2,3
+R17,2,136,168,MI,DO#,#583300,#01c7fc,2,3
+R18,2,236,156,DO#,FA#,#01c7fc,#ffc777,3,3
+R19,2,342,148,FA#,SI,#ffc777,#5e30eb,2,1
+R20,2,436,156,LA,SI,#a62c17,#5e30eb,2,3
+R21,2,530,164,DO,RE,#285ff4,#587934,3,3
+R22,2,612,184,MI,SOL,#583300,#fefb41,3,4
+R23,2,0,262,LA,RE,#a62c17,#587934,1,3
+R24,2,94,246,FA,FA,#a96800,#a96800,2,3
+R25,3,188,232,LA#,MI,#e63b7a,#583300,2,2
+R26,3,284,224,SOL#,LA,#ff6a00,#a62c17,2,2
+R27,3,386,224,SI,DO#,#5e30eb,#01c7fc,3,4
+R28,3,478,232,RE,MI,#587934,#583300,3,4
+R29,3,570,246,SOL#,LA,#ff6a00,#a62c17,3,3
+R30,3,654,266,SI,DO#,#5e30eb,#01c7fc,3,4
+R31,3,26,328,LA#,LA#,#e63b7a,#e63b7a,1,1
+R32,3,122,312,RE#,RE#,#84cc16,#84cc16,2,3
+R33,4,220,298,FA,FA,#a96800,#a96800,3,4
+R34,4,316,296,RE#,MI,#84cc16,#583300,3,4
+R35,4,412,300,FA#,SOL#,#ffc777,#ff6a00,3,3
+R36,4,500,308,LA,SI,#a62c17,#5e30eb,3,3
+R37,4,594,322,DO#,MI,#01c7fc,#583300,4,4
+R38,4,680,346,SOL,RE#,#fefb41,#84cc16,3,2
 function loadBtns() {
   try {
     const rawL = localStorage.getItem(STORAGE_KEY_L);

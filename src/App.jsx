@@ -3044,7 +3044,7 @@ function VitralTab(){
     <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",paddingBottom:"2rem"}}>
 
       {/* Header */}
-      <div style={{textAlign:"center",padding:"1.5rem 0 1rem"}}>
+      <div style={{textAlign:"center",padding:"1.5rem 0 1rem",position:"relative"}}>
         <p style={{fontFamily:"'Courier New',monospace",fontSize:10,letterSpacing:".2em",
           color:"#3a2e0a",marginBottom:".6rem"}}>HARMONÍA · INTRODUCCIÓN</p>
         <h1 style={{fontFamily:"'Libre Baskerville',serif",fontWeight:400,
@@ -3055,6 +3055,63 @@ function VitralTab(){
         <p style={{fontStyle:"italic",fontSize:".9rem",color:"#5a4820",letterSpacing:".03em"}}>
           Cada nota tiene un color único e invariable — la base visual de Harmonía
         </p>
+
+        {/* Botón editor — siempre visible arriba a la derecha */}
+        {!editMode && !showPassInput && (
+          <button onClick={()=>setShowPassInput(true)}
+            style={{
+              position:"absolute",top:16,right:16,
+              fontSize:10,fontFamily:"monospace",letterSpacing:".12em",
+              color:"#8a6030",background:"#0a0800",
+              border:"1px solid #3a2808",borderRadius:99,
+              cursor:"pointer",padding:"4px 12px",
+              transition:"all .2s",
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor="#c89030";e.currentTarget.style.color="#c89030";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="#3a2808";e.currentTarget.style.color="#8a6030";}}>
+            ✎ paleta
+          </button>
+        )}
+
+        {/* Input contraseña — aparece en el header */}
+        {showPassInput && !editMode && (
+          <div style={{
+            position:"absolute",top:12,right:12,
+            display:"flex",gap:6,alignItems:"center",
+            padding:"6px 10px",borderRadius:10,
+            background:"#0a0800",border:"1px solid #3a2808",
+          }}>
+            <input
+              type="password"
+              value={passInput}
+              onChange={e=>setPassInput(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&handlePassSubmit()}
+              placeholder="contraseña"
+              autoFocus
+              style={{
+                background:"transparent",border:"none",outline:"none",
+                color:passError?"#cc3333":"#c89030",
+                fontFamily:"monospace",fontSize:11,letterSpacing:".08em",
+                width:110,
+              }}/>
+            <button onClick={handlePassSubmit}
+              style={{background:"transparent",border:"1px solid #3a2808",
+                color:"#8a6020",borderRadius:5,padding:"2px 8px",
+                fontSize:10,cursor:"pointer",fontFamily:"monospace"}}>
+              →
+            </button>
+            <button onClick={()=>{setShowPassInput(false);setPassInput("");setPassError(false);}}
+              style={{background:"transparent",border:"none",
+                color:"#3a2808",fontSize:13,cursor:"pointer",lineHeight:1}}>
+              ✕
+            </button>
+            {passError && (
+              <span style={{color:"#cc3333",fontSize:9,fontFamily:"monospace"}}>
+                incorrecta
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Vitrales */}
@@ -3168,57 +3225,9 @@ function VitralTab(){
         fontSize:".85rem",letterSpacing:".02em",marginBottom:"1.5rem"}}>{paso.desc}</p>
 
       {/* ── EDITOR DE PALETA ── */}
-      {!editMode && !showPassInput && (
-        <div style={{textAlign:"center",marginTop:"1rem"}}>
-          <button onClick={()=>setShowPassInput(true)}
-            style={{fontSize:11,fontFamily:"monospace",letterSpacing:".2em",
-              color:"#6a4a18",background:"transparent",
-              border:"1px solid #2a1a06",borderRadius:99,
-              cursor:"pointer",padding:"4px 16px",
-              opacity:.6,transition:"opacity .2s"}}
-            onMouseEnter={e=>e.target.style.opacity=1}
-            onMouseLeave={e=>e.target.style.opacity=.6}>
-            ✎ editar paleta
-          </button>
-        </div>
-      )}
 
-      {/* Input contraseña */}
-      {showPassInput && !editMode && (
-        <div style={{textAlign:"center",marginTop:"1rem"}}>
-          <div style={{display:"inline-flex",gap:8,alignItems:"center",
-            padding:"8px 12px",borderRadius:10,
-            background:"#0a0a0a",border:"1px solid #2a1e06"}}>
-            <input
-              type="password"
-              value={passInput}
-              onChange={e=>setPassInput(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&handlePassSubmit()}
-              placeholder="contraseña"
-              autoFocus
-              style={{
-                background:"transparent",border:"none",outline:"none",
-                color:passError?"#cc3333":"#c89030",
-                fontFamily:"monospace",fontSize:12,letterSpacing:".1em",
-                width:120,
-              }}/>
-            <button onClick={handlePassSubmit}
-              style={{background:"transparent",border:"1px solid #3a2808",
-                color:"#6a4020",borderRadius:5,padding:"2px 8px",
-                fontSize:10,cursor:"pointer",fontFamily:"monospace"}}>
-              →
-            </button>
-            <button onClick={()=>{setShowPassInput(false);setPassInput("");}}
-              style={{background:"transparent",border:"none",
-                color:"#3a2808",fontSize:12,cursor:"pointer"}}>
-              ✕
-            </button>
-          </div>
-          {passError&&<p style={{color:"#cc3333",fontSize:10,marginTop:4,fontFamily:"monospace"}}>
-            contraseña incorrecta
-          </p>}
-        </div>
-      )}
+
+
 
       {/* Panel editor */}
       {editMode && (

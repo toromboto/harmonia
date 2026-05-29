@@ -1721,6 +1721,253 @@ function ImportModal({ onImport, onClose }) {
 function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
   const [leftBtns,  setLeftBtns]  = useState(()=>initialLeft.map(b=>({...b})));
   const [rightBtns, setRightBtns] = useState(()=>initialRight.map(b=>({...b})));
+  const [mode,      setMode]      = useState("abre");   // abre | cierra
+  const [selected,  setSelected]  = useState(null);     // {id, side} side="L"|"R"
+  const [popupPos,  setPopupPos]  = useState(null);     // {x,y} posición del popup
+  const [copied,    setCopied]    = useState(false);
+
+  // Obtener el botón seleccionado
+  const selBtn = selected
+    ? (selected.side==="L" ? leftBtns : rightBtns).find(b=>b.id===selected.id)
+    : null;
+
+  const editBtn = (id, side, field, val) => {
+    const setter = side==="L" ? setLeftBtns : setRightBtns;
+    setter(p=>p.map(b=>b.id===id ? {...b,[field]:val} : b));
+  };
+
+  // Al hacer clic en un botón del canvas
+  const handleBtnClick = (btn, side, domEvent) => {
+    if (selected?.id===btn.id && selected?.side===side) {
+      setSelected(null); setPopupPos(null); return;
+    }
+    setSelected({id:btn.id, side});
+    // Calcular posición del popup relativa al contenedor
+    if (domEvent) {
+      const rect = domEvent.currentTarget.getBoundingClientRect();
+      const container = document.getElementById("editor-container");
+      const cRect = container ? container.getBoundingClientRect() : {left:0,top:0};
+      setPopupPos({
+        x: rect.left - cRect.left + rect.width/2,
+        y: rect.top  - cRect.top  - 8,
+      });
+    }
+  };
+
+  const jsText = () => {
+    const fmt=(arr,name)=>{
+      const ls=arr.map(b=>`  { id:"${b.id}", row:${b.row}, x:${b.x}, y:${b.y}, abre:"${b.abre}", cierra:"${b.cierra}", color_abre:"${b.color_abre}", color_cierra:"${b.color_cierra}", oct_abre:${b.oct_abre??3}, oct_cierra:${b.oct_cierra??3} },`);
+      return`const ${name} = [\n${ls.join("\n")}\n];`;
+    };
+    return`// Pegá esto en App.jsx reemplazando DEFS_L y DEFS_R\n\n`+fmt(leftBtns,"DEFS_L")+"\n\n"+fmt(rightBtns,"DEFS_R");
+  };
+
+  const pill=(active,v="orange")=>({
+    padding:"5px 12px",borderRadius:8,border:"none",
+    fontFamily:"'Courier New',monospace",fontWeight:700,fontSize:10,cursor:"pointer",
+    background:active?(v==="orange"?"linear-gradient(135deg,#a05010,#f5c060)":"linear-gradient(135deg,#1a4a8a,#4a8af0)"):"transparent",
+    color:active?(v==="orange"?"#0a0502":"#fff"):"#6a4020",
+  });
+
+  // Canvas especial para el editor — muestra ambas manos, clic abre popup
+  const EditorCanvas = ({buttons, side, label}) => {
+    const rawW = Math.max(...buttons.map(b=>b.x)) + BTN_SIZE + 16;
+    const rawH = Math.max(...buttons.map(b=>b.y)) + BTN_SIZE + 20;
+    return (
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <p style={{fontSize:9,color:"#7a5030",marginBottom:4,letterSpacing:".1em",fontFamily:"monospace"}}>{label}</p>
+        <div style={{position:"relative",width:rawW,height:rawH,flexShrink:0,
+          background:"linear-gradient(145deg,#281a08,#140e04)",
+          border:`2px solid ${selected?.side===side?"#f5c060":"#3a2010"}`,
+          borderRadius:14,overflow:"visible"}}>
+          {buttons.map(btn=>{
+            const note  = mode==="abre" ? btn.abre  : btn.cierra;
+            const color = mode==="abre" ? btn.color_abre : btn.color_cierra;
+            const isSel = selected?.id===btn.id && selected?.side===side;
+            return (
+              <div key={btn.id}
+                onClick={e=>handleBtnClick(btn, side, e)}
+                style={{
+                  position:"absolute",left:btn.x,top:btn.y,
+                  width:BTN_SIZE,height:BTN_SIZE,borderRadius:"50%",
+                  cursor:"pointer",userSelect:"none",
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                  background:isSel
+                    ? `radial-gradient(circle at 36% 30%,${color}ff,${color}cc)`
+                    : `radial-gradient(circle at 36% 30%,${color}99,${color}44 60%,${color}22)`,
+                  border:`2.5px solid ${isSel?"#f5c060":color+"aa"}`,
+                  boxShadow:isSel?`0 0 0 3px #f5c06088,0 0 18px ${color}cc`:`0 2px 8px rgba(0,0,0,.7)`,
+                  transform:isSel?"scale(1.15)":"scale(1)",
+                  transition:"all .15s",
+                  zIndex:isSel?30:1,
+                }}>
+                <span style={{fontSize:note.length>2?7:9,fontWeight:800,color:"#fff",
+                  fontFamily:"monospace",lineHeight:1,textShadow:"0 1px 3px rgba(0,0,0,.9)"}}>{note}</span>
+                <span style={{fontSize:6,color:"rgba(255,255,255,.7)",fontFamily:"monospace"}}>
+                  {mode==="abre"?(btn.oct_abre??"-"):(btn.oct_cierra??"-")}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div style={{fontFamily:"'Courier New',monospace"}}>
+
+      {/* Banner */}
+      <div style={{marginBottom:10,padding:"8px 14px",background:"#1a0e04",
+        border:"1.5px solid #f5c060",borderRadius:10,
+        display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+        <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>✏️ MODO EDICIÓN</span>
+        <span style={{color:"#7a5030",fontSize:10}}>Hacé clic en cualquier botón para editar sus propiedades</span>
+        <button onClick={()=>onSave(leftBtns,rightBtns)}
+          style={{padding:"6px 16px",borderRadius:9,border:"none",
+            background:"linear-gradient(135deg,#0d9488,#2dd4bf)",
+            color:"#0a0502",fontWeight:800,fontSize:12,cursor:"pointer",marginLeft:"auto"}}>
+          💾 Guardar y salir
+        </button>
+        <button onClick={onCancel}
+          style={{padding:"6px 12px",borderRadius:9,border:"1px solid #3a2010",
+            background:"transparent",color:"#7a5030",fontSize:11,cursor:"pointer"}}>
+          Cancelar
+        </button>
+      </div>
+
+      {/* Selector fuelle */}
+      <div style={{display:"flex",gap:6,marginBottom:10,alignItems:"center",flexWrap:"wrap"}}>
+        <div style={{display:"flex",background:"#100802",border:"1.5px solid #3a2010",borderRadius:10,padding:3,gap:3}}>
+          <button style={pill(mode==="abre")}   onClick={()=>{setMode("abre");  setSelected(null);}}>▷ Abre</button>
+          <button style={pill(mode==="cierra")} onClick={()=>{setMode("cierra");setSelected(null);}}>◁ Cierra</button>
+        </div>
+        <span style={{fontSize:9,color:"#4a2a08"}}>
+          {selected ? `Editando ${selected.id} — ${selected.side==="L"?"Mano Izq":"Mano Der"}` : "Seleccioná un botón"}
+        </span>
+        {selected && (
+          <button onClick={()=>{setSelected(null);setPopupPos(null);}}
+            style={{marginLeft:"auto",padding:"3px 10px",borderRadius:6,border:"1px solid #3a2010",
+              background:"transparent",color:"#6a4020",fontSize:10,cursor:"pointer"}}>
+            ✕ deseleccionar
+          </button>
+        )}
+      </div>
+
+      {/* Contenedor principal con position:relative para el popup */}
+      <div id="editor-container" style={{position:"relative"}}>
+
+        {/* Los dos teclados lado a lado */}
+        <div style={{display:"flex",gap:16,flexWrap:"wrap",justifyContent:"center",paddingBottom:8}}>
+          <EditorCanvas buttons={leftBtns}  side="L" label="MANO IZQUIERDA"/>
+          <EditorCanvas buttons={rightBtns} side="R" label="MANO DERECHA"/>
+        </div>
+
+        {/* POPUP FLOTANTE — aparece encima del botón seleccionado */}
+        {selBtn && popupPos && (
+          <div style={{
+            position:"absolute",
+            left: Math.max(10, Math.min(popupPos.x - 140, 99999)),
+            top:  Math.max(10, popupPos.y - 180),
+            width:280,
+            background:"#0e0a02",
+            border:"1.5px solid #f5c060",
+            borderRadius:12,
+            padding:"10px 12px",
+            zIndex:100,
+            boxShadow:"0 8px 32px rgba(0,0,0,.8)",
+          }}>
+            {/* Header del popup */}
+            <div style={{display:"flex",justifyContent:"space-between",
+              alignItems:"center",marginBottom:8}}>
+              <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>{selBtn.id}</span>
+              <button onClick={()=>{setSelected(null);setPopupPos(null);}}
+                style={{background:"transparent",border:"none",color:"#6a4020",
+                  fontSize:14,cursor:"pointer",lineHeight:1}}>✕</button>
+            </div>
+
+            {/* ABRIENDO */}
+            <div style={{padding:"6px 8px",background:"#0a1408",
+              borderRadius:7,border:"1px solid #2a4010",marginBottom:5}}>
+              <p style={{fontSize:8,fontWeight:700,color:"#34d399",
+                letterSpacing:".1em",marginBottom:5}}>▷ ABRIENDO</p>
+              <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
+                <select value={selBtn.abre}
+                  onChange={e=>editBtn(selBtn.id,selected.side,"abre",e.target.value)}
+                  style={{background:"#1a0e04",color:"#34d399",border:"1px solid #34d39955",
+                    borderRadius:5,padding:"2px 4px",fontFamily:"monospace",
+                    fontWeight:700,fontSize:11,cursor:"pointer",width:70}}>
+                  {ALL_NOTES_LAT.map(n=><option key={n} value={n}>{n}</option>)}
+                </select>
+                <span style={{fontSize:9,color:"#4a3010"}}>oct.</span>
+                <select value={selBtn.oct_abre??3}
+                  onChange={e=>editBtn(selBtn.id,selected.side,"oct_abre",parseInt(e.target.value))}
+                  style={{background:"#1a0e04",color:"#34d399",border:"1px solid #34d39955",
+                    borderRadius:5,padding:"2px 4px",fontFamily:"monospace",
+                    fontWeight:700,fontSize:11,cursor:"pointer",width:46}}>
+                  {[0,1,2,3,4,5,6].map(o=><option key={o} value={o}>{o}</option>)}
+                </select>
+                <input type="color" value={selBtn.color_abre||"#888"}
+                  onChange={e=>editBtn(selBtn.id,selected.side,"color_abre",e.target.value)}
+                  style={{width:26,height:22,padding:1,borderRadius:4,border:"none",cursor:"pointer"}}/>
+              </div>
+            </div>
+
+            {/* CERRANDO */}
+            <div style={{padding:"6px 8px",background:"#140a14",
+              borderRadius:7,border:"1px solid #401040"}}>
+              <p style={{fontSize:8,fontWeight:700,color:"#f472b6",
+                letterSpacing:".1em",marginBottom:5}}>◁ CERRANDO</p>
+              <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
+                <select value={selBtn.cierra}
+                  onChange={e=>editBtn(selBtn.id,selected.side,"cierra",e.target.value)}
+                  style={{background:"#1a0e04",color:"#f472b6",border:"1px solid #f472b655",
+                    borderRadius:5,padding:"2px 4px",fontFamily:"monospace",
+                    fontWeight:700,fontSize:11,cursor:"pointer",width:70}}>
+                  {ALL_NOTES_LAT.map(n=><option key={n} value={n}>{n}</option>)}
+                </select>
+                <span style={{fontSize:9,color:"#4a3010"}}>oct.</span>
+                <select value={selBtn.oct_cierra??3}
+                  onChange={e=>editBtn(selBtn.id,selected.side,"oct_cierra",parseInt(e.target.value))}
+                  style={{background:"#1a0e04",color:"#f472b6",border:"1px solid #f472b655",
+                    borderRadius:5,padding:"2px 4px",fontFamily:"monospace",
+                    fontWeight:700,fontSize:11,cursor:"pointer",width:46}}>
+                  {[0,1,2,3,4,5,6].map(o=><option key={o} value={o}>{o}</option>)}
+                </select>
+                <input type="color" value={selBtn.color_cierra||"#888"}
+                  onChange={e=>editBtn(selBtn.id,selected.side,"color_cierra",e.target.value)}
+                  style={{width:26,height:22,padding:1,borderRadius:4,border:"none",cursor:"pointer"}}/>
+              </div>
+            </div>
+
+            {/* Flecha indicadora */}
+            <div style={{position:"absolute",bottom:-8,left:"50%",
+              transform:"translateX(-50%)",
+              width:0,height:0,
+              borderLeft:"8px solid transparent",
+              borderRight:"8px solid transparent",
+              borderTop:"8px solid #f5c060"}}/>
+          </div>
+        )}
+      </div>
+
+      {/* Exportar JS */}
+      <div style={{marginTop:12,display:"flex",gap:6}}>
+        <button onClick={()=>navigator.clipboard.writeText(jsText()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);})}
+          style={{padding:"4px 12px",borderRadius:7,border:"1px solid #3a2010",
+            background:copied?"#0d9488":"#1a0e04",
+            color:copied?"#fff":"#f5c060",fontFamily:"monospace",fontWeight:700,fontSize:10,cursor:"pointer"}}>
+          {copied?"✓ Copiado":"↓ Copiar JS para el repo"}
+        </button>
+      </div>
+
+    </div>
+  );
+}
+
+) {
+  const [leftBtns,  setLeftBtns]  = useState(()=>initialLeft.map(b=>({...b})));
+  const [rightBtns, setRightBtns] = useState(()=>initialRight.map(b=>({...b})));
   const [hand,      setHand]      = useState("left");
   const [mode,      setMode]      = useState("abre");
   const [selected,  setSelected]  = useState(null);

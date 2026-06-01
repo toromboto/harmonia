@@ -12,26 +12,19 @@ const NC_DEFAULT = {
   "A#":"#A5286E","Bb":"#A5286E",
 };
 const PALETTE_KEY = "harmonia_palette_v1";
-const EDIT_HASH   = "murcielago"; // contraseña del editor
+const EDIT_HASH   = "murcielago";
 
-// Carga la paleta desde localStorage (si existe) o usa la default
 function loadPalette() {
   try {
     const saved = localStorage.getItem(PALETTE_KEY);
     if (!saved) return {...NC_DEFAULT};
     const parsed = JSON.parse(saved);
-    // Merge: default como base + cambios guardados
     const merged = {...NC_DEFAULT, ...parsed};
-    // Sincronizar enarmónicos
-    ["C#","D#","F#","G#","A#"].forEach(s => {
-      const enh = {"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"}[s];
-      if (merged[s]) merged[enh] = merged[s];
-    });
+    const ENH = {"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"};
+    Object.keys(ENH).forEach(s=>{ if(merged[s]) merged[ENH[s]]=merged[s]; });
     return merged;
   } catch { return {...NC_DEFAULT}; }
 }
-
-// NC mutable — se recarga cuando el editor guarda
 let NC = loadPalette();
 const nc = (n) => NC[n?.replace(/[0-9]/g,"").trim()] || "#888";
 
@@ -185,63 +178,55 @@ const playChord=(notes)=>notes.forEach((n,i)=>setTimeout(()=>playTone(n,4,1.2),i
 
 // ─── TEORÍA ───────────────────────────────────────────────────────────────────
 const FORMULAS={
-  "maj":     {intervals:[0,4,7],          label:"Mayor",          symbol:""        },
-  "min":     {intervals:[0,3,7],          label:"Menor",          symbol:"m"       },
-  "7":       {intervals:[0,4,7,10],       label:"Dom. 7ª",        symbol:"7"       },
-  "maj7":    {intervals:[0,4,7,11],       label:"Mayor 7ª",       symbol:"maj7"    },
-  "min7":    {intervals:[0,3,7,10],       label:"Menor 7ª",       symbol:"m7"      },
-  "dim":     {intervals:[0,3,6],          label:"Disminuido",     symbol:"°"       },
-  "dim7":    {intervals:[0,3,6,9],        label:"Dim. 7ª",        symbol:"dim7"    },
-  "m7b5":    {intervals:[0,3,6,10],       label:"Semidism.",      symbol:"m7b5"    },
-  "mmaj7":   {intervals:[0,3,7,11],       label:"m(maj7)",        symbol:"m(maj7)" },
-  "maj7s5":  {intervals:[0,4,8,11],       label:"maj7#5",         symbol:"maj7#5"  },
-  "aug":     {intervals:[0,4,8],          label:"Aumentado",      symbol:"+"       },
-  "sus2":    {intervals:[0,2,7],          label:"Sus2",           symbol:"sus2"    },
-  "sus4":    {intervals:[0,5,7],          label:"Sus4",           symbol:"sus4"    },
-  "9":       {intervals:[0,4,7,10,2],     label:"Dom. 9ª",        symbol:"9"       },
-  "maj9":    {intervals:[0,4,7,11,2],     label:"Mayor 9ª",       symbol:"maj9"    },
-  "min9":    {intervals:[0,3,7,10,2],     label:"Menor 9ª",       symbol:"m9"      },
-  "13":      {intervals:[0,4,7,10,2,9],   label:"Dom. 13ª",       symbol:"13"      },
-  "7b9":     {intervals:[0,4,7,10,1],     label:"Dom. b9",        symbol:"7b9"     },
-  "7s9":     {intervals:[0,4,7,10,3],     label:"Dom. #9",        symbol:"7#9"     },
-  "7alt":    {intervals:[0,4,7,10,1,3,8], label:"Alt.",           symbol:"7alt"    },
+  "maj": {intervals:[0,4,7],          label:"Mayor",      symbol:""    },
+  "min": {intervals:[0,3,7],          label:"Menor",      symbol:"m"   },
+  "7":   {intervals:[0,4,7,10],       label:"Dom. 7ª",    symbol:"7"   },
+  "maj7":{intervals:[0,4,7,11],       label:"Mayor 7ª",   symbol:"△7"  },
+  "min7":{intervals:[0,3,7,10],       label:"Menor 7ª",   symbol:"m7"  },
+  "dim": {intervals:[0,3,6],          label:"Disminuido", symbol:"°"   },
+  "dim7":{intervals:[0,3,6,9],        label:"Dim. 7ª",    symbol:"°7"  },
+  "m7b5":{intervals:[0,3,6,10],       label:"Semidism.",  symbol:"ø7"  },
+  "aug": {intervals:[0,4,8],          label:"Aumentado",  symbol:"+"   },
+  "sus2":{intervals:[0,2,7],          label:"Sus2",       symbol:"sus2"},
+  "sus4":{intervals:[0,5,7],          label:"Sus4",       symbol:"sus4"},
+  "9":   {intervals:[0,4,7,10,2],     label:"Dom. 9ª",    symbol:"9"   },
+  "maj9":{intervals:[0,4,7,11,2],     label:"Mayor 9ª",   symbol:"△9"  },
+  "min9":{intervals:[0,3,7,10,2],     label:"Menor 9ª",   symbol:"m9"  },
+  "13":  {intervals:[0,4,7,10,2,9],   label:"Dom. 13ª",   symbol:"13"  },
+  "7b9": {intervals:[0,4,7,10,1],     label:"Dom. b9",    symbol:"7b9" },
+  "7#9": {intervals:[0,4,7,10,3],     label:"Dom. #9",    symbol:"7#9" },
+  "7alt":{intervals:[0,4,7,10,1,3,8], label:"Alt.",       symbol:"7alt"},
 };
 
 const MODES={
-  // Modos del Mayor (Jónico)
-  "Jónico":        [0,2,4,5,7,9,11],
-  "Dórico":        [0,2,3,5,7,9,10],
-  "Frigio":        [0,1,3,5,7,8,10],
-  "Lidio":         [0,2,4,6,7,9,11],
-  "Mixolidio":     [0,2,4,5,7,9,10],
-  "Eólico":        [0,2,3,5,7,8,10],  // = Menor Natural
-  "Locrio":        [0,1,3,5,6,8,10],
-  // Modos del Menor Armónico
-  "Menor Arm.":    [0,2,3,5,7,8,11],  // i — m(maj7)
-  "Locrio #6":     [0,2,3,5,6,9,10],  // ii — m7b5
-  "Jónico #5":     [0,2,4,5,8,9,11],  // bIII — maj7#5
-  "Dórico #4":     [0,2,3,6,7,9,10],  // iv — m7
-  "Frigio Dom.":   [0,1,4,5,7,8,10],  // V — 7 (tensiones alteradas b9 #9 b13)
-  "Lidio #2":      [0,3,4,6,7,9,11],  // bVI — maj7
-  "Ultra Locrio":  [0,1,3,4,6,8,9],   // vii° — dim7
-  // Modos del Menor Melódico (Jazz Minor)
-  "Menor Mel.":    [0,2,3,5,7,9,11],  // i — m(maj7)
-  "Dórico b2":     [0,1,3,5,7,9,10],  // ii — m7
-  "Lidio Aum.":    [0,2,4,6,8,9,11],  // bIII — maj7#5
-  "Lidio Dom.":    [0,2,4,6,7,9,10],  // IV — 7
-  "Mixolidio b6":  [0,2,4,5,7,8,10],  // V — 7
-  "Locrio #2":     [0,2,3,5,6,8,10],  // vi/ii — m7b5 (jazz preferred)
-  "Alterada":      [0,1,3,4,6,8,10],  // vii — 7alt
-  // Otros
-  "Lidio b7":      [0,2,4,6,7,9,10],
-  "Disminuida":    [0,2,3,5,6,8,9,11],
-  "Blues":         [0,3,5,6,7,10],
+  "Jónico":       [0,2,4,5,7,9,11],
+  "Dórico":       [0,2,3,5,7,9,10],
+  "Frigio":       [0,1,3,5,7,8,10],
+  "Lidio":        [0,2,4,6,7,9,11],
+  "Mixolidio":    [0,2,4,5,7,9,10],
+  "Eólico":       [0,2,3,5,7,8,10],
+  "Locrio":       [0,1,3,5,6,8,10],
+  "Locrio #2":    [0,2,3,5,6,8,10],
+  "Lidio b7":     [0,2,4,6,7,9,10],
+  "Alterada":     [0,1,3,4,6,8,10],
+  "Frigio Dom.":  [0,1,4,5,7,8,10],
+  "Disminuida":   [0,2,3,5,6,8,9,11],
+  "Blues":        [0,3,5,6,7,10],
+  "Menor Arm.":   [0,2,3,5,7,8,11],
+  "Jónico #5":    [0,2,4,5,8,9,11],
+  "Dórico #4":    [0,2,3,6,7,9,10],
+  "Lidio #2":     [0,3,4,6,7,9,11],
+  "Ultra Locrio": [0,1,3,4,6,8,9],
+  "Menor Mel.":   [0,2,3,5,7,9,11],
+  "Dórico b2":    [0,1,3,5,7,9,10],
+  "Lidio Aum.":   [0,2,4,6,8,9,11],
+  "Lidio Dom.":   [0,2,4,6,7,9,10],
+  "Mixolidio b6": [0,2,4,5,7,8,10],
 };
 
 const T_SEMI={"9":2,"b9":1,"#9":3,"11":5,"#11":6,"13":9,"b13":8,"6":9,"b6":8,"b7":10,"7":11};
 const tNote=(root,t)=>{const s=T_SEMI[t];return s!==undefined?fromRoot(root,s):null;};
 
-// Grados diatónicos — Tonalidad MAYOR (cifrado romano en mayúsculas)
 const MODE_BY_DEGREE=[
   {name:"Jónico",   ivs:MODES["Jónico"],   q:"maj7",tensions:["9","13"],       avoid:["11"], degree:"I"  },
   {name:"Dórico",   ivs:MODES["Dórico"],   q:"m7",  tensions:["9","11"],       avoid:["b9"], degree:"II" },
@@ -251,27 +236,14 @@ const MODE_BY_DEGREE=[
   {name:"Eólico",   ivs:MODES["Eólico"],   q:"m7",  tensions:["9","11"],       avoid:[],     degree:"VI" },
   {name:"Locrio",   ivs:MODES["Locrio"],   q:"m7b5",tensions:["11","b13"],     avoid:["b9"], degree:"VII"},
 ];
-
-// Grados diatónicos — Tonalidad MENOR NATURAL (cifrado romano en minúsculas)
 const MODE_BY_DEGREE_MINOR=[
-  {name:"Eólico",      ivs:MODES["Eólico"],      q:"m7",   tensions:["9","11"],         avoid:[],          degree:"i"   },
-  {name:"Locrio",      ivs:MODES["Locrio"],      q:"m7b5", tensions:["11","b13"],        avoid:["b9"],      degree:"ii"  },
-  {name:"Jónico",      ivs:MODES["Jónico"],      q:"maj7", tensions:["9","13"],          avoid:["11"],      degree:"bIII"},
-  {name:"Dórico",      ivs:MODES["Dórico"],      q:"m7",   tensions:["9","11"],          avoid:["b9"],      degree:"iv"  },
-  {name:"Frigio",      ivs:MODES["Frigio"],      q:"m7",   tensions:["11"],              avoid:["9","13"],  degree:"v"   },
-  {name:"Lidio",       ivs:MODES["Lidio"],       q:"maj7", tensions:["9","#11","13"],    avoid:[],          degree:"bVI" },
-  {name:"Mixolidio",   ivs:MODES["Mixolidio"],   q:"7",    tensions:["9","13"],          avoid:["11"],      degree:"bVII"},
-];
-
-// Grados — Menor ARMÓNICO
-const MODE_BY_DEGREE_HARM=[
-  {name:"Menor Arm.",  ivs:MODES["Menor Arm."],  q:"mmaj7",tensions:["9","11"],          avoid:[],          degree:"i"   },
-  {name:"Locrio #6",   ivs:MODES["Locrio #6"],   q:"m7b5", tensions:["11","13"],         avoid:["b9"],      degree:"ii"  },
-  {name:"Jónico #5",   ivs:MODES["Jónico #5"],   q:"maj7s5",tensions:["9","11"],         avoid:[],          degree:"bIII"},
-  {name:"Dórico #4",   ivs:MODES["Dórico #4"],   q:"m7",   tensions:["9","#11","13"],    avoid:[],          degree:"iv"  },
-  {name:"Frigio Dom.", ivs:MODES["Frigio Dom."],  q:"7",    tensions:["b9","#9","b13"],   avoid:["9","13"],  degree:"V"   },
-  {name:"Lidio #2",    ivs:MODES["Lidio #2"],     q:"maj7", tensions:["#9","#11","13"],   avoid:[],          degree:"bVI" },
-  {name:"Ultra Locrio",ivs:MODES["Ultra Locrio"], q:"dim7", tensions:[],                 avoid:[],          degree:"vii°"},
+  {name:"Eólico",    ivs:MODES["Eólico"],    q:"m7",  tensions:["9","11"],       avoid:[],         degree:"i"   },
+  {name:"Locrio",    ivs:MODES["Locrio"],    q:"m7b5",tensions:["11","b13"],     avoid:["b9"],     degree:"ii"  },
+  {name:"Jónico",    ivs:MODES["Jónico"],    q:"maj7",tensions:["9","13"],       avoid:["11"],     degree:"bIII"},
+  {name:"Dórico",    ivs:MODES["Dórico"],    q:"m7",  tensions:["9","11"],       avoid:["b9"],     degree:"iv"  },
+  {name:"Frigio",    ivs:MODES["Frigio"],    q:"m7",  tensions:["11"],           avoid:["9","13"], degree:"v"   },
+  {name:"Lidio",     ivs:MODES["Lidio"],     q:"maj7",tensions:["9","#11","13"], avoid:[],         degree:"bVI" },
+  {name:"Mixolidio", ivs:MODES["Mixolidio"], q:"7",   tensions:["9","13"],       avoid:["11"],     degree:"bVII"},
 ];
 
 const HF={
@@ -357,28 +329,16 @@ const COF=[
 ];
 const MSI=[0,2,4,5,7,9,11];
 const DN=["I","II","III","IV","V","VI","VII"];
-const DQ=["maj7","m7","m7","maj7","7","m7","m7b5"]; // calidades correctas del Mayor
+const DQ=["maj7","m7","m7","maj7","7","m7","m7b5"];
 const DL=["Tónica","Supertónica","Mediante","Subdominante","Dominante","Relativa m.","Sensible"];
-// Calidades del Menor Natural
 const DN_MIN=["i","ii","bIII","iv","v","bVI","bVII"];
 const DQ_MIN=["m7","m7b5","maj7","m7","m7","maj7","7"];
 const DL_MIN=["Tónica","Supertónica","Mediante","Subdominante","Dominante","Submediante","Subtónica"];
 
-const getMSD=(root, minor=false)=>{
+const getMSD=(root)=>{
   const ri=noteIdx(root);if(ri===-1)return null;
-  if(minor){
-    const MINOR_SCALE=[0,2,3,5,7,8,10];
-    const notes=MINOR_SCALE.map(i=>CHROMATIC[(ri+i+120)%12]);
-    return{notes,isMinor:true,diatonic:notes.map((n,i)=>({
-      note:n,degree:DN_MIN[i],quality:DQ_MIN[i],label:DL_MIN[i],
-      full:`${n}${DQ_MIN[i]}`,mode:MODE_BY_DEGREE_MINOR[i],
-    }))};
-  }
   const notes=MSI.map(i=>CHROMATIC[(ri+i)%12]);
-  return{notes,isMinor:false,diatonic:notes.map((n,i)=>({
-    note:n,degree:DN[i],quality:DQ[i],label:DL[i],
-    full:`${n}${DQ[i]}`,mode:MODE_BY_DEGREE[i],
-  }))};
+  return{notes,diatonic:notes.map((n,i)=>({note:n,degree:DN[i],quality:DQ[i],label:DL[i],full:`${n}${DQ[i]}`}))};
 };
 
 const parseChord=(input)=>{
@@ -391,8 +351,8 @@ const parseChord=(input)=>{
     if(rest.includes("m7b5")||rest.includes("ø"))q="m7b5";
     else if(rest.includes("dim7")||rest.includes("°7"))q="dim7";
     else if(rest.includes("dim")||rest.includes("°"))q="dim";
-    else if(rest.includes("maj7")||rest.includes("maj7")||rest.includes("∆7"))q="maj7";
-    else if(rest.includes("maj9")||rest.includes("maj9"))q="maj9";
+    else if(rest.includes("maj7")||rest.includes("△7")||rest.includes("∆7"))q="maj7";
+    else if(rest.includes("maj9")||rest.includes("△9"))q="maj9";
     else if(rest.includes("maj"))q="maj7";
     else if(rest.includes("m9"))q="min9";
     else if(rest.includes("m7"))q="min7";
@@ -413,46 +373,31 @@ const parseChord=(input)=>{
 };
 
 const computeProg=(chords)=>{
-  // ── PASO 1: Detectar si la progresión es Mayor o Menor ──────────────────
-  // Basado en el manual de referencia armónica
-  const quals = chords.map(c=>c.quality);
-  const roots = chords.map(c=>c.root);
-
-  // Cadencia ii m7b5 → V7 → i (cualquier menor) = definitivamente Menor
-  let isMinor = false;
+  const MINOR_SCALE=[0,2,3,5,7,8,10];
+  // Detectar menor: cadencia ii m7b5->V7->i, reposo en menor, V7->acorde menor
+  let isMinor=false;
   for(let i=0;i<chords.length-1;i++){
-    const cur=chords[i], nxt=chords[i+1];
-    // ii m7b5 seguido de V7
-    if(cur.quality==="m7b5" && nxt.quality==="7"){
-      const expectedV = CHROMATIC[(noteIdx(cur.root)+2+120)%12]; // raíz de V = raíz de ii + 2st
-      if(nxt.root===expectedV || enh(nxt.root)===expectedV) isMinor=true;
+    const cur=chords[i],nxt=chords[i+1];
+    if(cur.quality==="m7b5"&&nxt.quality==="7"){
+      const expV=CHROMATIC[(noteIdx(cur.root)+2+120)%12];
+      if(nxt.root===expV||enh(nxt.root)===expV) isMinor=true;
     }
-    // V7 resolviendo a acorde menor (una 4ª justa arriba)
-    if(nxt.quality==="min" || nxt.quality==="min7" || nxt.quality==="mmaj7"){
-      const expectedI = CHROMATIC[(noteIdx(cur.root)+5+120)%12];
-      if(cur.quality==="7" && (nxt.root===expectedI||enh(nxt.root)===expectedI)) isMinor=true;
+    if((nxt.quality==="min"||nxt.quality==="min7")&&cur.quality==="7"){
+      const expI=CHROMATIC[(noteIdx(cur.root)+5+120)%12];
+      if(nxt.root===expI||enh(nxt.root)===expI) isMinor=true;
     }
   }
-  // El último acorde (reposo) es menor = Menor
-  const lastQ = chords[chords.length-1]?.quality;
-  if(lastQ==="min"||lastQ==="min7"||lastQ==="mmaj7") isMinor=true;
+  const lastQ=chords[chords.length-1]?.quality;
+  if(lastQ==="min"||lastQ==="min7") isMinor=true;
 
-  // ── PASO 2: Calcular scores para encontrar la tónica ────────────────────
-  const MINOR_SCALE = [0,2,3,5,7,8,10]; // Eólico
   const scores={};
-
   if(isMinor){
-    // Buscar tónica menor: la nota que mejor explica los acordes como menor natural
-    COF.forEach(({note,minor})=>{
-      // Usar la relativa menor de cada tonalidad mayor del COF
-      const minRoot = minor.replace("m","");
-      const ri = noteIdx(minRoot); if(ri===-1)return;
-      let sc=0;
-      const scale = MINOR_SCALE.map(i=>CHROMATIC[(ri+i+120)%12]);
-      chords.forEach(({root})=>{
-        if(scale.includes(root)||scale.includes(enh(root))) sc+=2;
-      });
-      scores[minRoot] = sc;
+    COF.forEach(({minor})=>{
+      const minRoot=minor.replace("m","");
+      const ri=noteIdx(minRoot);if(ri===-1)return;
+      let sc=0;const scale=MINOR_SCALE.map(i=>CHROMATIC[(ri+i+120)%12]);
+      chords.forEach(({root})=>{if(scale.includes(root)||scale.includes(enh(root)))sc+=2;});
+      scores[minRoot]=sc;
     });
   } else {
     COF.forEach(({note})=>{
@@ -462,35 +407,21 @@ const computeProg=(chords)=>{
       scores[note]=sc;
     });
   }
-
   const key=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];
   const ki=noteIdx(key);
-
   if(isMinor){
-    // Usar escala menor natural para asignar grados
-    const sn = MINOR_SCALE.map(i=>CHROMATIC[(ki+i+120)%12]);
-    const mbd = MODE_BY_DEGREE_MINOR;
+    const sn=MINOR_SCALE.map(i=>CHROMATIC[(ki+i+120)%12]);
     return chords.map(({root,quality,raw,notes})=>{
-      const ri = sn.indexOf(root)!==-1?sn.indexOf(root):sn.indexOf(enh(root));
-      const degreeInfo = ri>=0 ? mbd[ri] : null;
-      return{raw,root,quality,notes,
-        degree:degreeInfo?degreeInfo.degree:"?",
-        key, isMinor:true,
-        fn:getFns(quality)[0],
-        mode:degreeInfo?.name||"",
-      };
+      const ri=sn.indexOf(root)!==-1?sn.indexOf(root):sn.indexOf(enh(root));
+      const di=ri>=0?MODE_BY_DEGREE_MINOR[ri]:null;
+      return{raw,root,quality,notes,degree:di?di.degree:"?",key,isMinor:true,fn:getFns(quality)[0]};
     });
   } else {
     const sn=MSI.map(i=>CHROMATIC[(ki+i)%12]);
     return chords.map(({root,quality,raw,notes})=>{
       const ri=sn.indexOf(root)!==-1?sn.indexOf(root):sn.indexOf(enh(root));
-      const degreeInfo = ri>=0 ? MODE_BY_DEGREE[ri] : null;
-      return{raw,root,quality,notes,
-        degree:degreeInfo?degreeInfo.degree:"?",
-        key, isMinor:false,
-        fn:getFns(quality)[0],
-        mode:degreeInfo?.name||"",
-      };
+      const di=ri>=0?MODE_BY_DEGREE[ri]:null;
+      return{raw,root,quality,notes,degree:di?di.degree:"?",key,isMinor:false,fn:getFns(quality)[0]};
     });
   }
 };
@@ -890,7 +821,6 @@ const Circulo=({highlighted=[],onSelect=null,selectedKey=null})=>{
       note:n,degree:DN[i],quality:DQ[i],
       mode:MODE_BY_DEGREE[i],
       tensions:(MODE_BY_DEGREE[i].tensions||[]).map(t=>({label:t,note:tNote(n,t)})),
-      avoid:(MODE_BY_DEGREE[i].avoid||[]),
     }));
   },[selectedKey]);
 
@@ -1717,16 +1647,391 @@ function ImportModal({ onImport, onClose }) {
   );
 }
 
+function DesktopBandLayout({
+  leftBtns, rightBtns, bellows, view,
+  pressedL, pressedR, heardIdsL, heardIdsR,
+  downL, upL, downR, upR,
+  OCT_L_OPEN, OCT_L_CLOSE, OCT_R_OPEN, OCT_R_CLOSE,
+  activeNotes, detected, heardNote, LAT,
+}) {
+  const [voicingHighlight, setVoicingHighlight] = useState(new Set());
+
+  const LAYOUT_KEY = "bandoneon_layout_v1";
+  const defaultLayout = {rotL:-90,scaleL:100,mirLH:false,mirLV:false,rotR:90,scaleR:100,mirRH:false,mirRV:false};
+  const [layout, setLayout] = useState(()=>{
+    try{const s=localStorage.getItem(LAYOUT_KEY);return s?{...defaultLayout,...JSON.parse(s)}:defaultLayout;}
+    catch{return defaultLayout;}
+  });
+  const [showLayoutCtrl, setShowLayoutCtrl] = useState(false);
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(0.7);
+
+  const updateLayout = (key,val) => {
+    setLayout(prev=>{
+      const next={...prev,[key]:val};
+      try{localStorage.setItem(LAYOUT_KEY,JSON.stringify(next));}catch{}
+      return next;
+    });
+  };
+
+  const applyPreset = (preset) => {
+    const presets={
+      normal:  {rotL:0,  scaleL:100,mirLH:false,mirLV:false,rotR:0,  scaleR:100,mirRH:false,mirRV:false},
+      rotados: {rotL:-90,scaleL:100,mirLH:false,mirLV:false,rotR:90, scaleR:100,mirRH:false,mirRV:false},
+      espejados:{rotL:-90,scaleL:100,mirLH:true, mirLV:false,rotR:90, scaleR:100,mirRH:true, mirRV:false},
+      vertical:{rotL:0,  scaleL:85, mirLH:false,mirLV:false,rotR:0,  scaleR:85, mirRH:false,mirRV:false},
+    };
+    const next={...defaultLayout,...presets[preset]};
+    setLayout(next);
+    try{localStorage.setItem(LAYOUT_KEY,JSON.stringify(next));}catch{}
+  };
+
+  const BTN=44;
+  const rawW_L = leftBtns.length  ? Math.max(...leftBtns.map(b=>b.x)) +BTN+16 : 750;
+  const rawH_L = leftBtns.length  ? Math.max(...leftBtns.map(b=>b.y)) +BTN+20 : 400;
+  const rawW_R = rightBtns.length ? Math.max(...rightBtns.map(b=>b.x))+BTN+16 : 750;
+  const rawH_R = rightBtns.length ? Math.max(...rightBtns.map(b=>b.y))+BTN+20 : 400;
+  const GAP = 12;
+  const CENTER_W = 220;
+
+  useEffect(()=>{
+    if(!containerRef.current) return;
+    const obs = new ResizeObserver(()=>{
+      const totalW = containerRef.current.clientWidth;
+      const neededW = rawH_L + rawH_R + GAP*2;
+      const scaleByW = totalW>0 ? (totalW*0.96)/neededW : 1;
+      const availH = window.innerHeight - 260;
+      const maxRawW = Math.max(rawW_L, rawW_R);
+      const scaleByH = availH>0 ? (availH*0.72)/maxRawW : 1;
+      setScale(Math.max(0.35, Math.min(1, scaleByW, scaleByH)));
+    });
+    obs.observe(containerRef.current);
+    return ()=>obs.disconnect();
+  },[rawW_L,rawW_R,rawH_L,rawH_R]);
+
+  // ScaledCanvas con rotación, escala y espejo
+  const ScaledCanvas = ({buttons, bellows:bel, pressed, heardIds, onDown, onUp,
+    octMap, rawW, rawH, label, rotation=0, scalePct=100, mirH=false, mirV=false}) => {
+    const finalScale = scale * (scalePct/100);
+    const rotated = rotation!==0;
+    const scaledW = rawW*finalScale, scaledH = rawH*finalScale;
+    const outerW = rotated ? scaledH : scaledW;
+    const outerH = rotated ? scaledW : scaledH;
+    const dx = rotated ? (scaledH-scaledW)/2 : 0;
+    const dy = rotated ? (scaledW-scaledH)/2 : 0;
+
+    // Calcular octava relativa (1=grave 2=media 3=aguda)
+    const octs = octMap ? [...new Set(buttons.map(b=>octMap[b.id]).filter(o=>o!=null))].sort((a,b)=>a-b) : [];
+    const octRel = (btnId) => {
+      if(!octMap||octs.length===0) return null;
+      const o=octMap[btnId]; if(o==null) return null;
+      if(octs.length===1) return 2;
+      if(octs.length===2) return octs.indexOf(o)===0?1:3;
+      const step=(octs.length-1)/2;
+      return Math.round(octs.indexOf(o)/step)+1;
+    };
+
+    return(
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <div style={{fontSize:9,color:"#5a3a18",marginBottom:4,letterSpacing:".14em",textAlign:"center",fontFamily:"monospace"}}>
+          {label} · {buttons.length}
+        </div>
+        <div style={{width:Math.ceil(outerW),height:Math.ceil(outerH),position:"relative",flexShrink:0,overflow:"hidden"}}>
+          <div style={{position:"absolute",top:Math.ceil(dy),left:Math.ceil(dx),
+            width:Math.ceil(scaledW),height:Math.ceil(scaledH),
+            transformOrigin:"center center",
+            transform:`rotate(${rotation}deg) scaleX(${mirH?-1:1}) scaleY(${mirV?-1:1})`}}>
+            <div style={{width:rawW,height:rawH,transformOrigin:"top left",
+              transform:`scale(${finalScale})`,position:"relative",touchAction:"none"}}>
+              {buttons.map(btn=>{
+                const notaLat=bel==="abre"?btn.abre:btn.cierra;
+                const notaEng=LAT[notaLat]||notaLat;
+                const isVoicing=voicingHighlight.has(notaEng);
+                return(
+                  <BandBtn key={btn.id} btn={btn} bellows={bel}
+                    pressed={pressed} isHeard={heardIds.includes(btn.id)||isVoicing}
+                    onDown={onDown} onUp={onUp} oct={octRel(btn.id)}/>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Panel central con notas tocadas y buscador de voicing
+  const CentralPanel = () => {
+    const CHROMATIC_C=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+    const ENH2={"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"};
+    const LAT2={"DO":"C","DO#":"C#","RE":"D","RE#":"D#","MI":"E","FA":"F","FA#":"F#","SOL":"G","SOL#":"G#","LA":"A","LA#":"A#","SI":"B"};
+    const ENG_LAT2=Object.fromEntries(Object.entries(LAT2).map(([k,v])=>[v,k]));
+    const [input,setInput]=useState("");
+    const [result,setResult]=useState(null);
+
+    const MIDI_C={C:60,"C#":61,D:62,"D#":63,E:64,F:65,"F#":66,G:67,"G#":68,A:69,"A#":70,B:71};
+
+    const VOICINGS={
+      "maj":[
+        {nombre:"Básico",    left:[0],    right:[4,7],       desc:"IZQ: raíz · DER: 3ª·5ª"},
+        {nombre:"Abierto",   left:[0,7],  right:[4,7,12],    desc:"IZQ: raíz·5ª · DER: 3ª·5ª·8ª"},
+      ],
+      "min":[
+        {nombre:"Básico",    left:[0],    right:[3,7],       desc:"IZQ: raíz · DER: 3ªm·5ª"},
+        {nombre:"Abierto",   left:[0,7],  right:[3,7,12],    desc:"IZQ: raíz·5ª · DER: 3ªm·5ª·8ª"},
+      ],
+      "7":[
+        {nombre:"Tango/Jazz",left:[0,7],  right:[4,10,14],   desc:"IZQ: raíz·5ª · DER: 3ª·7ªm·9ª"},
+        {nombre:"Con raíz",  left:[0],    right:[4,7,10],    desc:"IZQ: raíz · DER: 3ª·5ª·7ªm"},
+        {nombre:"Shell",     left:[0,10], right:[4,7,14],    desc:"IZQ: raíz·7ªm · DER: 3ª·5ª·9ª"},
+      ],
+      "maj7":[
+        {nombre:"Clásico",   left:[0,7],  right:[4,11,14],   desc:"IZQ: raíz·5ª · DER: 3ª·7ª·9ª"},
+        {nombre:"Con raíz",  left:[0],    right:[4,7,11],    desc:"IZQ: raíz · DER: 3ª·5ª·7ª"},
+        {nombre:"Shell",     left:[0,11], right:[4,7,14],    desc:"IZQ: raíz·7ª · DER: 3ª·5ª·9ª"},
+      ],
+      "min7":[
+        {nombre:"Tango/Jazz",left:[0,7],  right:[3,10,14],   desc:"IZQ: raíz·5ª · DER: 3ªm·7ªm·9ª"},
+        {nombre:"Con raíz",  left:[0],    right:[3,7,10],    desc:"IZQ: raíz · DER: 3ªm·5ª·7ªm"},
+        {nombre:"Shell",     left:[0,10], right:[3,7,14],    desc:"IZQ: raíz·7ªm · DER: 3ªm·5ª·9ª"},
+      ],
+      "m7b5":[
+        {nombre:"Clásico",   left:[0,6],  right:[3,10,14],   desc:"IZQ: raíz·5ªb · DER: 3ªm·7ªm·9ª"},
+        {nombre:"Con raíz",  left:[0],    right:[3,6,10],    desc:"IZQ: raíz · DER: 3ªm·5ªb·7ªm"},
+      ],
+      "dim7":[
+        {nombre:"Simétrico", left:[0,6],  right:[3,9,15],    desc:"IZQ: raíz·5ªb · DER: 3ªm·6ªb·9ªb"},
+        {nombre:"Con raíz",  left:[0],    right:[3,6,9],     desc:"IZQ: raíz · DER: 3ªm·5ªb·7ªbb"},
+      ],
+      "default":[
+        {nombre:"Básico",    left:[0],    right:[4,7],       desc:"IZQ: raíz · DER: 3ª·5ª"},
+      ],
+    };
+
+    const parseCentral=(s)=>{
+      const t=s.trim();
+      const mLat=t.match(/^(DO#|DO|RE#|RE|MI|FA#|FA|SOL#|SOL|LA#|LA|SI)/i);
+      const mEng=t.match(/^([A-G][#b]?)/);
+      let root=null,rest="";
+      if(mLat){root=LAT2[mLat[1].toUpperCase()];rest=t.slice(mLat[1].length).toLowerCase().trim();}
+      else if(mEng){
+        root=mEng[1];
+        if(root.length>1&&root[1]==="b")root=CHROMATIC_C[(CHROMATIC_C.indexOf(root[0])+11)%12];
+        rest=t.slice(mEng[1].length).toLowerCase().trim();
+      }
+      if(!root)return null;
+      let q="maj";
+      if(rest.includes("m7b5")||rest.includes("ø"))q="m7b5";
+      else if(rest.includes("dim7")||rest.includes("°7"))q="dim7";
+      else if(rest.includes("maj7")||rest.includes("△7"))q="maj7";
+      else if(rest.includes("m7"))q="min7";
+      else if(rest.includes("7"))q="7";
+      else if(/^m(?!aj)/.test(rest))q="min";
+      const rootIdx=CHROMATIC_C.indexOf(root);
+      const vs=VOICINGS[q]||VOICINGS["default"];
+      const noteFromSemi=(semi)=>{const e=CHROMATIC_C[(rootIdx+semi+120)%12];return{eng:e,lat:ENG_LAT2[e]||e,semi};};
+      const voicings=vs.map(v=>({
+        ...v,
+        notesLeft:v.left.map(s=>({...noteFromSemi(s),oct:s<=7?2:3})),
+        notesRight:v.right.map(s=>({...noteFromSemi(s),oct:s<12?3:s<19?4:5})),
+        notes:[...v.left,...v.right].map(s=>({...noteFromSemi(s),oct:s<=7?2:s<12?3:s<19?4:5})),
+      }));
+      return{rootEng:root,rootLat:ENG_LAT2[root]||root,q,voicings};
+    };
+
+    const playVoicing=(notes)=>{
+      notes.forEach(({eng,oct},i)=>setTimeout(()=>playBandSound(eng,oct,1.5),i*30));
+      setVoicingHighlight(new Set(notes.map(n=>n.eng)));
+    };
+
+    const handleAnalyze=()=>{
+      const r=parseCentral(input);setResult(r);
+      if(r&&r.voicings[0])playVoicing(r.voicings[0].notes);
+      else setVoicingHighlight(new Set());
+    };
+
+    const hasActive=activeNotes.length>0||heardNote;
+
+    return(
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {hasActive&&(
+          <div style={{background:"#09090f",borderRadius:10,padding:"8px 10px",border:"1px solid #1a1a28"}}>
+            <div style={{fontSize:8,color:"#383848",marginBottom:5,letterSpacing:".12em",fontFamily:"monospace"}}>TOCANDO AHORA</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:3,marginBottom:detected?6:0}}>
+              {activeNotes.map(n=>{
+                const notaPura=n.replace(/\d+$/,"");
+                const engKey=LAT[notaPura]||notaPura;
+                const oct=(n.match(/\d+$/)||[""])[0];
+                return(<span key={n} style={{padding:"2px 6px",borderRadius:20,background:nc(engKey)+"22",border:`1px solid ${nc(engKey)}`,color:nc(engKey),fontWeight:700,fontSize:10}}>{notaPura}<span style={{fontSize:"0.7em",opacity:.6,marginLeft:1}}>{oct}</span></span>);
+              })}
+            </div>
+            {detected&&<div style={{fontSize:22,fontWeight:900,color:"#88aaff",fontFamily:"serif",lineHeight:1,textAlign:"center",padding:"4px 0 2px"}}>{detected}</div>}
+          </div>
+        )}
+
+        <div style={{background:"#09090f",borderRadius:10,padding:"8px 10px",border:"1px solid #1a1a28"}}>
+          <div style={{fontSize:8,color:"#383848",marginBottom:6,letterSpacing:".12em",fontFamily:"monospace"}}>CONSULTAR VOICING</div>
+          <div style={{display:"flex",gap:4,marginBottom:6}}>
+            <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handleAnalyze()}
+              placeholder="Ej: Rem7, Sol7, Dm7"
+              style={{flex:1,background:"#111120",border:"1px solid #2a2a44",borderRadius:6,padding:"4px 7px",color:"#ccc",fontSize:10,fontFamily:"monospace",outline:"none"}}/>
+            <button onClick={handleAnalyze} style={{padding:"4px 9px",borderRadius:6,border:"none",background:"#1e2a4a",color:"#88aaff",fontWeight:700,fontSize:10,cursor:"pointer"}}>▶</button>
+          </div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:3}}>
+            {["Dm7","G7","Cmaj7","Am7b5","E7","Am"].map(ex=>(
+              <button key={ex} onClick={()=>{setInput(ex);const r=parseCentral(ex);setResult(r);if(r&&r.voicings[0])playVoicing(r.voicings[0].notes);}}
+                style={{padding:"2px 6px",borderRadius:5,border:"1px solid #222234",background:"transparent",color:"#444466",fontSize:9,cursor:"pointer",fontFamily:"monospace"}}>
+                {ex}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {result&&(
+          <div style={{background:"#09090f",borderRadius:10,padding:"8px 10px",border:"1px solid #1a1a28"}}>
+            <div style={{fontSize:9,color:"#88aaff",fontWeight:700,fontFamily:"serif",marginBottom:6,textAlign:"center"}}>
+              {result.rootLat}<span style={{opacity:.7}}>{result.q}</span>
+            </div>
+            {result.voicings.map((v,vi)=>(
+              <div key={vi} onClick={()=>playVoicing(v.notes)}
+                style={{marginBottom:5,padding:"6px 8px",borderRadius:8,
+                  border:`1px solid ${vi===0?"#2a2a50":"#141420"}`,
+                  background:vi===0?"#0d0d1e":"transparent",cursor:"pointer"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                  <span style={{fontSize:9,fontWeight:700,color:vi===0?"#88aaff":"#555",fontFamily:"monospace"}}>{v.nombre}</span>
+                  <span style={{fontSize:8,color:"#333"}}>▶</span>
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:5}}>
+                  <div style={{background:"#08080e",borderRadius:6,padding:"4px 6px",borderLeft:"2px solid #34d39944"}}>
+                    <div style={{fontSize:7,color:"#34d399",marginBottom:3,fontFamily:"monospace"}}>← IZQ (bajo)</div>
+                    <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                      {v.notesLeft.map((n,ni)=>(
+                        <div key={ni} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"2px 4px",borderRadius:4,background:nc(n.eng)+"22",border:`1px solid ${nc(n.eng)}55`}}>
+                          <span style={{fontSize:9,fontWeight:800,color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}</span>
+                          <span style={{fontSize:6,color:"#444"}}>{n.oct}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{background:"#08080e",borderRadius:6,padding:"4px 6px",borderLeft:"2px solid #f472b644"}}>
+                    <div style={{fontSize:7,color:"#f472b6",marginBottom:3,fontFamily:"monospace"}}>DER → (acorde)</div>
+                    <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                      {v.notesRight.map((n,ni)=>(
+                        <div key={ni} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"2px 4px",borderRadius:4,background:nc(n.eng)+"22",border:`1px solid ${nc(n.eng)}55`}}>
+                          <span style={{fontSize:9,fontWeight:800,color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}</span>
+                          <span style={{fontSize:6,color:"#444"}}>{n.oct}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div style={{fontSize:7,color:"#333",marginTop:4,fontStyle:"italic",fontFamily:"monospace"}}>{v.desc}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{fontSize:8,color:"#2a2a3a",fontFamily:"monospace",textAlign:"center",lineHeight:1.6}}>
+          Rheinische · 71 botones · <span style={{color:"#1a3a1a"}}>▷ abre</span> · <span style={{color:"#3a1a3a"}}>◁ cierra</span>
+        </div>
+      </div>
+    );
+  };
+
+  // Controles de layout
+  const Slider=({label,val,min,max,keyName})=>(
+    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+      <span style={{fontSize:10,color:"#7a5030",width:44,flexShrink:0}}>{label}</span>
+      <input type="range" min={min} max={max} value={val}
+        onChange={e=>updateLayout(keyName,parseInt(e.target.value))}
+        style={{flex:1,accentColor:"#f5c060",height:3,cursor:"pointer"}}/>
+      <span style={{fontSize:10,color:"#f5c060",width:34,textAlign:"right",fontFamily:"monospace"}}>
+        {val}{keyName.startsWith("rot")?"°":"%"}
+      </span>
+    </div>
+  );
+
+  const MirBtn=({label,keyName})=>(
+    <button onClick={()=>updateLayout(keyName,!layout[keyName])}
+      style={{fontSize:10,padding:"2px 8px",borderRadius:5,cursor:"pointer",fontFamily:"monospace",
+        border:`1px solid ${layout[keyName]?"#f5c060":"#3a2010"}`,
+        background:layout[keyName]?"#2a1804":"transparent",
+        color:layout[keyName]?"#f5c060":"#6a4020"}}>
+      {label}
+    </button>
+  );
+
+  const showL=view==="ambas"||view==="izquierda";
+  const showR=view==="ambas"||view==="derecha";
+
+  return(
+    <div ref={containerRef} style={{width:"100%",paddingBottom:8}}>
+
+      {/* Panel de control de layout */}
+      <div style={{marginBottom:10}}>
+        <button onClick={()=>setShowLayoutCtrl(p=>!p)}
+          style={{fontSize:10,padding:"3px 10px",borderRadius:6,border:"1px solid #3a2010",
+            background:"transparent",color:showLayoutCtrl?"#f5c060":"#6a4020",
+            fontFamily:"monospace",cursor:"pointer"}}>
+          ⚙ Posición teclados {showLayoutCtrl?"▲":"▼"}
+        </button>
+        {showLayoutCtrl&&(
+          <div style={{marginTop:8,padding:"10px 14px",background:"#100802",border:"1px solid #3a2010",borderRadius:10,display:"flex",gap:16,flexWrap:"wrap"}}>
+            <div style={{flex:"1 1 180px",minWidth:160}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#34d399",marginBottom:6,fontFamily:"monospace"}}>← IZQ</div>
+              <Slider label="rotación" val={layout.rotL} min={-180} max={180} keyName="rotL"/>
+              <Slider label="escala"   val={layout.scaleL} min={40} max={150} keyName="scaleL"/>
+              <div style={{display:"flex",gap:5,marginTop:4}}><MirBtn label="↔ H" keyName="mirLH"/><MirBtn label="↕ V" keyName="mirLV"/></div>
+            </div>
+            <div style={{flex:"1 1 180px",minWidth:160}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#f472b6",marginBottom:6,fontFamily:"monospace"}}>DER →</div>
+              <Slider label="rotación" val={layout.rotR} min={-180} max={180} keyName="rotR"/>
+              <Slider label="escala"   val={layout.scaleR} min={40} max={150} keyName="scaleR"/>
+              <div style={{display:"flex",gap:5,marginTop:4}}><MirBtn label="↔ H" keyName="mirRH"/><MirBtn label="↕ V" keyName="mirRV"/></div>
+            </div>
+            <div style={{flex:"1 1 140px",minWidth:120}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#888",marginBottom:6,fontFamily:"monospace"}}>PRESETS</div>
+              {[["normal","horizontal"],["rotados","±90° instrumento"],["espejados","espejados"],["vertical","apilado"]].map(([k,l])=>(
+                <button key={k} onClick={()=>applyPreset(k)}
+                  style={{display:"block",width:"100%",textAlign:"left",fontSize:10,padding:"3px 8px",marginBottom:3,borderRadius:5,border:"1px solid #3a2010",background:"transparent",color:"#7a5030",fontFamily:"monospace",cursor:"pointer"}}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Teclados */}
+      <div style={{display:"flex",gap:GAP*2,justifyContent:"center",alignItems:"flex-start",marginBottom:12,flexWrap:"nowrap"}}>
+        {showL&&(
+          <ScaledCanvas buttons={leftBtns} bellows={bellows} pressed={pressedL} heardIds={heardIdsL}
+            onDown={downL} onUp={upL} octMap={bellows==="abre"?OCT_L_OPEN:OCT_L_CLOSE}
+            rawW={rawW_L} rawH={rawH_L} label="← IZQ"
+            rotation={layout.rotL} scalePct={layout.scaleL} mirH={layout.mirLH} mirV={layout.mirLV}/>
+        )}
+        {showR&&(
+          <ScaledCanvas buttons={rightBtns} bellows={bellows} pressed={pressedR} heardIds={heardIdsR}
+            onDown={downR} onUp={upR} octMap={bellows==="abre"?OCT_R_OPEN:OCT_R_CLOSE}
+            rawW={rawW_R} rawH={rawH_R} label="DER →"
+            rotation={layout.rotR} scalePct={layout.scaleR} mirH={layout.mirRH} mirV={layout.mirRV}/>
+        )}
+      </div>
+
+      {/* Panel inferior */}
+      <div style={{width:"100%"}}><CentralPanel/></div>
+    </div>
+  );
+}
+
 // ─── EDITOR DRAG & DROP ───────────────────────────────────────────────────────
 function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
   const [leftBtns,  setLeftBtns]  = useState(()=>initialLeft.map(b=>({...b})));
   const [rightBtns, setRightBtns] = useState(()=>initialRight.map(b=>({...b})));
-  const [mode,      setMode]      = useState("abre");   // abre | cierra
-  const [selected,  setSelected]  = useState(null);     // {id, side} side="L"|"R"
-  const [popupPos,  setPopupPos]  = useState(null);     // {x,y} posición del popup
+  const [mode,      setMode]      = useState("abre");
+  const [selected,  setSelected]  = useState(null);
+  const [popupPos,  setPopupPos]  = useState(null);
   const [copied,    setCopied]    = useState(false);
 
-  // Obtener el botón seleccionado
   const selBtn = selected
     ? (selected.side==="L" ? leftBtns : rightBtns).find(b=>b.id===selected.id)
     : null;
@@ -1736,76 +2041,54 @@ function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
     setter(p=>p.map(b=>b.id===id ? {...b,[field]:val} : b));
   };
 
-  // Al hacer clic en un botón del canvas
-  const handleBtnClick = (btn, side, domEvent) => {
-    if (selected?.id===btn.id && selected?.side===side) {
-      setSelected(null); setPopupPos(null); return;
-    }
+  const handleBtnClick = (btn, side, e) => {
+    if(selected?.id===btn.id && selected?.side===side){setSelected(null);setPopupPos(null);return;}
     setSelected({id:btn.id, side});
-    // Calcular posición del popup relativa al contenedor
-    if (domEvent) {
-      const rect = domEvent.currentTarget.getBoundingClientRect();
-      const container = document.getElementById("editor-container");
-      const cRect = container ? container.getBoundingClientRect() : {left:0,top:0};
-      setPopupPos({
-        x: rect.left - cRect.left + rect.width/2,
-        y: rect.top  - cRect.top  - 8,
-      });
+    if(e){
+      const rect=e.currentTarget.getBoundingClientRect();
+      const cont=document.getElementById("band-editor-cont");
+      const cRect=cont?cont.getBoundingClientRect():{left:0,top:0};
+      setPopupPos({x:rect.left-cRect.left+rect.width/2, y:rect.top-cRect.top-8});
     }
   };
 
-  const jsText = () => {
+  const jsText=()=>{
     const fmt=(arr,name)=>{
       const ls=arr.map(b=>`  { id:"${b.id}", row:${b.row}, x:${b.x}, y:${b.y}, abre:"${b.abre}", cierra:"${b.cierra}", color_abre:"${b.color_abre}", color_cierra:"${b.color_cierra}", oct_abre:${b.oct_abre??3}, oct_cierra:${b.oct_cierra??3} },`);
       return`const ${name} = [\n${ls.join("\n")}\n];`;
     };
-    return`// Pegá esto en App.jsx reemplazando DEFS_L y DEFS_R\n\n`+fmt(leftBtns,"DEFS_L")+"\n\n"+fmt(rightBtns,"DEFS_R");
+    return`// Pegá esto en App.jsx\n\n`+fmt(leftBtns,"DEFS_L")+"\n\n"+fmt(rightBtns,"DEFS_R");
   };
 
   const pill=(active,v="orange")=>({
-    padding:"5px 12px",borderRadius:8,border:"none",
-    fontFamily:"'Courier New',monospace",fontWeight:700,fontSize:10,cursor:"pointer",
+    padding:"5px 12px",borderRadius:8,border:"none",fontFamily:"'Courier New',monospace",fontWeight:700,fontSize:10,cursor:"pointer",
     background:active?(v==="orange"?"linear-gradient(135deg,#a05010,#f5c060)":"linear-gradient(135deg,#1a4a8a,#4a8af0)"):"transparent",
     color:active?(v==="orange"?"#0a0502":"#fff"):"#6a4020",
   });
 
-  // Canvas especial para el editor — muestra ambas manos, clic abre popup
-  const EditorCanvas = ({buttons, side, label}) => {
-    const rawW = Math.max(...buttons.map(b=>b.x)) + BTN_SIZE + 16;
-    const rawH = Math.max(...buttons.map(b=>b.y)) + BTN_SIZE + 20;
-    return (
+  const EditorCanvas=({buttons,side,label})=>{
+    const rawW=Math.max(...buttons.map(b=>b.x))+BTN_SIZE+16;
+    const rawH=Math.max(...buttons.map(b=>b.y))+BTN_SIZE+20;
+    return(
       <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
         <p style={{fontSize:9,color:"#7a5030",marginBottom:4,letterSpacing:".1em",fontFamily:"monospace"}}>{label}</p>
         <div style={{position:"relative",width:rawW,height:rawH,flexShrink:0,
           background:"linear-gradient(145deg,#281a08,#140e04)",
-          border:`2px solid ${selected?.side===side?"#f5c060":"#3a2010"}`,
-          borderRadius:14,overflow:"visible"}}>
+          border:`2px solid ${selected?.side===side?"#f5c060":"#3a2010"}`,borderRadius:14}}>
           {buttons.map(btn=>{
-            const note  = mode==="abre" ? btn.abre  : btn.cierra;
-            const color = mode==="abre" ? btn.color_abre : btn.color_cierra;
-            const isSel = selected?.id===btn.id && selected?.side===side;
-            return (
-              <div key={btn.id}
-                onClick={e=>handleBtnClick(btn, side, e)}
-                style={{
-                  position:"absolute",left:btn.x,top:btn.y,
-                  width:BTN_SIZE,height:BTN_SIZE,borderRadius:"50%",
-                  cursor:"pointer",userSelect:"none",
+            const note=mode==="abre"?btn.abre:btn.cierra;
+            const color=mode==="abre"?btn.color_abre:btn.color_cierra;
+            const isSel=selected?.id===btn.id&&selected?.side===side;
+            return(
+              <div key={btn.id} onClick={e=>handleBtnClick(btn,side,e)}
+                style={{position:"absolute",left:btn.x,top:btn.y,width:BTN_SIZE,height:BTN_SIZE,borderRadius:"50%",cursor:"pointer",userSelect:"none",
                   display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                  background:isSel
-                    ? `radial-gradient(circle at 36% 30%,${color}ff,${color}cc)`
-                    : `radial-gradient(circle at 36% 30%,${color}99,${color}44 60%,${color}22)`,
+                  background:isSel?`radial-gradient(circle at 36% 30%,${color}ff,${color}cc)`:`radial-gradient(circle at 36% 30%,${color}99,${color}44 60%,${color}22)`,
                   border:`2.5px solid ${isSel?"#f5c060":color+"aa"}`,
                   boxShadow:isSel?`0 0 0 3px #f5c06088,0 0 18px ${color}cc`:`0 2px 8px rgba(0,0,0,.7)`,
-                  transform:isSel?"scale(1.15)":"scale(1)",
-                  transition:"all .15s",
-                  zIndex:isSel?30:1,
-                }}>
-                <span style={{fontSize:note.length>2?7:9,fontWeight:800,color:"#fff",
-                  fontFamily:"monospace",lineHeight:1,textShadow:"0 1px 3px rgba(0,0,0,.9)"}}>{note}</span>
-                <span style={{fontSize:6,color:"rgba(255,255,255,.7)",fontFamily:"monospace"}}>
-                  {mode==="abre"?(btn.oct_abre??"-"):(btn.oct_cierra??"-")}
-                </span>
+                  transform:isSel?"scale(1.15)":"scale(1)",transition:"all .15s",zIndex:isSel?30:1}}>
+                <span style={{fontSize:note.length>2?7:9,fontWeight:800,color:"#fff",fontFamily:"monospace",lineHeight:1,textShadow:"0 1px 3px rgba(0,0,0,.9)"}}>{note}</span>
+                <span style={{fontSize:6,color:"rgba(255,255,255,.7)",fontFamily:"monospace"}}>{mode==="abre"?(btn.oct_abre??"-"):(btn.oct_cierra??"-")}</span>
               </div>
             );
           })}
@@ -1814,153 +2097,80 @@ function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
     );
   };
 
-  return (
+  return(
     <div style={{fontFamily:"'Courier New',monospace"}}>
-
-      {/* Banner */}
-      <div style={{marginBottom:10,padding:"8px 14px",background:"#1a0e04",
-        border:"1.5px solid #f5c060",borderRadius:10,
-        display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+      <div style={{marginBottom:10,padding:"8px 14px",background:"#1a0e04",border:"1.5px solid #f5c060",borderRadius:10,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
         <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>✏️ MODO EDICIÓN</span>
-        <span style={{color:"#7a5030",fontSize:10}}>Hacé clic en cualquier botón para editar sus propiedades</span>
-        <button onClick={()=>onSave(leftBtns,rightBtns)}
-          style={{padding:"6px 16px",borderRadius:9,border:"none",
-            background:"linear-gradient(135deg,#0d9488,#2dd4bf)",
-            color:"#0a0502",fontWeight:800,fontSize:12,cursor:"pointer",marginLeft:"auto"}}>
-          💾 Guardar y salir
-        </button>
-        <button onClick={onCancel}
-          style={{padding:"6px 12px",borderRadius:9,border:"1px solid #3a2010",
-            background:"transparent",color:"#7a5030",fontSize:11,cursor:"pointer"}}>
-          Cancelar
-        </button>
+        <span style={{color:"#7a5030",fontSize:10}}>Hacé clic en cualquier botón para editar</span>
+        <button onClick={()=>onSave(leftBtns,rightBtns)} style={{padding:"6px 16px",borderRadius:9,border:"none",background:"linear-gradient(135deg,#0d9488,#2dd4bf)",color:"#0a0502",fontWeight:800,fontSize:12,cursor:"pointer",marginLeft:"auto"}}>💾 Guardar y salir</button>
+        <button onClick={onCancel} style={{padding:"6px 12px",borderRadius:9,border:"1px solid #3a2010",background:"transparent",color:"#7a5030",fontSize:11,cursor:"pointer"}}>Cancelar</button>
       </div>
 
-      {/* Selector fuelle */}
       <div style={{display:"flex",gap:6,marginBottom:10,alignItems:"center",flexWrap:"wrap"}}>
         <div style={{display:"flex",background:"#100802",border:"1.5px solid #3a2010",borderRadius:10,padding:3,gap:3}}>
-          <button style={pill(mode==="abre")}   onClick={()=>{setMode("abre");  setSelected(null);}}>▷ Abre</button>
-          <button style={pill(mode==="cierra")} onClick={()=>{setMode("cierra");setSelected(null);}}>◁ Cierra</button>
+          <button style={pill(mode==="abre")}   onClick={()=>{setMode("abre");  setSelected(null);setPopupPos(null);}}>▷ Abre</button>
+          <button style={pill(mode==="cierra")} onClick={()=>{setMode("cierra");setSelected(null);setPopupPos(null);}}>◁ Cierra</button>
         </div>
-        <span style={{fontSize:9,color:"#4a2a08"}}>
-          {selected ? `Editando ${selected.id} — ${selected.side==="L"?"Mano Izq":"Mano Der"}` : "Seleccioná un botón"}
-        </span>
-        {selected && (
-          <button onClick={()=>{setSelected(null);setPopupPos(null);}}
-            style={{marginLeft:"auto",padding:"3px 10px",borderRadius:6,border:"1px solid #3a2010",
-              background:"transparent",color:"#6a4020",fontSize:10,cursor:"pointer"}}>
-            ✕ deseleccionar
-          </button>
-        )}
+        <span style={{fontSize:9,color:"#4a2a08"}}>{selected?`${selected.id} — ${selected.side==="L"?"Mano Izq":"Mano Der"}`:"Tocá un botón"}</span>
+        {selected&&<button onClick={()=>{setSelected(null);setPopupPos(null);}} style={{marginLeft:"auto",padding:"3px 10px",borderRadius:6,border:"1px solid #3a2010",background:"transparent",color:"#6a4020",fontSize:10,cursor:"pointer"}}>✕</button>}
       </div>
 
-      {/* Contenedor principal con position:relative para el popup */}
-      <div id="editor-container" style={{position:"relative"}}>
-
-        {/* Los dos teclados lado a lado */}
-        <div style={{display:"flex",gap:16,flexWrap:"wrap",justifyContent:"center",paddingBottom:8}}>
+      <div id="band-editor-cont" style={{position:"relative"}}>
+        <div style={{display:"flex",gap:16,flexWrap:"wrap",justifyContent:"center",paddingBottom:8,overflowX:"auto"}}>
           <EditorCanvas buttons={leftBtns}  side="L" label="MANO IZQUIERDA"/>
           <EditorCanvas buttons={rightBtns} side="R" label="MANO DERECHA"/>
         </div>
 
-        {/* POPUP FLOTANTE — aparece encima del botón seleccionado */}
-        {selBtn && popupPos && (
-          <div style={{
-            position:"absolute",
-            left: Math.max(10, Math.min(popupPos.x - 140, 99999)),
-            top:  Math.max(10, popupPos.y - 180),
-            width:280,
-            background:"#0e0a02",
-            border:"1.5px solid #f5c060",
-            borderRadius:12,
-            padding:"10px 12px",
-            zIndex:100,
-            boxShadow:"0 8px 32px rgba(0,0,0,.8)",
-          }}>
-            {/* Header del popup */}
-            <div style={{display:"flex",justifyContent:"space-between",
-              alignItems:"center",marginBottom:8}}>
-              <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>{selBtn.id}</span>
-              <button onClick={()=>{setSelected(null);setPopupPos(null);}}
-                style={{background:"transparent",border:"none",color:"#6a4020",
-                  fontSize:14,cursor:"pointer",lineHeight:1}}>✕</button>
+        {selBtn&&popupPos&&(
+          <div style={{position:"absolute",left:Math.max(10,Math.min(popupPos.x-140,600)),top:Math.max(10,popupPos.y-195),
+            width:288,background:"#0e0a02",border:"1.5px solid #f5c060",borderRadius:12,padding:"10px 12px",zIndex:100,boxShadow:"0 8px 32px rgba(0,0,0,.85)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>{selBtn.id} — {selected.side==="L"?"IZQ":"DER"}</span>
+              <button onClick={()=>{setSelected(null);setPopupPos(null);}} style={{background:"transparent",border:"none",color:"#6a4020",fontSize:14,cursor:"pointer",lineHeight:1}}>✕</button>
             </div>
-
-            {/* ABRIENDO */}
-            <div style={{padding:"6px 8px",background:"#0a1408",
-              borderRadius:7,border:"1px solid #2a4010",marginBottom:5}}>
-              <p style={{fontSize:8,fontWeight:700,color:"#34d399",
-                letterSpacing:".1em",marginBottom:5}}>▷ ABRIENDO</p>
+            <div style={{padding:"6px 8px",background:"#0a1408",borderRadius:7,border:"1px solid #2a4010",marginBottom:5}}>
+              <p style={{fontSize:8,fontWeight:700,color:"#34d399",letterSpacing:".1em",marginBottom:5}}>▷ ABRIENDO</p>
               <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
-                <select value={selBtn.abre}
-                  onChange={e=>editBtn(selBtn.id,selected.side,"abre",e.target.value)}
-                  style={{background:"#1a0e04",color:"#34d399",border:"1px solid #34d39955",
-                    borderRadius:5,padding:"2px 4px",fontFamily:"monospace",
-                    fontWeight:700,fontSize:11,cursor:"pointer",width:70}}>
+                <select value={selBtn.abre} onChange={e=>editBtn(selBtn.id,selected.side,"abre",e.target.value)}
+                  style={{background:"#1a0e04",color:"#34d399",border:"1px solid #34d39955",borderRadius:5,padding:"2px 4px",fontFamily:"monospace",fontWeight:700,fontSize:11,cursor:"pointer",width:70}}>
                   {ALL_NOTES_LAT.map(n=><option key={n} value={n}>{n}</option>)}
                 </select>
                 <span style={{fontSize:9,color:"#4a3010"}}>oct.</span>
-                <select value={selBtn.oct_abre??3}
-                  onChange={e=>editBtn(selBtn.id,selected.side,"oct_abre",parseInt(e.target.value))}
-                  style={{background:"#1a0e04",color:"#34d399",border:"1px solid #34d39955",
-                    borderRadius:5,padding:"2px 4px",fontFamily:"monospace",
-                    fontWeight:700,fontSize:11,cursor:"pointer",width:46}}>
+                <select value={selBtn.oct_abre??3} onChange={e=>editBtn(selBtn.id,selected.side,"oct_abre",parseInt(e.target.value))}
+                  style={{background:"#1a0e04",color:"#34d399",border:"1px solid #34d39955",borderRadius:5,padding:"2px 4px",fontFamily:"monospace",fontWeight:700,fontSize:11,cursor:"pointer",width:46}}>
                   {[0,1,2,3,4,5,6].map(o=><option key={o} value={o}>{o}</option>)}
                 </select>
-                <input type="color" value={selBtn.color_abre||"#888"}
-                  onChange={e=>editBtn(selBtn.id,selected.side,"color_abre",e.target.value)}
+                <input type="color" value={selBtn.color_abre||"#888"} onChange={e=>editBtn(selBtn.id,selected.side,"color_abre",e.target.value)}
                   style={{width:26,height:22,padding:1,borderRadius:4,border:"none",cursor:"pointer"}}/>
               </div>
             </div>
-
-            {/* CERRANDO */}
-            <div style={{padding:"6px 8px",background:"#140a14",
-              borderRadius:7,border:"1px solid #401040"}}>
-              <p style={{fontSize:8,fontWeight:700,color:"#f472b6",
-                letterSpacing:".1em",marginBottom:5}}>◁ CERRANDO</p>
+            <div style={{padding:"6px 8px",background:"#140a14",borderRadius:7,border:"1px solid #401040"}}>
+              <p style={{fontSize:8,fontWeight:700,color:"#f472b6",letterSpacing:".1em",marginBottom:5}}>◁ CERRANDO</p>
               <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
-                <select value={selBtn.cierra}
-                  onChange={e=>editBtn(selBtn.id,selected.side,"cierra",e.target.value)}
-                  style={{background:"#1a0e04",color:"#f472b6",border:"1px solid #f472b655",
-                    borderRadius:5,padding:"2px 4px",fontFamily:"monospace",
-                    fontWeight:700,fontSize:11,cursor:"pointer",width:70}}>
+                <select value={selBtn.cierra} onChange={e=>editBtn(selBtn.id,selected.side,"cierra",e.target.value)}
+                  style={{background:"#1a0e04",color:"#f472b6",border:"1px solid #f472b655",borderRadius:5,padding:"2px 4px",fontFamily:"monospace",fontWeight:700,fontSize:11,cursor:"pointer",width:70}}>
                   {ALL_NOTES_LAT.map(n=><option key={n} value={n}>{n}</option>)}
                 </select>
                 <span style={{fontSize:9,color:"#4a3010"}}>oct.</span>
-                <select value={selBtn.oct_cierra??3}
-                  onChange={e=>editBtn(selBtn.id,selected.side,"oct_cierra",parseInt(e.target.value))}
-                  style={{background:"#1a0e04",color:"#f472b6",border:"1px solid #f472b655",
-                    borderRadius:5,padding:"2px 4px",fontFamily:"monospace",
-                    fontWeight:700,fontSize:11,cursor:"pointer",width:46}}>
+                <select value={selBtn.oct_cierra??3} onChange={e=>editBtn(selBtn.id,selected.side,"oct_cierra",parseInt(e.target.value))}
+                  style={{background:"#1a0e04",color:"#f472b6",border:"1px solid #f472b655",borderRadius:5,padding:"2px 4px",fontFamily:"monospace",fontWeight:700,fontSize:11,cursor:"pointer",width:46}}>
                   {[0,1,2,3,4,5,6].map(o=><option key={o} value={o}>{o}</option>)}
                 </select>
-                <input type="color" value={selBtn.color_cierra||"#888"}
-                  onChange={e=>editBtn(selBtn.id,selected.side,"color_cierra",e.target.value)}
+                <input type="color" value={selBtn.color_cierra||"#888"} onChange={e=>editBtn(selBtn.id,selected.side,"color_cierra",e.target.value)}
                   style={{width:26,height:22,padding:1,borderRadius:4,border:"none",cursor:"pointer"}}/>
               </div>
             </div>
-
-            {/* Flecha indicadora */}
-            <div style={{position:"absolute",bottom:-8,left:"50%",
-              transform:"translateX(-50%)",
-              width:0,height:0,
-              borderLeft:"8px solid transparent",
-              borderRight:"8px solid transparent",
-              borderTop:"8px solid #f5c060"}}/>
+            <div style={{position:"absolute",bottom:-8,left:"50%",transform:"translateX(-50%)",width:0,height:0,borderLeft:"8px solid transparent",borderRight:"8px solid transparent",borderTop:"8px solid #f5c060"}}/>
           </div>
         )}
       </div>
 
-      {/* Exportar JS */}
       <div style={{marginTop:12,display:"flex",gap:6}}>
         <button onClick={()=>navigator.clipboard.writeText(jsText()).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);})}
-          style={{padding:"4px 12px",borderRadius:7,border:"1px solid #3a2010",
-            background:copied?"#0d9488":"#1a0e04",
-            color:copied?"#fff":"#f5c060",fontFamily:"monospace",fontWeight:700,fontSize:10,cursor:"pointer"}}>
+          style={{padding:"4px 12px",borderRadius:7,border:"1px solid #3a2010",background:copied?"#0d9488":"#1a0e04",color:copied?"#fff":"#f5c060",fontFamily:"monospace",fontWeight:700,fontSize:10,cursor:"pointer"}}>
           {copied?"✓ Copiado":"↓ Copiar JS para el repo"}
         </button>
       </div>
-
     </div>
   );
 }
@@ -2129,9 +2339,9 @@ function BandoneonTab() {
     const ivs=idxs.map(i=>(i-idxs[0]+12)%12).sort((a,b)=>a-b);
     const has=i=>ivs.includes(i);
     let q="?";
-    if(has(4)&&has(7)&&has(11))q="maj7"; else if(has(3)&&has(7)&&has(10))q="m7";
+    if(has(4)&&has(7)&&has(11))q="△7"; else if(has(3)&&has(7)&&has(10))q="m7";
     else if(has(4)&&has(7)&&has(10))q="7"; else if(has(3)&&has(6)&&has(9))q="°7";
-    else if(has(3)&&has(6)&&has(10))q="m7b5"; else if(has(4)&&has(7))q="△";
+    else if(has(3)&&has(6)&&has(10))q="ø7"; else if(has(4)&&has(7))q="△";
     else if(has(3)&&has(7))q="m"; else if(has(3)&&has(6))q="°";
     const rootLat = ENG_TO_LAT[root]??root;
     return`${rootLat}${q}`;
@@ -2363,7 +2573,8 @@ function BandoneonTab() {
 }
 
 
-// ─── VITRAL TAB — Sistema de Colores Tonales ─────────────────────────────────
+
+// ─── VITRAL TAB ───────────────────────────────────────────────────────────────
 function VitralTab(){
   const NOTAS_V=[
     {eng:"C", lat:"DO",  natural:true },
@@ -2379,381 +2590,176 @@ function VitralTab(){
     {eng:"A#",lat:"LA#", natural:false},
     {eng:"B", lat:"SI",  natural:true },
   ];
-
   const PASOS_V=[
-    {idx:[0,1,2,3,4,5,6,7,8,9,10,11],roles:["","","","","","","","","","","",""],
-     desc:"Las 12 notas del sistema cromático · hacé clic para escuchar cada una"},
-    {idx:[0,2,4,5,7,9,11],roles:["I","II","III","IV","V","VI","VII"],
-     desc:"Escala de Do Mayor · 7 notas · 7 colores · la paleta de la tonalidad"},
-    {idx:[9,11,0,2,4,5,7],roles:["i","ii","bIII","iv","v","bVI","bVII"],
-     desc:"Escala de La Menor natural · el carácter oscuro del modo eólico"},
-    {idx:[2,5,9,0],roles:["Raíz","3ªm","5ª","7ªm"],
-     desc:"Dm7 · Re menor 7ª · cuatro colores que definen este acorde"},
-    {idx:[7,11,2,5],roles:["Raíz","3ª","5ª","7ªm"],
-     desc:"G7 · Sol dominante · el acorde de máxima tensión tonal"},
-    {idx:[0,4,7,11],roles:["Raíz","3ª","5ª","7ª"],
-     desc:"Cmaj7 · Do mayor séptima · luminoso y estable"},
+    {idx:[0,1,2,3,4,5,6,7,8,9,10,11],roles:["","","","","","","","","","","",""],desc:"Las 12 notas del sistema cromático · hacé clic para escuchar cada una"},
+    {idx:[0,2,4,5,7,9,11],roles:["I","II","III","IV","V","VI","VII"],desc:"Escala de Do Mayor · 7 notas · 7 colores · la paleta de la tonalidad"},
+    {idx:[9,11,0,2,4,5,7],roles:["i","ii","bIII","iv","v","bVI","bVII"],desc:"Escala de La Menor natural · el carácter oscuro del modo eólico"},
+    {idx:[2,5,9,0],roles:["Raíz","3ªm","5ª","7ªm"],desc:"Dm7 · Re menor 7ª · cuatro colores que definen este acorde"},
+    {idx:[7,11,2,5],roles:["Raíz","3ª","5ª","7ªm"],desc:"G7 · Sol dominante · el acorde de máxima tensión tonal"},
+    {idx:[0,4,7,11],roles:["Raíz","3ª","5ª","7ª"],desc:"Cmaj7 · Do mayor séptima · luminoso y estable"},
   ];
+  const ENH_MAP={"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"};
+  const CHROMATIC_V=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const [pasoV,setPasoV]=useState(0);
+  const [hoverV,setHoverV]=useState(null);
+  const [revealed,setRevealed]=useState(false);
+  const [showPassInput,setShowPassInput]=useState(false);
+  const [passInput,setPassInput]=useState("");
+  const [passError,setPassError]=useState(false);
+  const [editMode,setEditMode]=useState(false);
+  const [palette,setPalette]=useState(()=>loadPalette());
+  const [saved,setSaved]=useState(false);
+  const [palVersion,setPalVersion]=useState(0);
 
-  const CHROMATIC_V = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  const ENH_MAP = {"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"};
+  useEffect(()=>{setRevealed(false);const t=setTimeout(()=>setRevealed(true),50);return()=>clearTimeout(t);},[pasoV,palVersion]);
 
-  const [pasoV, setPasoV]       = useState(0);
-  const [hoverV, setHoverV]     = useState(null);
-  const [revealed, setRevealed] = useState(false);
+  const paso=PASOS_V[pasoV];
+  const activas=new Set(paso.idx);
+  const txtClr=(hex)=>{const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return(r*299+g*587+b*114)/1000>128?"#1a1a1a":"#ffffff";};
+  const getColor=(eng)=>palette[eng]||NC_DEFAULT[eng]||"#888";
 
-  // ── Editor protegido ──
-  const [showPassInput, setShowPassInput] = useState(false);
-  const [passInput, setPassInput]         = useState("");
-  const [passError, setPassError]         = useState(false);
-  const [editMode, setEditMode]           = useState(false);
-  const [palette, setPalette]             = useState(()=>loadPalette());
-  const [saved, setSaved]                 = useState(false);
-
-  // Forzar re-render global cuando se guarda
-  const [palVersion, setPalVersion]       = useState(0);
-
-  useEffect(()=>{
-    setRevealed(false);
-    const t = setTimeout(()=>setRevealed(true), 50);
-    return ()=>clearTimeout(t);
-  },[pasoV, palVersion]);
-
-  const paso = PASOS_V[pasoV];
-  const activas = new Set(paso.idx);
-
-  const txtClr = (hex)=>{
-    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-    return (r*299+g*587+b*114)/1000>128?"#1a1a1a":"#ffffff";
+  const handlePassSubmit=()=>{
+    if(passInput.toLowerCase()===EDIT_HASH){setEditMode(true);setShowPassInput(false);setPassInput("");setPassError(false);}
+    else{setPassError(true);setTimeout(()=>setPassError(false),1500);}
   };
-
-  const getColor = (eng) => palette[eng] || NC_DEFAULT[eng] || "#888";
-
-  const handlePassSubmit = () => {
-    if (passInput.toLowerCase() === EDIT_HASH) {
-      setEditMode(true); setShowPassInput(false);
-      setPassInput(""); setPassError(false);
-    } else {
-      setPassError(true);
-      setTimeout(()=>setPassError(false), 1500);
-    }
+  const handleColorChange=(eng,hex)=>{
+    setPalette(prev=>{const next={...prev,[eng]:hex};if(ENH_MAP[eng])next[ENH_MAP[eng]]=hex;return next;});
   };
-
-  const handleColorChange = (eng, hex) => {
-    setPalette(prev => {
-      const next = {...prev, [eng]: hex};
-      // Sincronizar enarmónico
-      if (ENH_MAP[eng]) next[ENH_MAP[eng]] = hex;
-      return next;
-    });
+  const handleSave=()=>{
+    const diff={};
+    CHROMATIC_V.forEach(eng=>{if(palette[eng]&&palette[eng]!==NC_DEFAULT[eng])diff[eng]=palette[eng];});
+    try{localStorage.setItem(PALETTE_KEY,JSON.stringify(diff));}catch(e){}
+    NC=loadPalette();setSaved(true);setPalVersion(v=>v+1);setTimeout(()=>setSaved(false),2000);
   };
+  const handleReset=()=>{localStorage.removeItem(PALETTE_KEY);NC={...NC_DEFAULT};setPalette({...NC_DEFAULT});setPalVersion(v=>v+1);};
 
-  const handleSave = () => {
-    // Guardar solo las diferencias respecto al default
-    const diff = {};
-    CHROMATIC_V.forEach(eng => {
-      if (palette[eng] && palette[eng] !== NC_DEFAULT[eng]) diff[eng] = palette[eng];
-    });
-    try { localStorage.setItem(PALETTE_KEY, JSON.stringify(diff)); } catch(e){}
-    // Actualizar NC global para que afecte toda la app
-    NC = loadPalette();
-    setSaved(true);
-    setPalVersion(v=>v+1);
-    setTimeout(()=>setSaved(false), 2000);
-  };
-
-  const handleReset = () => {
-    localStorage.removeItem(PALETTE_KEY);
-    NC = {...NC_DEFAULT};
-    setPalette({...NC_DEFAULT});
-    setPalVersion(v=>v+1);
-  };
-
-  const ALT_NAT = 180;
-  const ALT_ALT = 148;
-
+  const ALT_NAT=180,ALT_ALT=148;
   return(
     <div style={{fontFamily:"'Cormorant Garamond',Georgia,serif",paddingBottom:"2rem"}}>
-
-      {/* Header */}
       <div style={{textAlign:"center",padding:"1.5rem 0 1rem",position:"relative"}}>
-        <p style={{fontFamily:"'Courier New',monospace",fontSize:10,letterSpacing:".2em",
-          color:"#3a2e0a",marginBottom:".6rem"}}>HARMONÍA · INTRODUCCIÓN</p>
-        <h1 style={{fontFamily:"'Libre Baskerville',serif",fontWeight:400,
-          fontSize:"clamp(1.4rem,3vw,2.2rem)",letterSpacing:".06em",
-          color:"#d4a030",marginBottom:".3rem"}}>
-          Sistema de Colores Tonales
-        </h1>
-        <p style={{fontStyle:"italic",fontSize:".9rem",color:"#5a4820",letterSpacing:".03em"}}>
-          Cada nota tiene un color único e invariable — la base visual de Harmonía
-        </p>
-
-        {/* Botón editor — siempre visible arriba a la derecha */}
-        {!editMode && !showPassInput && (
+        <p style={{fontFamily:"'Courier New',monospace",fontSize:10,letterSpacing:".2em",color:"#3a2e0a",marginBottom:".6rem"}}>HARMONÍA · INTRODUCCIÓN</p>
+        <h1 style={{fontFamily:"'Libre Baskerville',serif",fontWeight:400,fontSize:"clamp(1.4rem,3vw,2.2rem)",letterSpacing:".06em",color:"#d4a030",marginBottom:".3rem"}}>Sistema de Colores Tonales</h1>
+        <p style={{fontStyle:"italic",fontSize:".9rem",color:"#5a4820",letterSpacing:".03em"}}>Cada nota tiene un color único e invariable — la base visual de Harmonía</p>
+        {!editMode&&!showPassInput&&(
           <button onClick={()=>setShowPassInput(true)}
-            style={{
-              position:"absolute",top:16,right:16,
-              fontSize:10,fontFamily:"monospace",letterSpacing:".12em",
-              color:"#8a6030",background:"#0a0800",
-              border:"1px solid #3a2808",borderRadius:99,
-              cursor:"pointer",padding:"4px 12px",
-              transition:"all .2s",
-            }}
+            style={{position:"absolute",top:16,right:0,fontSize:10,fontFamily:"monospace",letterSpacing:".1em",color:"#6a4a18",background:"#0a0800",border:"1px solid #3a2808",borderRadius:99,cursor:"pointer",padding:"4px 12px",transition:"all .2s"}}
             onMouseEnter={e=>{e.currentTarget.style.borderColor="#c89030";e.currentTarget.style.color="#c89030";}}
-            onMouseLeave={e=>{e.currentTarget.style.borderColor="#3a2808";e.currentTarget.style.color="#8a6030";}}>
+            onMouseLeave={e=>{e.currentTarget.style.borderColor="#3a2808";e.currentTarget.style.color="#6a4a18";}}>
             ✎ paleta
           </button>
         )}
-
-        {/* Input contraseña — aparece en el header */}
-        {showPassInput && !editMode && (
-          <div style={{
-            position:"absolute",top:12,right:12,
-            display:"flex",gap:6,alignItems:"center",
-            padding:"6px 10px",borderRadius:10,
-            background:"#0a0800",border:"1px solid #3a2808",
-          }}>
-            <input
-              type="password"
-              value={passInput}
-              onChange={e=>setPassInput(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&handlePassSubmit()}
-              placeholder="contraseña"
-              autoFocus
-              style={{
-                background:"transparent",border:"none",outline:"none",
-                color:passError?"#cc3333":"#c89030",
-                fontFamily:"monospace",fontSize:11,letterSpacing:".08em",
-                width:110,
-              }}/>
-            <button onClick={handlePassSubmit}
-              style={{background:"transparent",border:"1px solid #3a2808",
-                color:"#8a6020",borderRadius:5,padding:"2px 8px",
-                fontSize:10,cursor:"pointer",fontFamily:"monospace"}}>
-              →
-            </button>
-            <button onClick={()=>{setShowPassInput(false);setPassInput("");setPassError(false);}}
-              style={{background:"transparent",border:"none",
-                color:"#3a2808",fontSize:13,cursor:"pointer",lineHeight:1}}>
-              ✕
-            </button>
-            {passError && (
-              <span style={{color:"#cc3333",fontSize:9,fontFamily:"monospace"}}>
-                incorrecta
-              </span>
-            )}
+        {showPassInput&&!editMode&&(
+          <div style={{position:"absolute",top:12,right:0,display:"flex",gap:6,alignItems:"center",padding:"6px 10px",borderRadius:10,background:"#0a0800",border:"1px solid #3a2808"}}>
+            <input type="password" value={passInput} onChange={e=>setPassInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&handlePassSubmit()} placeholder="contraseña" autoFocus
+              style={{background:"transparent",border:"none",outline:"none",color:passError?"#cc3333":"#c89030",fontFamily:"monospace",fontSize:11,letterSpacing:".08em",width:110}}/>
+            <button onClick={handlePassSubmit} style={{background:"transparent",border:"1px solid #3a2808",color:"#8a6020",borderRadius:5,padding:"2px 8px",fontSize:10,cursor:"pointer",fontFamily:"monospace"}}>→</button>
+            <button onClick={()=>{setShowPassInput(false);setPassInput("");setPassError(false);}} style={{background:"transparent",border:"none",color:"#3a2808",fontSize:13,cursor:"pointer",lineHeight:1}}>✕</button>
+            {passError&&<span style={{color:"#cc3333",fontSize:9,fontFamily:"monospace"}}>incorrecta</span>}
           </div>
         )}
       </div>
 
-      {/* Vitrales */}
-      <div style={{display:"flex",gap:6,justifyContent:"center",
-        alignItems:"flex-end",padding:"0 .5rem",flexWrap:"nowrap",overflow:"hidden"}}>
+      <div style={{display:"flex",gap:6,justifyContent:"center",alignItems:"flex-end",padding:"0 .5rem",flexWrap:"nowrap",overflow:"hidden"}}>
         {NOTAS_V.map((n,i)=>{
-          const color = getColor(n.eng);
-          const activa = activas.has(i);
-          const esHover = hoverV===i;
-          const alt = n.natural ? ALT_NAT : ALT_ALT;
+          const color=getColor(n.eng);
+          const activa=activas.has(i);
+          const esHover=hoverV===i;
+          const alt=n.natural?ALT_NAT:ALT_ALT;
           return(
-            <div key={i}
-              onMouseEnter={()=>setHoverV(i)}
-              onMouseLeave={()=>setHoverV(null)}
+            <div key={i} onMouseEnter={()=>setHoverV(i)} onMouseLeave={()=>setHoverV(null)}
               onClick={()=>{const ctx=getCtx();if(ctx&&ctx.state==="suspended")ctx.resume();playTone(n.eng,4,.8);}}
-              style={{
-                width:n.natural?52:36, height:alt, flexShrink:0,
-                borderRadius:"999px 999px 50% 50%",
-                position:"relative", cursor:"pointer",
+              style={{width:n.natural?52:36,height:alt,flexShrink:0,borderRadius:"999px 999px 50% 50%",position:"relative",cursor:"pointer",
                 background:`linear-gradient(180deg,${color}ee 0%,${color}99 55%,${color}55 100%)`,
                 border:`1px solid ${color}${activa?"aa":"33"}`,
-                boxShadow: activa
-                  ? `0 0 ${esHover?40:28}px ${color}${esHover?"99":"55"}, inset 0 0 14px rgba(0,0,0,.3)`
-                  : "none",
-                filter: activa ? "brightness(1) saturate(1)" : "brightness(.15) saturate(.15)",
-                opacity: revealed ? 1 : 0,
-                transform: `translateY(${revealed?(esHover?-10:0):20}px) scale(${esHover?1.04:1})`,
-                transition:`transform .25s cubic-bezier(.34,1.56,.64,1), filter .3s, opacity .4s, box-shadow .3s`,
-                transitionDelay: revealed ? `${i*40}ms` : "0ms",
-              }}>
-              <div style={{position:"absolute",top:0,left:"15%",right:"15%",height:"35%",
-                background:"linear-gradient(180deg,rgba(255,255,255,.28) 0%,transparent 100%)",
-                borderRadius:"50% 50% 0 0",pointerEvents:"none"}}/>
-              <div style={{position:"absolute",bottom:12,left:0,right:0,
-                textAlign:"center",display:"flex",flexDirection:"column",
-                alignItems:"center",gap:1}}>
-                <span style={{fontFamily:"'Libre Baskerville',serif",
-                  fontSize:n.natural?12:10,fontWeight:700,
-                  color:txtClr(color),
-                  textShadow:"0 1px 6px rgba(0,0,0,.9)",lineHeight:1}}>
-                  {n.eng}
-                </span>
-                <span style={{fontFamily:"monospace",fontSize:7,
-                  color:txtClr(color),opacity:.7,letterSpacing:".04em"}}>
-                  {n.lat}
-                </span>
+                boxShadow:activa?`0 0 ${esHover?40:28}px ${color}${esHover?"99":"55"},inset 0 0 14px rgba(0,0,0,.3)`:"none",
+                filter:activa?"brightness(1) saturate(1)":"brightness(.15) saturate(.15)",
+                opacity:revealed?1:0,
+                transform:`translateY(${revealed?(esHover?-10:0):20}px) scale(${esHover?1.04:1})`,
+                transition:`transform .25s cubic-bezier(.34,1.56,.64,1),filter .3s,opacity .4s,box-shadow .3s`,
+                transitionDelay:revealed?`${i*40}ms`:"0ms"}}>
+              <div style={{position:"absolute",top:0,left:"15%",right:"15%",height:"35%",background:"linear-gradient(180deg,rgba(255,255,255,.28) 0%,transparent 100%)",borderRadius:"50% 50% 0 0",pointerEvents:"none"}}/>
+              <div style={{position:"absolute",bottom:12,left:0,right:0,textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                <span style={{fontFamily:"'Libre Baskerville',serif",fontSize:n.natural?12:10,fontWeight:700,color:txtClr(color),textShadow:"0 1px 6px rgba(0,0,0,.9)",lineHeight:1}}>{n.eng}</span>
+                <span style={{fontFamily:"monospace",fontSize:7,color:txtClr(color),opacity:.7,letterSpacing:".04em"}}>{n.lat}</span>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Marco base */}
-      <div style={{height:10,
-        background:"linear-gradient(90deg,transparent,#3a2808 15%,#6a4a10 50%,#3a2808 85%,transparent)",
-        borderRadius:"0 0 8px 8px",margin:"0 .5rem .8rem"}}>
+      <div style={{height:10,background:"linear-gradient(90deg,transparent,#3a2808 15%,#6a4a10 50%,#3a2808 85%,transparent)",borderRadius:"0 0 8px 8px",margin:"0 .5rem .8rem"}}>
         <div style={{height:2,background:"linear-gradient(90deg,transparent,rgba(200,144,0,.5),transparent)"}}/>
       </div>
 
-      {/* Selectores de contexto */}
       <div style={{textAlign:"center",marginBottom:"1.2rem"}}>
-        <p style={{fontFamily:"monospace",fontSize:9,letterSpacing:".18em",
-          color:"#3a2e0a",marginBottom:"1rem"}}>EXPLORAR EN CONTEXTO</p>
+        <p style={{fontFamily:"monospace",fontSize:9,letterSpacing:".18em",color:"#3a2e0a",marginBottom:"1rem"}}>EXPLORAR EN CONTEXTO</p>
         <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
           {["Cromática","Mayor (C)","Menor (Am)","Dm7","G7","Cmaj7"].map((label,i)=>(
             <button key={i} onClick={()=>setPasoV(i)}
-              style={{padding:"5px 14px",borderRadius:99,cursor:"pointer",
-                fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:".82rem",
-                letterSpacing:".03em",
-                border:`1px solid ${pasoV===i?"#8a6020":"#2a1e06"}`,
-                background:pasoV===i?"#1a1000":"transparent",
-                color:pasoV===i?"#c89030":"#4a3a10",
-                transition:"all .2s"}}>
+              style={{padding:"5px 14px",borderRadius:99,cursor:"pointer",fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:".82rem",letterSpacing:".03em",border:`1px solid ${pasoV===i?"#8a6020":"#2a1e06"}`,background:pasoV===i?"#1a1000":"transparent",color:pasoV===i?"#c89030":"#4a3a10",transition:"all .2s"}}>
               {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Dots */}
       {pasoV>0&&(
         <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap",marginBottom:"1rem"}}>
           {paso.idx.map((ni,ri)=>{
-            const n=NOTAS_V[ni];
-            const color=getColor(n.eng);
+            const n=NOTAS_V[ni];const color=getColor(n.eng);
             return(
-              <div key={ri} onClick={()=>playTone(n.eng,4,.8)}
+              <div key={ri} onClick={()=>{const ctx=getCtx();if(ctx&&ctx.state==="suspended")ctx.resume();playTone(n.eng,4,.8);}}
                 style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer"}}>
-                <div onClick={()=>{const ctx=getCtx();if(ctx&&ctx.state==="suspended")ctx.resume();playTone(n.eng,4,.8);}} style={{width:48,height:48,borderRadius:"50%",background:color,
-                  boxShadow:`0 0 18px ${color}66`,
-                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1}}>
-                  <span style={{fontFamily:"'Libre Baskerville',serif",
-                    fontSize:13,fontWeight:700,color:txtClr(color),lineHeight:1}}>{n.eng}</span>
+                <div style={{width:48,height:48,borderRadius:"50%",background:color,boxShadow:`0 0 18px ${color}66`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:1}}>
+                  <span style={{fontFamily:"'Libre Baskerville',serif",fontSize:13,fontWeight:700,color:txtClr(color),lineHeight:1}}>{n.eng}</span>
                   <span style={{fontFamily:"monospace",fontSize:7,color:txtClr(color),opacity:.7}}>{n.lat}</span>
                 </div>
-                <span style={{fontFamily:"monospace",fontSize:8,color:"#4a3a10",letterSpacing:".06em"}}>
-                  {paso.roles[ri]}
-                </span>
+                <span style={{fontFamily:"monospace",fontSize:8,color:"#4a3a10",letterSpacing:".06em"}}>{paso.roles[ri]}</span>
               </div>
             );
           })}
         </div>
       )}
 
-      {/* Barra mezcla */}
-      <div style={{height:8,borderRadius:99,maxWidth:560,margin:"0 auto .8rem",opacity:.75,
-        boxShadow:"0 2px 16px rgba(0,0,0,.4)",
-        background:`linear-gradient(90deg,${paso.idx.map(i=>getColor(NOTAS_V[i].eng)).join(",")})`}}/>
+      <div style={{height:8,borderRadius:99,maxWidth:560,margin:"0 auto .8rem",opacity:.75,boxShadow:"0 2px 16px rgba(0,0,0,.4)",background:`linear-gradient(90deg,${paso.idx.map(i=>getColor(NOTAS_V[i].eng)).join(",")})`}}/>
+      <p style={{textAlign:"center",fontStyle:"italic",color:"#4a3a18",fontSize:".85rem",letterSpacing:".02em",marginBottom:"1.5rem"}}>{paso.desc}</p>
 
-      <p style={{textAlign:"center",fontStyle:"italic",color:"#4a3a18",
-        fontSize:".85rem",letterSpacing:".02em",marginBottom:"1.5rem"}}>{paso.desc}</p>
-
-      {/* ── EDITOR DE PALETA ── */}
-
-
-
-
-      {/* Panel editor */}
-      {editMode && (
-        <div style={{marginTop:"1rem",padding:"1rem 1.2rem",
-          background:"#080800",border:"1px solid #3a2808",borderRadius:14}}>
-
-          <div style={{display:"flex",justifyContent:"space-between",
-            alignItems:"center",marginBottom:"1rem"}}>
-            <p style={{fontFamily:"monospace",fontSize:10,letterSpacing:".15em",
-              color:"#6a4020"}}>EDITOR DE PALETA · ACCESO RESTRINGIDO</p>
-            <button onClick={()=>setEditMode(false)}
-              style={{background:"transparent",border:"none",color:"#3a2808",
-                fontSize:14,cursor:"pointer"}}>✕</button>
+      {editMode&&(
+        <div style={{marginTop:"1rem",padding:"1rem 1.2rem",background:"#080800",border:"1px solid #3a2808",borderRadius:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1rem"}}>
+            <p style={{fontFamily:"monospace",fontSize:10,letterSpacing:".15em",color:"#6a4020"}}>EDITOR DE PALETA</p>
+            <button onClick={()=>setEditMode(false)} style={{background:"transparent",border:"none",color:"#3a2808",fontSize:14,cursor:"pointer"}}>✕</button>
           </div>
-
-          {/* Grid de colores editables */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:8,marginBottom:"1rem"}}>
             {NOTAS_V.map((n,i)=>{
-              const color = palette[n.eng] || NC_DEFAULT[n.eng];
-              const isModified = color !== NC_DEFAULT[n.eng];
+              const color=palette[n.eng]||NC_DEFAULT[n.eng];
+              const isModified=color!==NC_DEFAULT[n.eng];
               return(
-                <div key={i} style={{
-                  padding:"8px",borderRadius:8,
-                  border:`1px solid ${isModified?"#6a4020":"#1a1200"}`,
-                  background:"#0a0800",
-                  display:"flex",flexDirection:"column",gap:5,
-                }}>
+                <div key={i} style={{padding:"8px",borderRadius:8,border:`1px solid ${isModified?"#6a4020":"#1a1200"}`,background:"#0a0800",display:"flex",flexDirection:"column",gap:5}}>
                   <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    {/* Color picker */}
-                    <input type="color" value={color}
-                      onChange={e=>handleColorChange(n.eng, e.target.value)}
-                      style={{width:32,height:32,padding:1,borderRadius:6,
-                        border:`2px solid ${color}`,cursor:"pointer",
-                        background:"transparent"}}/>
+                    <input type="color" value={color} onChange={e=>handleColorChange(n.eng,e.target.value)}
+                      style={{width:32,height:32,padding:1,borderRadius:6,border:`2px solid ${color}`,cursor:"pointer",background:"transparent"}}/>
                     <div>
-                      <div style={{fontFamily:"'Libre Baskerville',serif",
-                        fontWeight:700,fontSize:13,color:color}}>{n.eng}</div>
-                      <div style={{fontFamily:"monospace",fontSize:8,
-                        color:"#4a3a10",letterSpacing:".06em"}}>{n.lat}</div>
+                      <div style={{fontFamily:"'Libre Baskerville',serif",fontWeight:700,fontSize:13,color}}>{n.eng}</div>
+                      <div style={{fontFamily:"monospace",fontSize:8,color:"#4a3a10",letterSpacing:".06em"}}>{n.lat}</div>
                     </div>
-                    {/* Indicador de modificado */}
-                    {isModified&&<div style={{width:5,height:5,borderRadius:"50%",
-                      background:"#c89030",marginLeft:"auto",flexShrink:0}}/>}
+                    {isModified&&<div style={{width:5,height:5,borderRadius:"50%",background:"#c89030",marginLeft:"auto",flexShrink:0}}/>}
                   </div>
-                  <div style={{fontFamily:"monospace",fontSize:8,
-                    color:"#3a2808",letterSpacing:".06em"}}>{color}</div>
-                  {/* Preview del vitral mini */}
-                  <div style={{height:24,borderRadius:"99px 99px 40% 40%",
-                    background:`linear-gradient(180deg,${color}cc,${color}66)`,
-                    border:`1px solid ${color}55`}}/>
-                  {/* Reset individual */}
-                  {isModified&&(
-                    <button onClick={()=>handleColorChange(n.eng, NC_DEFAULT[n.eng])}
-                      style={{fontSize:8,fontFamily:"monospace",color:"#4a2a08",
-                        background:"transparent",border:"none",cursor:"pointer",
-                        letterSpacing:".06em",textAlign:"left"}}>
-                      ↺ restaurar
-                    </button>
-                  )}
+                  <div style={{fontFamily:"monospace",fontSize:8,color:"#3a2808",letterSpacing:".06em"}}>{color}</div>
+                  <div style={{height:24,borderRadius:"999px 999px 40% 40%",background:`linear-gradient(180deg,${color}cc,${color}66)`,border:`1px solid ${color}55`}}/>
+                  {isModified&&<button onClick={()=>handleColorChange(n.eng,NC_DEFAULT[n.eng])} style={{fontSize:8,fontFamily:"monospace",color:"#4a2a08",background:"transparent",border:"none",cursor:"pointer",letterSpacing:".06em",textAlign:"left"}}>↺ restaurar</button>}
                 </div>
               );
             })}
           </div>
-
-          {/* Botones de acción */}
           <div style={{display:"flex",gap:8,justifyContent:"flex-end",flexWrap:"wrap"}}>
-            <button onClick={handleReset}
-              style={{padding:"6px 14px",borderRadius:8,cursor:"pointer",
-                fontFamily:"monospace",fontSize:10,letterSpacing:".08em",
-                border:"1px solid #3a2808",background:"transparent",color:"#6a4020"}}>
-              ↺ restaurar todo
-            </button>
-            <button onClick={handleSave}
-              style={{padding:"6px 18px",borderRadius:8,cursor:"pointer",
-                fontFamily:"monospace",fontSize:10,letterSpacing:".08em",
-                border:"none",
-                background:saved
-                  ?"linear-gradient(135deg,#0d4a18,#2dd4bf)"
-                  :"linear-gradient(135deg,#4a2a00,#c89030)",
-                color:saved?"#fff":"#0a0500",
-                fontWeight:700,
-                transition:"background .3s"}}>
-              {saved ? "✓ guardado" : "💾 guardar paleta"}
+            <button onClick={handleReset} style={{padding:"6px 14px",borderRadius:8,cursor:"pointer",fontFamily:"monospace",fontSize:10,letterSpacing:".08em",border:"1px solid #3a2808",background:"transparent",color:"#6a4020"}}>↺ restaurar todo</button>
+            <button onClick={handleSave} style={{padding:"6px 18px",borderRadius:8,cursor:"pointer",fontFamily:"monospace",fontSize:10,letterSpacing:".08em",border:"none",background:saved?"linear-gradient(135deg,#0d4a18,#2dd4bf)":"linear-gradient(135deg,#4a2a00,#c89030)",color:saved?"#fff":"#0a0500",fontWeight:700,transition:"background .3s"}}>
+              {saved?"✓ guardado":"💾 guardar paleta"}
             </button>
           </div>
-
-          <p style={{marginTop:".6rem",fontSize:9,color:"#2a1e06",
-            fontFamily:"monospace",letterSpacing:".06em"}}>
-            Los cambios guardados se aplican en toda la app inmediatamente.
-            El punto dorado indica notas modificadas respecto al original.
-          </p>
         </div>
       )}
-
     </div>
   );
 }

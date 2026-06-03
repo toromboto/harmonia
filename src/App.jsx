@@ -1865,7 +1865,38 @@ function DesktopBandLayout({
                 return(<span key={n} style={{padding:"2px 6px",borderRadius:20,background:nc(engKey)+"22",border:`1px solid ${nc(engKey)}`,color:nc(engKey),fontWeight:700,fontSize:10}}>{notaPura}<span style={{fontSize:"0.7em",opacity:.6,marginLeft:1}}>{oct}</span></span>);
               })}
             </div>
-            {detected&&<div style={{fontSize:22,fontWeight:900,color:"#88aaff",fontFamily:"serif",lineHeight:1,textAlign:"center",padding:"4px 0 2px"}}>{detected}</div>}
+            {detected&&(
+              <>
+                <div style={{fontSize:22,fontWeight:900,color:"#88aaff",fontFamily:"serif",lineHeight:1,textAlign:"center",padding:"4px 0 2px"}}>{detected}</div>
+                {(()=>{
+                  const LAT2loc={"DO":"C","DO#":"C#","RE":"D","RE#":"D#","MI":"E","FA":"F","FA#":"F#","SOL":"G","SOL#":"G#","LA":"A","LA#":"A#","SI":"B"};
+                  const convDet=detected.replace(/^(DO#|DO|RE#|RE|MI|FA#|FA|SOL#|SOL|LA#|LA|SI)/i,m=>LAT2loc[m.toUpperCase()]||m);
+                  const r=parseCentral(convDet);
+                  if(!r||!r.voicings[0])return null;
+                  const v=r.voicings[0];
+                  return(
+                    <div style={{marginTop:6,padding:"5px 8px",borderRadius:7,background:"#0a0a1a",border:"1px solid #1a1a38"}}>
+                      <div style={{fontSize:7,color:"#555",fontFamily:"monospace",marginBottom:4,letterSpacing:".1em"}}>VOICING SUGERIDO</div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}>
+                        <div style={{borderLeft:"2px solid #34d39933",paddingLeft:5}}>
+                          <div style={{fontSize:6,color:"#34d399",marginBottom:3,fontFamily:"monospace"}}>IZQ ←</div>
+                          <div style={{display:"flex",gap:2,flexWrap:"wrap"}}>
+                            {v.notesLeft.map((n,ni)=>(<span key={ni} style={{padding:"1px 5px",borderRadius:4,background:nc(n.eng)+"22",border:"1px solid "+nc(n.eng)+"55",fontSize:9,fontWeight:800,color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}<span style={{fontSize:6,opacity:.5,marginLeft:1}}>{n.oct}</span></span>))}
+                          </div>
+                        </div>
+                        <div style={{borderLeft:"2px solid #f472b633",paddingLeft:5}}>
+                          <div style={{fontSize:6,color:"#f472b6",marginBottom:3,fontFamily:"monospace"}}>DER →</div>
+                          <div style={{display:"flex",gap:2,flexWrap:"wrap"}}>
+                            {v.notesRight.map((n,ni)=>(<span key={ni} style={{padding:"1px 5px",borderRadius:4,background:nc(n.eng)+"22",border:"1px solid "+nc(n.eng)+"55",fontSize:9,fontWeight:800,color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}<span style={{fontSize:6,opacity:.5,marginLeft:1}}>{n.oct}</span></span>))}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{fontSize:7,color:"#333",marginTop:3,fontStyle:"italic",fontFamily:"monospace"}}>{v.desc}</div>
+                    </div>
+                  );
+                })()}
+              </>
+            )}
           </div>
         )}
 
@@ -2330,21 +2361,63 @@ function BandoneonTab() {
   },[pressedL,pressedR,bellows,leftBtns,rightBtns]);
 
   // Detección de acorde
+  // Algoritmo: probar cada nota única como raíz potencial (rotación de inversiones).
+  // Para cada candidata se calculan los intervalos desde ella y se evalúa
+  // si coincide con un patrón conocido. Se elige la raíz con mejor match,
+  // priorizando calidades más específicas (m7b5 > dim7 > maj7 > ...).
   const detected = useMemo(()=>{
     if(activeNotes.length<2)return null;
-    // activeNotes ahora es "SOL3" — extraer solo la nota para detectar acorde
-    const noteOnly = activeNotes.map(n=>n.replace(/\d+$/,""));
-    const idxs=noteOnly.map(n=>noteIdxB(n)).filter(i=>i>=0).sort((a,b)=>a-b);
-    const root=CHROMATIC_B[idxs[0]];
-    const ivs=idxs.map(i=>(i-idxs[0]+12)%12).sort((a,b)=>a-b);
-    const has=i=>ivs.includes(i);
-    let q="?";
-    if(has(4)&&has(7)&&has(11))q="△7"; else if(has(3)&&has(7)&&has(10))q="m7";
-    else if(has(4)&&has(7)&&has(10))q="7"; else if(has(3)&&has(6)&&has(9))q="°7";
-    else if(has(3)&&has(6)&&has(10))q="ø7"; else if(has(4)&&has(7))q="△";
-    else if(has(3)&&has(7))q="m"; else if(has(3)&&has(6))q="°";
-    const rootLat = ENG_TO_LAT[root]??root;
-    return`${rootLat}${q}`;
+
+    // Extraer notas únicas (sin octava, sin duplicados por clase de nota)
+    const noteOnly = [...new Set(activeNotes.map(n=>n.replace(/\d+$/,"")))];
+    const uniqueIdxs = [...new Set(noteOnly.map(n=>noteIdxB(n)).filter(i=>i>=0))];
+    if(uniqueIdxs.length<2) return null;
+
+    // Tabla de patrones: calidad → intervalos requeridos (orden importa para prioridad)
+    const PATTERNS = [
+      { q:"m7b5",  ivs:[3,6,10] },
+      { q:"dim7",  ivs:[3,6,9]  },
+      { q:"maj7",  ivs:[4,7,11] },
+      { q:"m7",    ivs:[3,7,10] },
+      { q:"7",     ivs:[4,7,10] },
+      { q:"maj",   ivs:[4,7]    },
+      { q:"m",     ivs:[3,7]    },
+      { q:"dim",   ivs:[3,6]    },
+      { q:"aug",   ivs:[4,8]    },
+      { q:"sus4",  ivs:[5,7]    },
+      { q:"sus2",  ivs:[2,7]    },
+    ];
+
+    // Intentar cada nota única como raíz
+    let bestRoot = null, bestQ = null, bestScore = -1;
+
+    for(const rootIdx of uniqueIdxs){
+      const ivs = uniqueIdxs
+        .map(i => (i - rootIdx + 12) % 12)
+        .filter(i => i !== 0)
+        .sort((a,b)=>a-b);
+      const hasAll = (required) => required.every(r => ivs.includes(r));
+
+      for(let pi=0; pi<PATTERNS.length; pi++){
+        const {q, ivs: req} = PATTERNS[pi];
+        if(hasAll(req)){
+          // Puntuación: favorece patrones con más intervalos coincidentes
+          // y aparece antes en la lista (más específico)
+          const score = req.length * 100 - pi;
+          if(score > bestScore){
+            bestScore = score;
+            bestRoot  = rootIdx;
+            bestQ     = q;
+          }
+          break; // un match por raíz candidata es suficiente
+        }
+      }
+    }
+
+    if(bestRoot === null) return null;
+    const rootEng = CHROMATIC_B[bestRoot];
+    const rootLat = ENG_TO_LAT[rootEng] ?? rootEng;
+    return `${rootLat}${bestQ}`;
   },[activeNotes]);
 
   const getOct = useCallback((btn, bellows) => {

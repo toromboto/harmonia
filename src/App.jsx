@@ -2127,32 +2127,41 @@ function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
   });
 
   const EditorCanvas=({buttons,side,label})=>{
-    const rawW=Math.max(...buttons.map(b=>b.x))+BTN_SIZE+16;
-    const rawH=Math.max(...buttons.map(b=>b.y))+BTN_SIZE+20;
+    const rawW=Math.max(...buttons.map(b=>b.x))+BTN_SIZE+24;
+    const rawH=Math.max(...buttons.map(b=>b.y))+BTN_SIZE+24;
     return(
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
-        <p style={{fontSize:9,color:"#7a5030",marginBottom:4,letterSpacing:".1em",fontFamily:"monospace"}}>{label}</p>
-        <div style={{position:"relative",width:rawW,height:rawH,flexShrink:0,
+      <div style={{marginBottom:4}}>
+        <p style={{fontSize:9,color:"#7a5030",marginBottom:4,letterSpacing:".1em",fontFamily:"monospace",paddingLeft:2}}>{label}</p>
+        {/* Scroll horizontal propio para cada teclado — permite ver todos los botones */}
+        <div style={{
+          overflowX:"auto",overflowY:"visible",
+          WebkitOverflowScrolling:"touch",
+          border:`2px solid ${selected?.side===side?"#f5c060":"#3a2010"}`,
+          borderRadius:14,
           background:"linear-gradient(145deg,#281a08,#140e04)",
-          border:`2px solid ${selected?.side===side?"#f5c060":"#3a2010"}`,borderRadius:14}}>
-          {buttons.map(btn=>{
-            const note=mode==="abre"?btn.abre:btn.cierra;
-            const color=mode==="abre"?btn.color_abre:btn.color_cierra;
-            const isSel=selected?.id===btn.id&&selected?.side===side;
-            return(
-              <div key={btn.id} onClick={e=>handleBtnClick(btn,side,e)}
-                style={{position:"absolute",left:btn.x,top:btn.y,width:BTN_SIZE,height:BTN_SIZE,borderRadius:"50%",cursor:"pointer",userSelect:"none",
-                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                  background:isSel?`radial-gradient(circle at 36% 30%,${color}ff,${color}cc)`:`radial-gradient(circle at 36% 30%,${color}99,${color}44 60%,${color}22)`,
-                  border:`2.5px solid ${isSel?"#f5c060":color+"aa"}`,
-                  boxShadow:isSel?`0 0 0 3px #f5c06088,0 0 18px ${color}cc`:`0 2px 8px rgba(0,0,0,.7)`,
-                  transform:isSel?"scale(1.15)":"scale(1)",transition:"all .15s",zIndex:isSel?30:1}}>
-                <span style={{fontSize:note.length>2?7:9,fontWeight:800,color:"#fff",fontFamily:"monospace",lineHeight:1,textShadow:"0 1px 3px rgba(0,0,0,.9)"}}>{note}</span>
-                <span style={{fontSize:6,color:"rgba(255,255,255,.7)",fontFamily:"monospace"}}>{mode==="abre"?(btn.oct_abre??"-"):(btn.oct_cierra??"-")}</span>
-              </div>
-            );
-          })}
+          paddingBottom:6,paddingTop:4,
+        }}>
+          <div style={{position:"relative",width:rawW,height:rawH,flexShrink:0,minWidth:rawW}}>
+            {buttons.map(btn=>{
+              const note=mode==="abre"?btn.abre:btn.cierra;
+              const color=mode==="abre"?btn.color_abre:btn.color_cierra;
+              const isSel=selected?.id===btn.id&&selected?.side===side;
+              return(
+                <div key={btn.id} onClick={e=>handleBtnClick(btn,side,e)}
+                  style={{position:"absolute",left:btn.x,top:btn.y,width:BTN_SIZE,height:BTN_SIZE,borderRadius:"50%",cursor:"pointer",userSelect:"none",touchAction:"none",
+                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                    background:isSel?`radial-gradient(circle at 36% 30%,${color}ff,${color}cc)`:`radial-gradient(circle at 36% 30%,${color}99,${color}44 60%,${color}22)`,
+                    border:`2.5px solid ${isSel?"#f5c060":color+"aa"}`,
+                    boxShadow:isSel?`0 0 0 3px #f5c06088,0 0 18px ${color}cc`:`0 2px 8px rgba(0,0,0,.7)`,
+                    transform:isSel?"scale(1.18)":"scale(1)",transition:"all .15s",zIndex:isSel?30:1}}>
+                  <span style={{fontSize:note.length>2?7:9,fontWeight:800,color:"#fff",fontFamily:"monospace",lineHeight:1,textShadow:"0 1px 3px rgba(0,0,0,.9)"}}>{note}</span>
+                  <span style={{fontSize:6,color:"rgba(255,255,255,.7)",fontFamily:"monospace"}}>{mode==="abre"?(btn.oct_abre??"-"):(btn.oct_cierra??"-")}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
+        <p style={{fontSize:7,color:"#2a1808",textAlign:"center",marginTop:2,fontFamily:"monospace"}}>← deslizá para ver todos →</p>
       </div>
     );
   };
@@ -2175,15 +2184,18 @@ function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
         {selected&&<button onClick={()=>{setSelected(null);setPopupPos(null);}} style={{marginLeft:"auto",padding:"3px 10px",borderRadius:6,border:"1px solid #3a2010",background:"transparent",color:"#6a4020",fontSize:10,cursor:"pointer"}}>✕</button>}
       </div>
 
-      <div id="band-editor-cont" style={{position:"relative"}}>
-        <div style={{display:"flex",gap:16,flexWrap:"wrap",justifyContent:"center",paddingBottom:8,overflowX:"auto"}}>
-          <EditorCanvas buttons={leftBtns}  side="L" label="MANO IZQUIERDA"/>
-          <EditorCanvas buttons={rightBtns} side="R" label="MANO DERECHA"/>
-        </div>
+      {/* Teclados: apilados verticalmente, cada uno con su propio scroll horizontal */}
+      <div id="band-editor-cont" style={{position:"relative",display:"flex",flexDirection:"column",gap:12}}>
+        <EditorCanvas buttons={leftBtns}  side="L" label="MANO IZQUIERDA · 33 botones"/>
+        <EditorCanvas buttons={rightBtns} side="R" label="MANO DERECHA · 38 botones"/>
 
         {selBtn&&popupPos&&(
-          <div style={{position:"absolute",left:Math.max(10,Math.min(popupPos.x-140,600)),top:Math.max(10,popupPos.y-195),
-            width:288,background:"#0e0a02",border:"1.5px solid #f5c060",borderRadius:12,padding:"10px 12px",zIndex:100,boxShadow:"0 8px 32px rgba(0,0,0,.85)"}}>
+          <div style={{position:"fixed",left:"50%",transform:"translateX(-50%)",bottom:16,
+            width:300,background:"#0e0a02",border:"1.5px solid #f5c060",borderRadius:12,padding:"10px 12px",zIndex:200,boxShadow:"0 8px 40px rgba(0,0,0,.95)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>{selBtn.id} — {selected.side==="L"?"IZQ":"DER"}</span>
+              <button onClick={()=>{setSelected(null);setPopupPos(null);}} style={{background:"transparent",border:"none",color:"#6a4020",fontSize:14,cursor:"pointer",lineHeight:1}}>✕</button>
+            </div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>{selBtn.id} — {selected.side==="L"?"IZQ":"DER"}</span>
               <button onClick={()=>{setSelected(null);setPopupPos(null);}} style={{background:"transparent",border:"none",color:"#6a4020",fontSize:14,cursor:"pointer",lineHeight:1}}>✕</button>

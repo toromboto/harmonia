@@ -1771,40 +1771,52 @@ function DesktopBandLayout({
 
     const MIDI_C={C:60,"C#":61,D:62,"D#":63,E:64,F:65,"F#":66,G:67,"G#":68,A:69,"A#":70,B:71};
 
+    // VOICINGS — lógica de bajo real:
+    // - Mano IZQUIERDA: siempre en octava 2 (grave). Tónica como bajo + opcionalmente quinta.
+    // - Mano DERECHA: notas guía (3ª + 7ª) en oct 3-4. Tensiones opcionales en oct 4-5.
+    // - Los semitonos se interpretan en ABSOLUTO dentro de la octava del instrumento,
+    //   no como distancia desde la raíz en registro agudo.
+    // Estructura: left[] = semitonos sobre la raíz para mano izq (oct 2)
+    //             right[] = semitonos sobre la raíz para mano der (oct 3-4)
+    // Los valores 0-11 = oct 2 (izq) o oct 3 (der)
+    // Los valores 12-23 = oct 3 (izq) o oct 4 (der)
+    // Los valores 24+ = oct 5 (der, tensiones altas)
     const VOICINGS={
+      // TRIADAS
       "maj":[
-        {nombre:"Básico",    left:[0],    right:[4,7],       desc:"IZQ: raíz · DER: 3ª·5ª"},
-        {nombre:"Abierto",   left:[0,7],  right:[4,7,12],    desc:"IZQ: raíz·5ª · DER: 3ª·5ª·8ª"},
+        {nombre:"Básico",       left:[0],    right:[4,7,12],    desc:"IZQ: raíz(bajo) · DER: 3ª·5ª·8ª"},
+        {nombre:"Con quinta",   left:[0,7],  right:[4,12,16],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ª·8ª·10ª"},
       ],
       "min":[
-        {nombre:"Básico",    left:[0],    right:[3,7],       desc:"IZQ: raíz · DER: 3ªm·5ª"},
-        {nombre:"Abierto",   left:[0,7],  right:[3,7,12],    desc:"IZQ: raíz·5ª · DER: 3ªm·5ª·8ª"},
+        {nombre:"Básico",       left:[0],    right:[3,7,12],    desc:"IZQ: raíz(bajo) · DER: 3ªm·5ª·8ª"},
+        {nombre:"Con quinta",   left:[0,7],  right:[3,12,15],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ªm·8ª·10ª"},
       ],
+      // CUATRIADAS — voicing 1 = el más frecuente en tango/jazz
       "7":[
-        {nombre:"Tango/Jazz",left:[0,7],  right:[4,10,14],   desc:"IZQ: raíz·5ª · DER: 3ª·7ªm·9ª"},
-        {nombre:"Con raíz",  left:[0],    right:[4,7,10],    desc:"IZQ: raíz · DER: 3ª·5ª·7ªm"},
-        {nombre:"Shell",     left:[0,10], right:[4,7,14],    desc:"IZQ: raíz·7ªm · DER: 3ª·5ª·9ª"},
+        {nombre:"Con raíz",     left:[0],    right:[4,7,10],    desc:"IZQ: raíz(bajo) · DER: 3ª·5ª·7ªm"},
+        {nombre:"Tango/Jazz",   left:[0,7],  right:[4,10,16],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ª·7ªm·9ª"},
+        {nombre:"Shell",        left:[0,10], right:[4,16,21],   desc:"IZQ: raíz·7ªm(bajo) · DER: 3ª·9ª·13ª"},
       ],
       "maj7":[
-        {nombre:"Clásico",   left:[0,7],  right:[4,11,14],   desc:"IZQ: raíz·5ª · DER: 3ª·7ª·9ª"},
-        {nombre:"Con raíz",  left:[0],    right:[4,7,11],    desc:"IZQ: raíz · DER: 3ª·5ª·7ª"},
-        {nombre:"Shell",     left:[0,11], right:[4,7,14],    desc:"IZQ: raíz·7ª · DER: 3ª·5ª·9ª"},
+        {nombre:"Con raíz",     left:[0],    right:[4,7,11],    desc:"IZQ: raíz(bajo) · DER: 3ª·5ª·7ª"},
+        {nombre:"Clásico",      left:[0,7],  right:[4,11,16],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ª·7ª·9ª"},
+        {nombre:"Shell",        left:[0,11], right:[4,16,21],   desc:"IZQ: raíz·7ª(bajo) · DER: 3ª·9ª·13ª"},
       ],
       "min7":[
-        {nombre:"Tango/Jazz",left:[0,7],  right:[3,10,14],   desc:"IZQ: raíz·5ª · DER: 3ªm·7ªm·9ª"},
-        {nombre:"Con raíz",  left:[0],    right:[3,7,10],    desc:"IZQ: raíz · DER: 3ªm·5ª·7ªm"},
-        {nombre:"Shell",     left:[0,10], right:[3,7,14],    desc:"IZQ: raíz·7ªm · DER: 3ªm·5ª·9ª"},
+        {nombre:"Con raíz",     left:[0],    right:[3,7,10],    desc:"IZQ: raíz(bajo) · DER: 3ªm·5ª·7ªm"},
+        {nombre:"Tango/Jazz",   left:[0,7],  right:[3,10,16],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ªm·7ªm·9ª"},
+        {nombre:"Shell",        left:[0,10], right:[3,16,21],   desc:"IZQ: raíz·7ªm(bajo) · DER: 3ªm·9ª·11ª"},
       ],
       "m7b5":[
-        {nombre:"Clásico",   left:[0,6],  right:[3,10,14],   desc:"IZQ: raíz·5ªb · DER: 3ªm·7ªm·9ª"},
-        {nombre:"Con raíz",  left:[0],    right:[3,6,10],    desc:"IZQ: raíz · DER: 3ªm·5ªb·7ªm"},
+        {nombre:"Con raíz",     left:[0],    right:[3,6,10],    desc:"IZQ: raíz(bajo) · DER: 3ªm·5ªb·7ªm"},
+        {nombre:"Clásico",      left:[0,6],  right:[3,10,16],   desc:"IZQ: raíz·5ªb(bajo) · DER: 3ªm·7ªm·9ª"},
       ],
       "dim7":[
-        {nombre:"Simétrico", left:[0,6],  right:[3,9,15],    desc:"IZQ: raíz·5ªb · DER: 3ªm·6ªb·9ªb"},
-        {nombre:"Con raíz",  left:[0],    right:[3,6,9],     desc:"IZQ: raíz · DER: 3ªm·5ªb·7ªbb"},
+        {nombre:"Con raíz",     left:[0],    right:[3,6,9],     desc:"IZQ: raíz(bajo) · DER: 3ªm·5ªb·7ªbb"},
+        {nombre:"Simétrico",    left:[0,6],  right:[3,9,18],    desc:"IZQ: raíz·5ªb(bajo) · DER: 3ªm·7ªbb·9ªb"},
       ],
       "default":[
-        {nombre:"Básico",    left:[0],    right:[4,7],       desc:"IZQ: raíz · DER: 3ª·5ª"},
+        {nombre:"Básico",       left:[0],    right:[4,7,12],    desc:"IZQ: raíz(bajo) · DER: 3ª·5ª·8ª"},
       ],
     };
 
@@ -1829,12 +1841,29 @@ function DesktopBandLayout({
       else if(/^m(?!aj)/.test(rest))q="min";
       const rootIdx=CHROMATIC_C.indexOf(root);
       const vs=VOICINGS[q]||VOICINGS["default"];
-      const noteFromSemi=(semi)=>{const e=CHROMATIC_C[(rootIdx+semi+120)%12];return{eng:e,lat:ENG_LAT2[e]||e,semi};};
+      // noteFromSemi: calcula nota y octava real según la mano
+      // Mano izquierda: raíz siempre en oct 2 (bajo grave)
+      //   semi 0-11 → oct 2 | semi 12-23 → oct 3
+      // Mano derecha: notas guía en oct 3-4, tensiones en oct 4-5
+      //   semi 0-11 → oct 3 | semi 12-23 → oct 4 | semi 24+ → oct 5
+      const noteFromSemi=(semi,hand)=>{
+        const e=CHROMATIC_C[(rootIdx+semi+120)%12];
+        let oct;
+        if(hand==="left"){
+          oct = semi<12 ? 2 : 3;
+        } else {
+          oct = semi<12 ? 3 : semi<24 ? 4 : 5;
+        }
+        return{eng:e,lat:ENG_LAT2[e]||e,semi,oct};
+      };
       const voicings=vs.map(v=>({
         ...v,
-        notesLeft:v.left.map(s=>({...noteFromSemi(s),oct:s<=7?2:3})),
-        notesRight:v.right.map(s=>({...noteFromSemi(s),oct:s<12?3:s<19?4:5})),
-        notes:[...v.left,...v.right].map(s=>({...noteFromSemi(s),oct:s<=7?2:s<12?3:s<19?4:5})),
+        notesLeft: v.left.map(s=>noteFromSemi(s,"left")),
+        notesRight:v.right.map(s=>noteFromSemi(s,"right")),
+        notes:[
+          ...v.left.map(s=>noteFromSemi(s,"left")),
+          ...v.right.map(s=>noteFromSemi(s,"right")),
+        ],
       }));
       return{rootEng:root,rootLat:ENG_LAT2[root]||root,q,voicings};
     };

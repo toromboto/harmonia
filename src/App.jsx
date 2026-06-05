@@ -228,22 +228,62 @@ const T_SEMI={"9":2,"b9":1,"#9":3,"11":5,"#11":6,"13":9,"b13":8,"6":9,"b6":8,"b7
 const tNote=(root,t)=>{const s=T_SEMI[t];return s!==undefined?fromRoot(root,s):null;};
 
 const MODE_BY_DEGREE=[
-  {name:"Jónico",   ivs:MODES["Jónico"],   q:"maj7",tensions:["9","13"],       avoid:["11"], degree:"I"  },
-  {name:"Dórico",   ivs:MODES["Dórico"],   q:"m7",  tensions:["9","11"],       avoid:["b9"], degree:"II" },
-  {name:"Frigio",   ivs:MODES["Frigio"],   q:"m7",  tensions:["11"],           avoid:["9","13"],degree:"III"},
-  {name:"Lidio",    ivs:MODES["Lidio"],    q:"maj7",tensions:["9","#11","13"],  avoid:[],     degree:"IV" },
-  {name:"Mixolidio",ivs:MODES["Mixolidio"],q:"7",   tensions:["9","13"],       avoid:["11"], degree:"V"  },
-  {name:"Eólico",   ivs:MODES["Eólico"],   q:"m7",  tensions:["9","11"],       avoid:[],     degree:"VI" },
-  {name:"Locrio",   ivs:MODES["Locrio"],   q:"m7b5",tensions:["11","b13"],     avoid:["b9"], degree:"VII"},
+  // I — Cmaj7 — Jónico
+  // 9=D (tono entero sobre C) ✅ | 13=A (tono entero sobre G) ✅
+  // avoid 11=F: medio tono sobre la 3ª (E), crea fricción ❌
+  {name:"Jónico",   ivs:MODES["Jónico"],   q:"maj7",tensions:["9","13"],      avoid:["11"],   degree:"I"  },
+
+  // II — Dm7 — Dórico
+  // 9=E (tono entero sobre D) ✅ | 11=G (tono entero sobre F) ✅
+  // 13=B (tono entero sobre A) ✅ — tensión característica del Dórico, no omitir
+  // NO hay b9 diatónica en Do Mayor: Eb no pertenece a la escala
+  {name:"Dórico",   ivs:MODES["Dórico"],   q:"m7",  tensions:["9","11","13"], avoid:[],       degree:"II" },
+
+  // III — Em7 — Frigio
+  // Las notas a evitar son diatónicas pero están a medio tono de notas del acorde:
+  // F (b9 desde E): medio tono sobre la raíz → avoid ❌
+  // C (b13 desde E): medio tono sobre la 5ª (B) → avoid ❌
+  // 11=A: tono entero sobre G (5ª), disponible ✅
+  // NO usar F# ni C# — no pertenecen a Do Mayor
+  {name:"Frigio",   ivs:MODES["Frigio"],   q:"m7",  tensions:["11"],          avoid:["b9","b13"], degree:"III"},
+
+  // IV — Fmaj7 — Lidio
+  // 9=G ✅ | #11=B (4ª aum. desde F, el Si natural) ✅ | 13=D ✅
+  // "#11" es el nombre del intervalo, la nota es Si (B) natural — sin alteración adicional
+  {name:"Lidio",    ivs:MODES["Lidio"],    q:"maj7",tensions:["9","#11","13"], avoid:[],       degree:"IV" },
+
+  // V — G7 — Mixolidio
+  // 9=A ✅ | 13=E ✅
+  // avoid 11=C: medio tono sobre la 3ª (B), choca con la sensible ❌
+  {name:"Mixolidio",ivs:MODES["Mixolidio"],q:"7",   tensions:["9","13"],      avoid:["11"],   degree:"V"  },
+
+  // VI — Am7 — Eólico
+  // 9=B ✅ | 11=D ✅
+  // La b13 (F) está a medio tono de la 5ª (E) → en contexto diatónico es avoid
+  {name:"Eólico",   ivs:MODES["Eólico"],   q:"m7",  tensions:["9","11"],      avoid:["b13"],  degree:"VI" },
+
+  // VII — Bm7b5 — Locrio
+  // 11=E ✅ | b13=G ✅
+  // b9=C: medio tono sobre la raíz (B) → avoid ❌
+  // La b9 de Si es Do (C natural), que sí pertenece a Do Mayor — correcto
+  {name:"Locrio",   ivs:MODES["Locrio"],   q:"m7b5",tensions:["11","b13"],    avoid:["b9"],   degree:"VII"},
 ];
+
 const MODE_BY_DEGREE_MINOR=[
-  {name:"Eólico",    ivs:MODES["Eólico"],    q:"m7",  tensions:["9","11"],       avoid:[],         degree:"i"   },
-  {name:"Locrio",    ivs:MODES["Locrio"],    q:"m7b5",tensions:["11","b13"],     avoid:["b9"],     degree:"ii"  },
-  {name:"Jónico",    ivs:MODES["Jónico"],    q:"maj7",tensions:["9","13"],       avoid:["11"],     degree:"bIII"},
-  {name:"Dórico",    ivs:MODES["Dórico"],    q:"m7",  tensions:["9","11"],       avoid:["b9"],     degree:"iv"  },
-  {name:"Frigio",    ivs:MODES["Frigio"],    q:"m7",  tensions:["11"],           avoid:["9","13"], degree:"v"   },
-  {name:"Lidio",     ivs:MODES["Lidio"],     q:"maj7",tensions:["9","#11","13"], avoid:[],         degree:"bVI" },
-  {name:"Mixolidio", ivs:MODES["Mixolidio"], q:"7",   tensions:["9","13"],       avoid:["11"],     degree:"bVII"},
+  // i — Am7 — Eólico
+  {name:"Eólico",    ivs:MODES["Eólico"],    q:"m7",  tensions:["9","11"],        avoid:["b13"],    degree:"i"   },
+  // ii — Bm7b5 — Locrio
+  {name:"Locrio",    ivs:MODES["Locrio"],    q:"m7b5",tensions:["11","b13"],      avoid:["b9"],     degree:"ii"  },
+  // bIII — Cmaj7 — Jónico
+  {name:"Jónico",    ivs:MODES["Jónico"],    q:"maj7",tensions:["9","13"],        avoid:["11"],     degree:"bIII"},
+  // iv — Dm7 — Dórico
+  {name:"Dórico",    ivs:MODES["Dórico"],    q:"m7",  tensions:["9","11","13"],   avoid:[],         degree:"iv"  },
+  // v — Em7 — Frigio
+  {name:"Frigio",    ivs:MODES["Frigio"],    q:"m7",  tensions:["11"],            avoid:["b9","b13"],degree:"v"  },
+  // bVI — Fmaj7 — Lidio
+  {name:"Lidio",     ivs:MODES["Lidio"],     q:"maj7",tensions:["9","#11","13"],  avoid:[],         degree:"bVI" },
+  // bVII — G7 — Mixolidio
+  {name:"Mixolidio", ivs:MODES["Mixolidio"], q:"7",   tensions:["9","13"],        avoid:["11"],     degree:"bVII"},
 ];
 
 const HF={

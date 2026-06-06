@@ -328,27 +328,65 @@ const getFns=(q)=>HF[q]||[{fn:"Acorde de color",degree:"?",key:"Uso libre / moda
 // ─── VOICING REAL DE PIANO ────────────────────────────────────────────────────
 // MI: tónica sola en bajo (oct 2)
 // MD: 3ª + 7ª (guía-notas) en oct 4, extensiones en oct 5
+// buildVoicing — construye el voicing real del acorde para el piano SVG.
+// Lógica de distribución por manos:
+//
+//   MANO IZQUIERDA (bajo, oct 2):
+//     - Siempre: tónica en oct 2 (bajo fundamental)
+//     - Quinta justa cuando está disponible (oct 2), excepto en acordes dim/aug donde
+//       la 5ª alterada ya se muestra en la mano derecha
+//
+//   MANO DERECHA (oct 3-4, tensiones en oct 5):
+//     - Orden de construcción de abajo hacia arriba:
+//       3ª (menor o mayor) en oct 3
+//       5ª (justa, disminuida o aumentada) en oct 4
+//       7ª (menor o mayor) en oct 4
+//       Extensiones (9ª, 11ª, 13ª y sus alteraciones) en oct 5
+//
+//   La quinta SIEMPRE aparece en mano derecha si el acorde la tiene,
+//   independientemente de si hay 7ª o no.
+//   En triadas sin 7ª, la quinta aparece en oct 3 (más cerca de la 3ª).
 const buildVoicing=(root,quality)=>{
   const f=FORMULAS[quality]||FORMULAS["maj"];
   const ivs=f.intervals;
+  // has: verifica si un semitono (mod 12) está en la fórmula
   const has=s=>ivs.some(i=>(i%12)===s%12);
   const has7=has(10)||has(11);
+
+  // ── MANO IZQUIERDA: bajo grave ──────────────────────────────────────────────
   const L=[];
-  L.push({note:root,role:"Tónica (bajo)",oct:2});
-  if(!has7&&has(7)) L.push({note:fromRoot(root,7),role:"Quinta",oct:2});
-  if(has(6))        L.push({note:fromRoot(root,6),role:"5ª dim.",oct:2});
-  if(has(8))        L.push({note:fromRoot(root,8),role:"5ª aum.",oct:2});
+  L.push({note:root, role:"Tónica (bajo)", oct:2});
+  // Quinta en el bajo solo en triadas simples (sin 7ª) y cuando es justa
+  // En acordes con 7ª la quinta va a la mano derecha
+  if(!has7 && has(7) && !has(6) && !has(8)){
+    L.push({note:fromRoot(root,7), role:"Quinta", oct:2});
+  }
+
+  // ── MANO DERECHA: cuerpo del acorde ────────────────────────────────────────
   const R=[];
-  if(has(3))  R.push({note:fromRoot(root,3), role:"3ª menor",oct:4});
-  if(has(4))  R.push({note:fromRoot(root,4), role:"3ª mayor",oct:4});
-  if(has(10)) R.push({note:fromRoot(root,10),role:"7ª menor", oct:4});
-  if(has(11)) R.push({note:fromRoot(root,11),role:"7ª mayor", oct:4});
-  if(!has7&&has(7)) R.push({note:fromRoot(root,7),role:"Quinta",oct:4});
-  const extL={1:"b9",2:"9ª",3:"#9",5:"11ª",6:"#11",8:"b13",9:"13ª"};
+
+  // 3ª — siempre la primera nota de la mano derecha
+  if(has(3)) R.push({note:fromRoot(root,3),  role:"3ª menor", oct:3});
+  if(has(4)) R.push({note:fromRoot(root,4),  role:"3ª mayor", oct:3});
+
+  // 5ª — SIEMPRE en mano derecha (justa, disminuida o aumentada)
+  // En triadas sin 7ª va en oct 3; en cuatriadas va en oct 4
+  const oct5a = has7 ? 4 : 3;
+  if(has(7))  R.push({note:fromRoot(root,7),  role:"5ª justa",  oct:oct5a});
+  if(has(6))  R.push({note:fromRoot(root,6),  role:"5ª dim.",   oct:oct5a});
+  if(has(8))  R.push({note:fromRoot(root,8),  role:"5ª aum.",   oct:oct5a});
+
+  // 7ª — cuando la hay
+  if(has(10)) R.push({note:fromRoot(root,10), role:"7ª menor",  oct:4});
+  if(has(11)) R.push({note:fromRoot(root,11), role:"7ª mayor",  oct:4});
+
+  // Extensiones (intervalos > 11 en la fórmula) — oct 5
+  const extLabels={1:"b9",2:"9ª",3:"#9",5:"11ª",6:"#11",8:"b13",9:"13ª"};
   ivs.filter(i=>i>11).forEach(i=>{
     const s=i%12;
-    R.push({note:fromRoot(root,s),role:extL[s]||"ext.",oct:5});
+    R.push({note:fromRoot(root,s), role:extLabels[s]||"ext.", oct:5});
   });
+
   return {L,R};
 };
 

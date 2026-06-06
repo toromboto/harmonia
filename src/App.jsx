@@ -37,6 +37,41 @@ const noteIdx = n => {
   return e?CHROMATIC.indexOf(e[0]):-1;
 };
 const fromRoot = (root,semi) => CHROMATIC[(noteIdx(root)+semi+120)%12];
+
+// spellInterval: devuelve la nota con nombre de letra correcto según el intervalo.
+// Ej: C# + 4 semitonos (3ª mayor) = E# (no F)
+//     F  + 6 semitonos (tritono)   = B  (no A#) en contexto Lidio
+// Tabla de grados por semitono: 0=1ª, 1=b2, 2=2ª, 3=b3, 4=3ª, 5=4ª,
+//   6=b5/#4, 7=5ª, 8=b6/#5, 9=6ª, 10=b7, 11=7ª
+const INTERVAL_DEGREE = [0,1,1,2,2,3,3,4,4,5,5,6]; // semitono → grado (0-based desde raíz)
+const LETTERS = ["C","D","E","F","G","A","B"];
+const CHROMATIC_SHARP_S = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const CHROMATIC_FLAT_S  = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
+const FLAT_ROOTS = new Set(["F","Bb","Eb","Ab","Db","Gb","Cb"]);
+
+function spellInterval(root, semi) {
+  if(semi===0) return root;
+  // Índice cromático destino
+  const rootIdx = CHROMATIC_SHARP_S.indexOf(root) !== -1
+    ? CHROMATIC_SHARP_S.indexOf(root)
+    : CHROMATIC_FLAT_S.indexOf(root);
+  const destIdx = (rootIdx + semi + 120) % 12;
+
+  // Letra destino según grado del intervalo
+  const rootLetter = root.replace(/[#b]/g,"");
+  const rootLetterIdx = LETTERS.indexOf(rootLetter);
+  const degreeOffset = INTERVAL_DEGREE[semi % 12];
+  const targetLetter = LETTERS[(rootLetterIdx + degreeOffset) % 7];
+
+  // Buscar en sharp y flat cuál tiene esa letra
+  for(const scale of [CHROMATIC_SHARP_S, CHROMATIC_FLAT_S]) {
+    const note = scale[destIdx];
+    if(note && note.replace(/[#b]/g,"") === targetLetter) return note;
+  }
+  // Doble alteración (Ej: E## → F#) — devolver enarmónico simple como fallback
+  const useFlat = FLAT_ROOTS.has(root);
+  return (useFlat ? CHROMATIC_FLAT_S : CHROMATIC_SHARP_S)[destIdx];
+}
 const buildScale = (root,ivs) => {
   // Para escalas de 7 notas: usar spelling diatónico correcto
   // (una nota por letra de la escala, sin repetir C D E F G A B)
@@ -225,7 +260,7 @@ const MODES={
 };
 
 const T_SEMI={"9":2,"b9":1,"#9":3,"11":5,"#11":6,"13":9,"b13":8,"6":9,"b6":8,"b7":10,"7":11};
-const tNote=(root,t)=>{const s=T_SEMI[t];return s!==undefined?fromRoot(root,s):null;};
+const tNote=(root,t)=>{const s=T_SEMI[t];return s!==undefined?spellInterval(root,s):null;};
 
 const MODE_BY_DEGREE=[
   // I — Cmaj7 — Jónico
@@ -349,42 +384,36 @@ const getFns=(q)=>HF[q]||[{fn:"Acorde de color",degree:"?",key:"Uso libre / moda
 const buildVoicing=(root,quality)=>{
   const f=FORMULAS[quality]||FORMULAS["maj"];
   const ivs=f.intervals;
-  // has: verifica si un semitono (mod 12) está en la fórmula
   const has=s=>ivs.some(i=>(i%12)===s%12);
   const has7=has(10)||has(11);
+  // sp: spelling diatónico correcto — usa spellInterval en vez de fromRoot
+  const sp=(semi)=>spellInterval(root,semi);
 
   // ── MANO IZQUIERDA: bajo grave ──────────────────────────────────────────────
   const L=[];
   L.push({note:root, role:"Tónica (bajo)", oct:2});
-  // Quinta en el bajo solo en triadas simples (sin 7ª) y cuando es justa
-  // En acordes con 7ª la quinta va a la mano derecha
   if(!has7 && has(7) && !has(6) && !has(8)){
-    L.push({note:fromRoot(root,7), role:"Quinta", oct:2});
+    L.push({note:sp(7), role:"Quinta", oct:2});
   }
 
   // ── MANO DERECHA: cuerpo del acorde ────────────────────────────────────────
   const R=[];
-
-  // 3ª — siempre la primera nota de la mano derecha
-  if(has(3)) R.push({note:fromRoot(root,3),  role:"3ª menor", oct:3});
-  if(has(4)) R.push({note:fromRoot(root,4),  role:"3ª mayor", oct:3});
-
-  // 5ª — SIEMPRE en mano derecha (justa, disminuida o aumentada)
-  // En triadas sin 7ª va en oct 3; en cuatriadas va en oct 4
+  // 3ª — nombre de letra correcto: C#+4 = E# (no F), Ab+3 = Cb (no B)
+  if(has(3)) R.push({note:sp(3),  role:"3ª menor", oct:3});
+  if(has(4)) R.push({note:sp(4),  role:"3ª mayor", oct:3});
+  // 5ª
   const oct5a = has7 ? 4 : 3;
-  if(has(7))  R.push({note:fromRoot(root,7),  role:"5ª justa",  oct:oct5a});
-  if(has(6))  R.push({note:fromRoot(root,6),  role:"5ª dim.",   oct:oct5a});
-  if(has(8))  R.push({note:fromRoot(root,8),  role:"5ª aum.",   oct:oct5a});
-
-  // 7ª — cuando la hay
-  if(has(10)) R.push({note:fromRoot(root,10), role:"7ª menor",  oct:4});
-  if(has(11)) R.push({note:fromRoot(root,11), role:"7ª mayor",  oct:4});
-
-  // Extensiones (intervalos > 11 en la fórmula) — oct 5
+  if(has(7))  R.push({note:sp(7),  role:"5ª justa",  oct:oct5a});
+  if(has(6))  R.push({note:sp(6),  role:"5ª dim.",   oct:oct5a});
+  if(has(8))  R.push({note:sp(8),  role:"5ª aum.",   oct:oct5a});
+  // 7ª
+  if(has(10)) R.push({note:sp(10), role:"7ª menor",  oct:4});
+  if(has(11)) R.push({note:sp(11), role:"7ª mayor",  oct:4});
+  // Extensiones
   const extLabels={1:"b9",2:"9ª",3:"#9",5:"11ª",6:"#11",8:"b13",9:"13ª"};
   ivs.filter(i=>i>11).forEach(i=>{
     const s=i%12;
-    R.push({note:fromRoot(root,s), role:extLabels[s]||"ext.", oct:5});
+    R.push({note:sp(s), role:extLabels[s]||"ext.", oct:5});
   });
 
   return {L,R};
@@ -445,7 +474,7 @@ const parseChord=(input)=>{
     else if(rest.includes("sus4")||rest.includes("sus"))q="sus4";
     else if(rest.includes("m"))q="min";
     const formula=FORMULAS[q]||FORMULAS["maj"];
-    const notes=formula.intervals.map(i=>fromRoot(root,i%12));
+    const notes=formula.intervals.map(i=>spellInterval(root,i%12));
     return{root,quality:q,notes,formula,raw:s};
   }catch(e){return null;}
 };

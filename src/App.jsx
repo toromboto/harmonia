@@ -3094,11 +3094,37 @@ export default function HarmoniaApp(){
                     <div className="flex flex-wrap gap-2 mb-5">
                       {chord.notes.map(n=><Nota key={n} note={n} size="lg"/>)}
                     </div>
+                    {/* Notas del acorde con octava sugerida — sin piano SVG */}
                     {voicing&&(
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Voicing real en piano</p>
-                        <div className="rounded-xl p-3 border border-gray-700" style={{background:"#111825"}}>
-                          <Piano leftVoice={voicing.L} rightVoice={voicing.R}/>
+                      <div className="rounded-xl p-3 border border-gray-800 mt-1" style={{background:"#0c0f1e"}}>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Notas del acorde</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="rounded-lg p-2.5 border" style={{background:"#07101f",borderColor:"#1a3060"}}>
+                            <p className="text-xs font-bold mb-2" style={{color:"#4488ff"}}>← Mano izquierda</p>
+                            <div className="space-y-1.5">
+                              {voicing.L.map((v,i)=>(
+                                <div key={i} className="flex items-center gap-2">
+                                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{background:nc(v.note)}}/>
+                                  <span className="font-bold text-sm" style={{color:nc(v.note)}}>{v.note}</span>
+                                  <span className="text-gray-600 text-xs">oct.{v.oct}</span>
+                                  <span className="text-gray-500 text-xs ml-auto">{v.role}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="rounded-lg p-2.5 border" style={{background:"#071507",borderColor:"#1a4a28"}}>
+                            <p className="text-xs font-bold mb-2 text-green-400">Mano derecha →</p>
+                            <div className="space-y-1.5">
+                              {voicing.R.map((v,i)=>(
+                                <div key={i} className="flex items-center gap-2">
+                                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{background:nc(v.note)}}/>
+                                  <span className="font-bold text-sm" style={{color:nc(v.note)}}>{v.note}</span>
+                                  <span className="text-gray-600 text-xs">oct.{v.oct}</span>
+                                  <span className="text-gray-500 text-xs ml-auto">{v.role}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -3205,10 +3231,36 @@ export default function HarmoniaApp(){
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               {ch.notes.map(n=><Nota key={n} note={n} size="sm"/>)}
                             </div>
-                            {/* Piano voicing */}
-                            <div className="rounded-xl p-2.5 border border-gray-700 mb-3" style={{background:"#111825"}}>
-                              <p className="text-xs text-gray-600 mb-1.5">Voicing en piano</p>
-                              <Piano leftVoice={v.L} rightVoice={v.R}/>
+                            {/* Notas del acorde sin piano SVG */}
+                            <div className="rounded-xl p-2.5 border border-gray-800 mb-3" style={{background:"#0c0f1e"}}>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="rounded-lg p-2 border" style={{background:"#07101f",borderColor:"#1a3060"}}>
+                                  <p className="text-xs font-bold mb-1.5" style={{color:"#4488ff",fontSize:"10px"}}>← IZQ</p>
+                                  <div className="space-y-1">
+                                    {v.L.map((n,i)=>(
+                                      <div key={i} className="flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{background:nc(n.note)}}/>
+                                        <span className="font-bold text-xs" style={{color:nc(n.note)}}>{n.note}</span>
+                                        <span className="text-gray-700" style={{fontSize:"9px"}}>oct.{n.oct}</span>
+                                        <span className="text-gray-600 ml-auto" style={{fontSize:"9px"}}>{n.role}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="rounded-lg p-2 border" style={{background:"#071507",borderColor:"#1a4a28"}}>
+                                  <p className="text-xs font-bold mb-1.5 text-green-400" style={{fontSize:"10px"}}>DER →</p>
+                                  <div className="space-y-1">
+                                    {v.R.map((n,i)=>(
+                                      <div key={i} className="flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{background:nc(n.note)}}/>
+                                        <span className="font-bold text-xs" style={{color:nc(n.note)}}>{n.note}</span>
+                                        <span className="text-gray-700" style={{fontSize:"9px"}}>oct.{n.oct}</span>
+                                        <span className="text-gray-600 ml-auto" style={{fontSize:"9px"}}>{n.role}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                             {f&&(
                               <div className="text-sm flex flex-wrap gap-x-4 gap-y-1">

@@ -38,39 +38,35 @@ const noteIdx = n => {
 };
 const fromRoot = (root,semi) => CHROMATIC[(noteIdx(root)+semi+120)%12];
 
-// spellInterval: devuelve la nota con nombre de letra correcto según el intervalo.
-// Ej: C# + 4 semitonos (3ª mayor) = E# (no F)
-//     F  + 6 semitonos (tritono)   = B  (no A#) en contexto Lidio
-// Tabla de grados por semitono: 0=1ª, 1=b2, 2=2ª, 3=b3, 4=3ª, 5=4ª,
-//   6=b5/#4, 7=5ª, 8=b6/#5, 9=6ª, 10=b7, 11=7ª
-const INTERVAL_DEGREE = [0,1,1,2,2,3,3,4,4,5,5,6]; // semitono → grado (0-based desde raíz)
-const LETTERS = ["C","D","E","F","G","A","B"];
-const CHROMATIC_SHARP_S = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-const CHROMATIC_FLAT_S  = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
-const FLAT_ROOTS = new Set(["F","Bb","Eb","Ab","Db","Gb","Cb"]);
-
+// spellInterval: devuelve el nombre correcto de la nota según el intervalo desde la raíz.
+// Usa tabla explícita validada para las 18 raíces más comunes.
+// Ej: C#+4 = E# (no F) | G+10 = F (no E#) | Bb+6 = Fb (no E)
+const SPELL_TABLE = {
+  "C":  {0:"C", 1:"Db",2:"D", 3:"Eb",4:"E", 5:"F", 6:"F#",7:"G", 8:"Ab",9:"A", 10:"Bb",11:"B"},
+  "C#": {0:"C#",1:"D", 2:"D#",3:"E", 4:"E#",5:"F#",6:"G", 7:"G#",8:"A", 9:"A#",10:"B", 11:"B#"},
+  "Db": {0:"Db",1:"D", 2:"Eb",3:"Fb",4:"F", 5:"Gb",6:"G", 7:"Ab",8:"A", 9:"Bb",10:"Cb",11:"C"},
+  "D":  {0:"D", 1:"Eb",2:"E", 3:"F", 4:"F#",5:"G", 6:"Ab",7:"A", 8:"Bb",9:"B", 10:"C", 11:"C#"},
+  "D#": {0:"D#",1:"E", 2:"E#",3:"F#",4:"G", 5:"G#",6:"A", 7:"A#",8:"B", 9:"B#",10:"C#",11:"D"},
+  "Eb": {0:"Eb",1:"E", 2:"F", 3:"Gb",4:"G", 5:"Ab",6:"A", 7:"Bb",8:"Cb",9:"C", 10:"Db",11:"D"},
+  "E":  {0:"E", 1:"F", 2:"F#",3:"G", 4:"G#",5:"A", 6:"Bb",7:"B", 8:"C", 9:"C#",10:"D", 11:"D#"},
+  "F":  {0:"F", 1:"Gb",2:"G", 3:"Ab",4:"A", 5:"Bb",6:"B", 7:"C", 8:"Db",9:"D", 10:"Eb",11:"E"},
+  "F#": {0:"F#",1:"G", 2:"G#",3:"A", 4:"A#",5:"B", 6:"C", 7:"C#",8:"D", 9:"D#",10:"E", 11:"E#"},
+  "Gb": {0:"Gb",1:"G", 2:"Ab",3:"A", 4:"Bb",5:"Cb",6:"C", 7:"Db",8:"D", 9:"Eb",10:"Fb",11:"F"},
+  "G":  {0:"G", 1:"Ab",2:"A", 3:"Bb",4:"B", 5:"C", 6:"C#",7:"D", 8:"Eb",9:"E", 10:"F", 11:"F#"},
+  "G#": {0:"G#",1:"A", 2:"A#",3:"B", 4:"B#",5:"C#",6:"D", 7:"D#",8:"E", 9:"E#",10:"F#",11:"G"},
+  "Ab": {0:"Ab",1:"A", 2:"Bb",3:"Cb",4:"C", 5:"Db",6:"D", 7:"Eb",8:"Fb",9:"F", 10:"Gb",11:"G"},
+  "A":  {0:"A", 1:"Bb",2:"B", 3:"C", 4:"C#",5:"D", 6:"Eb",7:"E", 8:"F", 9:"F#",10:"G", 11:"G#"},
+  "A#": {0:"A#",1:"B", 2:"B#",3:"C#",4:"D", 5:"D#",6:"E", 7:"E#",8:"F#",9:"G", 10:"G#",11:"A"},
+  "Bb": {0:"Bb",1:"B", 2:"C", 3:"Db",4:"D", 5:"Eb",6:"Fb",7:"F", 8:"Gb",9:"G", 10:"Ab",11:"A"},
+  "B":  {0:"B", 1:"C", 2:"C#",3:"D", 4:"D#",5:"E", 6:"F", 7:"F#",8:"G", 9:"G#",10:"A", 11:"A#"},
+};
 function spellInterval(root, semi) {
-  if(semi===0) return root;
-  // Índice cromático destino
-  const rootIdx = CHROMATIC_SHARP_S.indexOf(root) !== -1
-    ? CHROMATIC_SHARP_S.indexOf(root)
-    : CHROMATIC_FLAT_S.indexOf(root);
-  const destIdx = (rootIdx + semi + 120) % 12;
-
-  // Letra destino según grado del intervalo
-  const rootLetter = root.replace(/[#b]/g,"");
-  const rootLetterIdx = LETTERS.indexOf(rootLetter);
-  const degreeOffset = INTERVAL_DEGREE[semi % 12];
-  const targetLetter = LETTERS[(rootLetterIdx + degreeOffset) % 7];
-
-  // Buscar en sharp y flat cuál tiene esa letra
-  for(const scale of [CHROMATIC_SHARP_S, CHROMATIC_FLAT_S]) {
-    const note = scale[destIdx];
-    if(note && note.replace(/[#b]/g,"") === targetLetter) return note;
-  }
-  // Doble alteración (Ej: E## → F#) — devolver enarmónico simple como fallback
-  const useFlat = FLAT_ROOTS.has(root);
-  return (useFlat ? CHROMATIC_FLAT_S : CHROMATIC_SHARP_S)[destIdx];
+  const t = SPELL_TABLE[root];
+  if(t && t[semi%12] !== undefined) return t[semi%12];
+  // Fallback para raíces no listadas (raro)
+  const CH=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  const ri=CH.indexOf(root);if(ri<0)return root;
+  return CH[(ri+semi+120)%12];
 }
 const buildScale = (root,ivs) => {
   // Para escalas de 7 notas: usar spelling diatónico correcto

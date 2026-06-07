@@ -26,7 +26,19 @@ function loadPalette() {
   } catch { return {...NC_DEFAULT}; }
 }
 let NC = loadPalette();
-const nc = (n) => NC[n?.replace(/[0-9]/g,"").trim()] || "#888";
+const nc = (n) => {
+  const key = n?.replace(/[0-9]/g,"").trim();
+  if(!key) return "#888";
+  if(NC[key]) return NC[key];
+  // Enarmónicos dobles: E#=F, B#=C, Cb=B, Fb=E, etc.
+  const ENH_EXT = {
+    "E#":"F","B#":"C","Cb":"B","Fb":"E",
+    "A#":"Bb","D#":"Eb","G#":"Ab","C#":"Db","F#":"Gb",
+  };
+  const mapped = ENH_EXT[key];
+  if(mapped && NC[mapped]) return NC[mapped];
+  return "#888";
+};
 
 const CHROMATIC  = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 const ENHARMONIC = {"C#":"Db","D#":"Eb","F#":"Gb","G#":"Ab","A#":"Bb"};
@@ -38,8 +50,9 @@ const noteIdx = n => {
 };
 const fromRoot = (root,semi) => CHROMATIC[(noteIdx(root)+semi+120)%12];
 
-// spellInterval: devuelve el nombre correcto de la nota según el intervalo desde la raíz.
-// Usa tabla explícita validada para las 18 raíces más comunes.
+// ─── SPELLING DIATÓNICO CORRECTO ──────────────────────────────────────────────
+// spellInterval: devuelve el nombre correcto de la nota según intervalo desde raíz.
+// Tabla explícita validada para las 18 raíces — evita errores de enarmonía.
 // Ej: C#+4 = E# (no F) | G+10 = F (no E#) | Bb+6 = Fb (no E)
 const SPELL_TABLE = {
   "C":  {0:"C", 1:"Db",2:"D", 3:"Eb",4:"E", 5:"F", 6:"F#",7:"G", 8:"Ab",9:"A", 10:"Bb",11:"B"},
@@ -63,9 +76,8 @@ const SPELL_TABLE = {
 function spellInterval(root, semi) {
   const t = SPELL_TABLE[root];
   if(t && t[semi%12] !== undefined) return t[semi%12];
-  // Fallback para raíces no listadas (raro)
   const CH=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-  const ri=CH.indexOf(root);if(ri<0)return root;
+  const ri=CH.indexOf(root); if(ri<0) return root;
   return CH[(ri+semi+120)%12];
 }
 const buildScale = (root,ivs) => {
@@ -259,71 +271,31 @@ const T_SEMI={"9":2,"b9":1,"#9":3,"11":5,"#11":6,"13":9,"b13":8,"6":9,"b6":8,"b7
 const tNote=(root,t)=>{const s=T_SEMI[t];return s!==undefined?spellInterval(root,s):null;};
 
 const MODE_BY_DEGREE=[
-  // I — Cmaj7 — Jónico
-  // 9=D (tono entero sobre C) ✅ | 13=A (tono entero sobre G) ✅
-  // avoid 11=F: medio tono sobre la 3ª (E), crea fricción ❌
-  {name:"Jónico",   ivs:MODES["Jónico"],   q:"maj7",tensions:["9","13"],      avoid:["11"],   degree:"I"  },
-
-  // II — Dm7 — Dórico
-  // 9=E (tono entero sobre D) ✅ | 11=G (tono entero sobre F) ✅
-  // 13=B (tono entero sobre A) ✅ — tensión característica del Dórico, no omitir
-  // NO hay b9 diatónica en Do Mayor: Eb no pertenece a la escala
-  {name:"Dórico",   ivs:MODES["Dórico"],   q:"m7",  tensions:["9","11","13"], avoid:[],       degree:"II" },
-
-  // III — Em7 — Frigio
-  // Las notas a evitar son diatónicas pero están a medio tono de notas del acorde:
-  // F (b9 desde E): medio tono sobre la raíz → avoid ❌
-  // C (b13 desde E): medio tono sobre la 5ª (B) → avoid ❌
-  // 11=A: tono entero sobre G (5ª), disponible ✅
-  // NO usar F# ni C# — no pertenecen a Do Mayor
-  {name:"Frigio",   ivs:MODES["Frigio"],   q:"m7",  tensions:["11"],          avoid:["b9","b13"], degree:"III"},
-
-  // IV — Fmaj7 — Lidio
-  // 9=G ✅ | #11=B (4ª aum. desde F, el Si natural) ✅ | 13=D ✅
-  // "#11" es el nombre del intervalo, la nota es Si (B) natural — sin alteración adicional
-  {name:"Lidio",    ivs:MODES["Lidio"],    q:"maj7",tensions:["9","#11","13"], avoid:[],       degree:"IV" },
-
-  // V — G7 — Mixolidio
-  // 9=A ✅ | 13=E ✅
-  // avoid 11=C: medio tono sobre la 3ª (B), choca con la sensible ❌
-  {name:"Mixolidio",ivs:MODES["Mixolidio"],q:"7",   tensions:["9","13"],      avoid:["11"],   degree:"V"  },
-
-  // VI — Am7 — Eólico
-  // 9=B ✅ | 11=D ✅
-  // La b13 (F) está a medio tono de la 5ª (E) → en contexto diatónico es avoid
-  {name:"Eólico",   ivs:MODES["Eólico"],   q:"m7",  tensions:["9","11"],      avoid:["b13"],  degree:"VI" },
-
-  // VII — Bm7b5 — Locrio
-  // 11=E ✅ | b13=G ✅
-  // b9=C: medio tono sobre la raíz (B) → avoid ❌
-  // La b9 de Si es Do (C natural), que sí pertenece a Do Mayor — correcto
-  {name:"Locrio",   ivs:MODES["Locrio"],   q:"m7b5",tensions:["11","b13"],    avoid:["b9"],   degree:"VII"},
+  {name:"Jónico",   ivs:MODES["Jónico"],   q:"maj7",tensions:["9","13"],       avoid:["11"], degree:"I"  },
+  {name:"Dórico",   ivs:MODES["Dórico"],   q:"m7",  tensions:["9","11"],       avoid:["b9"], degree:"II" },
+  {name:"Frigio",   ivs:MODES["Frigio"],   q:"m7",  tensions:["11"],           avoid:["9","13"],degree:"III"},
+  {name:"Lidio",    ivs:MODES["Lidio"],    q:"maj7",tensions:["9","#11","13"],  avoid:[],     degree:"IV" },
+  {name:"Mixolidio",ivs:MODES["Mixolidio"],q:"7",   tensions:["9","13"],       avoid:["11"], degree:"V"  },
+  {name:"Eólico",   ivs:MODES["Eólico"],   q:"m7",  tensions:["9","11"],       avoid:[],     degree:"VI" },
+  {name:"Locrio",   ivs:MODES["Locrio"],   q:"m7b5",tensions:["11","b13"],     avoid:["b9"], degree:"VII"},
 ];
-
 const MODE_BY_DEGREE_MINOR=[
-  // i — Am7 — Eólico
-  {name:"Eólico",    ivs:MODES["Eólico"],    q:"m7",  tensions:["9","11"],        avoid:["b13"],    degree:"i"   },
-  // ii — Bm7b5 — Locrio
-  {name:"Locrio",    ivs:MODES["Locrio"],    q:"m7b5",tensions:["11","b13"],      avoid:["b9"],     degree:"ii"  },
-  // bIII — Cmaj7 — Jónico
-  {name:"Jónico",    ivs:MODES["Jónico"],    q:"maj7",tensions:["9","13"],        avoid:["11"],     degree:"bIII"},
-  // iv — Dm7 — Dórico
-  {name:"Dórico",    ivs:MODES["Dórico"],    q:"m7",  tensions:["9","11","13"],   avoid:[],         degree:"iv"  },
-  // v — Em7 — Frigio
-  {name:"Frigio",    ivs:MODES["Frigio"],    q:"m7",  tensions:["11"],            avoid:["b9","b13"],degree:"v"  },
-  // bVI — Fmaj7 — Lidio
-  {name:"Lidio",     ivs:MODES["Lidio"],     q:"maj7",tensions:["9","#11","13"],  avoid:[],         degree:"bVI" },
-  // bVII — G7 — Mixolidio
-  {name:"Mixolidio", ivs:MODES["Mixolidio"], q:"7",   tensions:["9","13"],        avoid:["11"],     degree:"bVII"},
+  {name:"Eólico",    ivs:MODES["Eólico"],    q:"m7",  tensions:["9","11"],       avoid:[],         degree:"i"   },
+  {name:"Locrio",    ivs:MODES["Locrio"],    q:"m7b5",tensions:["11","b13"],     avoid:["b9"],     degree:"ii"  },
+  {name:"Jónico",    ivs:MODES["Jónico"],    q:"maj7",tensions:["9","13"],       avoid:["11"],     degree:"bIII"},
+  {name:"Dórico",    ivs:MODES["Dórico"],    q:"m7",  tensions:["9","11"],       avoid:["b9"],     degree:"iv"  },
+  {name:"Frigio",    ivs:MODES["Frigio"],    q:"m7",  tensions:["11"],           avoid:["9","13"], degree:"v"   },
+  {name:"Lidio",     ivs:MODES["Lidio"],     q:"maj7",tensions:["9","#11","13"], avoid:[],         degree:"bVI" },
+  {name:"Mixolidio", ivs:MODES["Mixolidio"], q:"7",   tensions:["9","13"],       avoid:["11"],     degree:"bVII"},
 ];
 
 const HF={
   "7":[
     {fn:"V7 → I (dominante)",degree:"V",key:"Resuelve a tónica mayor",mode:"Mixolidio",modeIvs:MODES["Mixolidio"],tensions:["9","13"],avoid:["11"],resolutions:["I△7","I"],why:"El tritono (3ª–7ª) se resuelve por semitono. Tensión máxima del sistema tonal."},
-    {fn:"V7/iv (hacia menor)",degree:"V",key:"Resuelve a acorde menor",mode:"Alterada",modeIvs:MODES["Alterada"],tensions:["b9","#9","b13"],avoid:["9","13"],resolutions:["im7","im"],why:"Tensiones alteradas crean color oscuro. Idiomático del tango en cadencias menores."},
+    {fn:"V7/iv (hacia menor)",degree:"V",key:"Resuelve a acorde menor",mode:"Alterada",modeIvs:MODES["Alterada"],tensions:["b9","#9","#11","b13"],avoid:[],resolutions:["im7","im"],why:"Modo Alterado: todas las tensiones (b9,#9,#11,b13) son disponibles. Ninguna es avoid. Color máximamente oscuro para cadencias menores en tango y jazz."},
     {fn:"SubV7 (tritonal)",degree:"bII",key:"Reemplaza V7 — bajo por semitono",mode:"Lidio b7",modeIvs:MODES["Lidio b7"],tensions:["9","#11","13"],avoid:[],resolutions:["I△7","I"],why:"Comparte el tritono con V7. El bajo baja un semitono en vez del salto de 5ª."},
     {fn:"Dominante de paso",degree:"?",key:"Conecta cromáticamente",mode:"Mixolidio",modeIvs:MODES["Mixolidio"],tensions:["9","13"],avoid:[],resolutions:["siguiente"],why:"No establece tonalidad. Genera movimiento cromático sin perturbar el centro."},
-    {fn:"I7 Blues / tango",degree:"I",key:"Tónica con color blue-tango",mode:"Blues",modeIvs:MODES["Blues"],tensions:["b9","#9"],avoid:[],resolutions:["IV7","V7"],why:"La 7ª menor es constitutiva del sonido, no tensión a resolver."},
+    {fn:"I7 Blues / tango",degree:"I",key:"Tónica estática — color blue-tango",mode:"Blues",modeIvs:MODES["Blues"],tensions:["9","#9","13"],avoid:["b9"],resolutions:["IV7","V7"],why:"En Blues, el I7 es estático — no resuelve. La 9ª y #9 (blue note) son disponibles. La b9 está PROHIBIDA: destruye el color del género al crear una disonancia funcional sobre la tónica."},
   ],
   "maj7":[
     {fn:"I△7 — Tónica mayor",degree:"I",key:"Centro tonal luminoso",mode:"Lidio",modeIvs:MODES["Lidio"],tensions:["9","#11","13"],avoid:["11"],resolutions:["estático"],why:"#11 (Lidio) evita conflicto con la 4ª justa. Color más sofisticado de la función."},
@@ -359,45 +331,28 @@ const getFns=(q)=>HF[q]||[{fn:"Acorde de color",degree:"?",key:"Uso libre / moda
 // ─── VOICING REAL DE PIANO ────────────────────────────────────────────────────
 // MI: tónica sola en bajo (oct 2)
 // MD: 3ª + 7ª (guía-notas) en oct 4, extensiones en oct 5
-// buildVoicing — construye el voicing real del acorde para el piano SVG.
-// Lógica de distribución por manos:
-//
-//   MANO IZQUIERDA (bajo, oct 2):
-//     - Siempre: tónica en oct 2 (bajo fundamental)
-//     - Quinta justa cuando está disponible (oct 2), excepto en acordes dim/aug donde
-//       la 5ª alterada ya se muestra en la mano derecha
-//
-//   MANO DERECHA (oct 3-4, tensiones en oct 5):
-//     - Orden de construcción de abajo hacia arriba:
-//       3ª (menor o mayor) en oct 3
-//       5ª (justa, disminuida o aumentada) en oct 4
-//       7ª (menor o mayor) en oct 4
-//       Extensiones (9ª, 11ª, 13ª y sus alteraciones) en oct 5
-//
-//   La quinta SIEMPRE aparece en mano derecha si el acorde la tiene,
-//   independientemente de si hay 7ª o no.
-//   En triadas sin 7ª, la quinta aparece en oct 3 (más cerca de la 3ª).
 const buildVoicing=(root,quality)=>{
   const f=FORMULAS[quality]||FORMULAS["maj"];
   const ivs=f.intervals;
   const has=s=>ivs.some(i=>(i%12)===s%12);
   const has7=has(10)||has(11);
-  // sp: spelling diatónico correcto — usa spellInterval en vez de fromRoot
+  // sp: usa spellInterval para naming diatónico correcto (C#+4=E#, no F)
   const sp=(semi)=>spellInterval(root,semi);
 
-  // ── MANO IZQUIERDA: bajo grave ──────────────────────────────────────────────
+  // ── MANO IZQUIERDA: bajo grave (oct 2) ──
   const L=[];
   L.push({note:root, role:"Tónica (bajo)", oct:2});
+  // Quinta en el bajo solo en triadas simples sin 7ª y cuando es justa
   if(!has7 && has(7) && !has(6) && !has(8)){
     L.push({note:sp(7), role:"Quinta", oct:2});
   }
 
-  // ── MANO DERECHA: cuerpo del acorde ────────────────────────────────────────
+  // ── MANO DERECHA: cuerpo del acorde (oct 3-4) ──
   const R=[];
-  // 3ª — nombre de letra correcto: C#+4 = E# (no F), Ab+3 = Cb (no B)
+  // 3ª — siempre la primera nota, nombre diatónico correcto
   if(has(3)) R.push({note:sp(3),  role:"3ª menor", oct:3});
   if(has(4)) R.push({note:sp(4),  role:"3ª mayor", oct:3});
-  // 5ª
+  // 5ª — SIEMPRE presente en MD (justa, dim o aum)
   const oct5a = has7 ? 4 : 3;
   if(has(7))  R.push({note:sp(7),  role:"5ª justa",  oct:oct5a});
   if(has(6))  R.push({note:sp(6),  role:"5ª dim.",   oct:oct5a});
@@ -405,7 +360,7 @@ const buildVoicing=(root,quality)=>{
   // 7ª
   if(has(10)) R.push({note:sp(10), role:"7ª menor",  oct:4});
   if(has(11)) R.push({note:sp(11), role:"7ª mayor",  oct:4});
-  // Extensiones
+  // Extensiones (intervalos > 11 en la fórmula) — oct 5
   const extLabels={1:"b9",2:"9ª",3:"#9",5:"11ª",6:"#11",8:"b13",9:"13ª"};
   ivs.filter(i=>i>11).forEach(i=>{
     const s=i%12;
@@ -1874,52 +1829,40 @@ function DesktopBandLayout({
 
     const MIDI_C={C:60,"C#":61,D:62,"D#":63,E:64,F:65,"F#":66,G:67,"G#":68,A:69,"A#":70,B:71};
 
-    // VOICINGS — lógica de bajo real:
-    // - Mano IZQUIERDA: siempre en octava 2 (grave). Tónica como bajo + opcionalmente quinta.
-    // - Mano DERECHA: notas guía (3ª + 7ª) en oct 3-4. Tensiones opcionales en oct 4-5.
-    // - Los semitonos se interpretan en ABSOLUTO dentro de la octava del instrumento,
-    //   no como distancia desde la raíz en registro agudo.
-    // Estructura: left[] = semitonos sobre la raíz para mano izq (oct 2)
-    //             right[] = semitonos sobre la raíz para mano der (oct 3-4)
-    // Los valores 0-11 = oct 2 (izq) o oct 3 (der)
-    // Los valores 12-23 = oct 3 (izq) o oct 4 (der)
-    // Los valores 24+ = oct 5 (der, tensiones altas)
     const VOICINGS={
-      // TRIADAS
       "maj":[
-        {nombre:"Básico",       left:[0],    right:[4,7,12],    desc:"IZQ: raíz(bajo) · DER: 3ª·5ª·8ª"},
-        {nombre:"Con quinta",   left:[0,7],  right:[4,12,16],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ª·8ª·10ª"},
+        {nombre:"Básico",    left:[0],    right:[4,7],       desc:"IZQ: raíz · DER: 3ª·5ª"},
+        {nombre:"Abierto",   left:[0,7],  right:[4,7,12],    desc:"IZQ: raíz·5ª · DER: 3ª·5ª·8ª"},
       ],
       "min":[
-        {nombre:"Básico",       left:[0],    right:[3,7,12],    desc:"IZQ: raíz(bajo) · DER: 3ªm·5ª·8ª"},
-        {nombre:"Con quinta",   left:[0,7],  right:[3,12,15],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ªm·8ª·10ª"},
+        {nombre:"Básico",    left:[0],    right:[3,7],       desc:"IZQ: raíz · DER: 3ªm·5ª"},
+        {nombre:"Abierto",   left:[0,7],  right:[3,7,12],    desc:"IZQ: raíz·5ª · DER: 3ªm·5ª·8ª"},
       ],
-      // CUATRIADAS — voicing 1 = el más frecuente en tango/jazz
       "7":[
-        {nombre:"Con raíz",     left:[0],    right:[4,7,10],    desc:"IZQ: raíz(bajo) · DER: 3ª·5ª·7ªm"},
-        {nombre:"Tango/Jazz",   left:[0,7],  right:[4,10,16],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ª·7ªm·9ª"},
-        {nombre:"Shell",        left:[0,10], right:[4,16,21],   desc:"IZQ: raíz·7ªm(bajo) · DER: 3ª·9ª·13ª"},
+        {nombre:"Tango/Jazz",left:[0,7],  right:[4,10,14],   desc:"IZQ: raíz·5ª · DER: 3ª·7ªm·9ª"},
+        {nombre:"Con raíz",  left:[0],    right:[4,7,10],    desc:"IZQ: raíz · DER: 3ª·5ª·7ªm"},
+        {nombre:"Shell",     left:[0,10], right:[4,7,14],    desc:"IZQ: raíz·7ªm · DER: 3ª·5ª·9ª"},
       ],
       "maj7":[
-        {nombre:"Con raíz",     left:[0],    right:[4,7,11],    desc:"IZQ: raíz(bajo) · DER: 3ª·5ª·7ª"},
-        {nombre:"Clásico",      left:[0,7],  right:[4,11,16],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ª·7ª·9ª"},
-        {nombre:"Shell",        left:[0,11], right:[4,16,21],   desc:"IZQ: raíz·7ª(bajo) · DER: 3ª·9ª·13ª"},
+        {nombre:"Clásico",   left:[0,7],  right:[4,11,14],   desc:"IZQ: raíz·5ª · DER: 3ª·7ª·9ª"},
+        {nombre:"Con raíz",  left:[0],    right:[4,7,11],    desc:"IZQ: raíz · DER: 3ª·5ª·7ª"},
+        {nombre:"Shell",     left:[0,11], right:[4,7,14],    desc:"IZQ: raíz·7ª · DER: 3ª·5ª·9ª"},
       ],
       "min7":[
-        {nombre:"Con raíz",     left:[0],    right:[3,7,10],    desc:"IZQ: raíz(bajo) · DER: 3ªm·5ª·7ªm"},
-        {nombre:"Tango/Jazz",   left:[0,7],  right:[3,10,16],   desc:"IZQ: raíz·5ª(bajo) · DER: 3ªm·7ªm·9ª"},
-        {nombre:"Shell",        left:[0,10], right:[3,16,21],   desc:"IZQ: raíz·7ªm(bajo) · DER: 3ªm·9ª·11ª"},
+        {nombre:"Tango/Jazz",left:[0,7],  right:[3,10,14],   desc:"IZQ: raíz·5ª · DER: 3ªm·7ªm·9ª"},
+        {nombre:"Con raíz",  left:[0],    right:[3,7,10],    desc:"IZQ: raíz · DER: 3ªm·5ª·7ªm"},
+        {nombre:"Shell",     left:[0,10], right:[3,7,14],    desc:"IZQ: raíz·7ªm · DER: 3ªm·5ª·9ª"},
       ],
       "m7b5":[
-        {nombre:"Con raíz",     left:[0],    right:[3,6,10],    desc:"IZQ: raíz(bajo) · DER: 3ªm·5ªb·7ªm"},
-        {nombre:"Clásico",      left:[0,6],  right:[3,10,16],   desc:"IZQ: raíz·5ªb(bajo) · DER: 3ªm·7ªm·9ª"},
+        {nombre:"Clásico",   left:[0,6],  right:[3,10,14],   desc:"IZQ: raíz·5ªb · DER: 3ªm·7ªm·9ª"},
+        {nombre:"Con raíz",  left:[0],    right:[3,6,10],    desc:"IZQ: raíz · DER: 3ªm·5ªb·7ªm"},
       ],
       "dim7":[
-        {nombre:"Con raíz",     left:[0],    right:[3,6,9],     desc:"IZQ: raíz(bajo) · DER: 3ªm·5ªb·7ªbb"},
-        {nombre:"Simétrico",    left:[0,6],  right:[3,9,18],    desc:"IZQ: raíz·5ªb(bajo) · DER: 3ªm·7ªbb·9ªb"},
+        {nombre:"Simétrico", left:[0,6],  right:[3,9,15],    desc:"IZQ: raíz·5ªb · DER: 3ªm·6ªb·9ªb"},
+        {nombre:"Con raíz",  left:[0],    right:[3,6,9],     desc:"IZQ: raíz · DER: 3ªm·5ªb·7ªbb"},
       ],
       "default":[
-        {nombre:"Básico",       left:[0],    right:[4,7,12],    desc:"IZQ: raíz(bajo) · DER: 3ª·5ª·8ª"},
+        {nombre:"Básico",    left:[0],    right:[4,7],       desc:"IZQ: raíz · DER: 3ª·5ª"},
       ],
     };
 
@@ -1944,29 +1887,12 @@ function DesktopBandLayout({
       else if(/^m(?!aj)/.test(rest))q="min";
       const rootIdx=CHROMATIC_C.indexOf(root);
       const vs=VOICINGS[q]||VOICINGS["default"];
-      // noteFromSemi: calcula nota y octava real según la mano
-      // Mano izquierda: raíz siempre en oct 2 (bajo grave)
-      //   semi 0-11 → oct 2 | semi 12-23 → oct 3
-      // Mano derecha: notas guía en oct 3-4, tensiones en oct 4-5
-      //   semi 0-11 → oct 3 | semi 12-23 → oct 4 | semi 24+ → oct 5
-      const noteFromSemi=(semi,hand)=>{
-        const e=CHROMATIC_C[(rootIdx+semi+120)%12];
-        let oct;
-        if(hand==="left"){
-          oct = semi<12 ? 2 : 3;
-        } else {
-          oct = semi<12 ? 3 : semi<24 ? 4 : 5;
-        }
-        return{eng:e,lat:ENG_LAT2[e]||e,semi,oct};
-      };
+      const noteFromSemi=(semi)=>{const e=CHROMATIC_C[(rootIdx+semi+120)%12];return{eng:e,lat:ENG_LAT2[e]||e,semi};};
       const voicings=vs.map(v=>({
         ...v,
-        notesLeft: v.left.map(s=>noteFromSemi(s,"left")),
-        notesRight:v.right.map(s=>noteFromSemi(s,"right")),
-        notes:[
-          ...v.left.map(s=>noteFromSemi(s,"left")),
-          ...v.right.map(s=>noteFromSemi(s,"right")),
-        ],
+        notesLeft:v.left.map(s=>({...noteFromSemi(s),oct:s<=7?2:3})),
+        notesRight:v.right.map(s=>({...noteFromSemi(s),oct:s<12?3:s<19?4:5})),
+        notes:[...v.left,...v.right].map(s=>({...noteFromSemi(s),oct:s<=7?2:s<12?3:s<19?4:5})),
       }));
       return{rootEng:root,rootLat:ENG_LAT2[root]||root,q,voicings};
     };
@@ -1997,38 +1923,7 @@ function DesktopBandLayout({
                 return(<span key={n} style={{padding:"2px 6px",borderRadius:20,background:nc(engKey)+"22",border:`1px solid ${nc(engKey)}`,color:nc(engKey),fontWeight:700,fontSize:10}}>{notaPura}<span style={{fontSize:"0.7em",opacity:.6,marginLeft:1}}>{oct}</span></span>);
               })}
             </div>
-            {detected&&(
-              <>
-                <div style={{fontSize:22,fontWeight:900,color:"#88aaff",fontFamily:"serif",lineHeight:1,textAlign:"center",padding:"4px 0 2px"}}>{detected}</div>
-                {(()=>{
-                  const LAT2loc={"DO":"C","DO#":"C#","RE":"D","RE#":"D#","MI":"E","FA":"F","FA#":"F#","SOL":"G","SOL#":"G#","LA":"A","LA#":"A#","SI":"B"};
-                  const convDet=detected.replace(/^(DO#|DO|RE#|RE|MI|FA#|FA|SOL#|SOL|LA#|LA|SI)/i,m=>LAT2loc[m.toUpperCase()]||m);
-                  const r=parseCentral(convDet);
-                  if(!r||!r.voicings[0])return null;
-                  const v=r.voicings[0];
-                  return(
-                    <div style={{marginTop:6,padding:"5px 8px",borderRadius:7,background:"#0a0a1a",border:"1px solid #1a1a38"}}>
-                      <div style={{fontSize:7,color:"#555",fontFamily:"monospace",marginBottom:4,letterSpacing:".1em"}}>VOICING SUGERIDO</div>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:4}}>
-                        <div style={{borderLeft:"2px solid #34d39933",paddingLeft:5}}>
-                          <div style={{fontSize:6,color:"#34d399",marginBottom:3,fontFamily:"monospace"}}>IZQ ←</div>
-                          <div style={{display:"flex",gap:2,flexWrap:"wrap"}}>
-                            {v.notesLeft.map((n,ni)=>(<span key={ni} style={{padding:"1px 5px",borderRadius:4,background:nc(n.eng)+"22",border:"1px solid "+nc(n.eng)+"55",fontSize:9,fontWeight:800,color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}<span style={{fontSize:6,opacity:.5,marginLeft:1}}>{n.oct}</span></span>))}
-                          </div>
-                        </div>
-                        <div style={{borderLeft:"2px solid #f472b633",paddingLeft:5}}>
-                          <div style={{fontSize:6,color:"#f472b6",marginBottom:3,fontFamily:"monospace"}}>DER →</div>
-                          <div style={{display:"flex",gap:2,flexWrap:"wrap"}}>
-                            {v.notesRight.map((n,ni)=>(<span key={ni} style={{padding:"1px 5px",borderRadius:4,background:nc(n.eng)+"22",border:"1px solid "+nc(n.eng)+"55",fontSize:9,fontWeight:800,color:nc(n.eng),fontFamily:"monospace"}}>{n.lat}<span style={{fontSize:6,opacity:.5,marginLeft:1}}>{n.oct}</span></span>))}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{fontSize:7,color:"#333",marginTop:3,fontStyle:"italic",fontFamily:"monospace"}}>{v.desc}</div>
-                    </div>
-                  );
-                })()}
-              </>
-            )}
+            {detected&&<div style={{fontSize:22,fontWeight:900,color:"#88aaff",fontFamily:"serif",lineHeight:1,textAlign:"center",padding:"4px 0 2px"}}>{detected}</div>}
           </div>
         )}
 
@@ -2230,41 +2125,32 @@ function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
   });
 
   const EditorCanvas=({buttons,side,label})=>{
-    const rawW=Math.max(...buttons.map(b=>b.x))+BTN_SIZE+24;
-    const rawH=Math.max(...buttons.map(b=>b.y))+BTN_SIZE+24;
+    const rawW=Math.max(...buttons.map(b=>b.x))+BTN_SIZE+16;
+    const rawH=Math.max(...buttons.map(b=>b.y))+BTN_SIZE+20;
     return(
-      <div style={{marginBottom:4}}>
-        <p style={{fontSize:9,color:"#7a5030",marginBottom:4,letterSpacing:".1em",fontFamily:"monospace",paddingLeft:2}}>{label}</p>
-        {/* Scroll horizontal propio para cada teclado — permite ver todos los botones */}
-        <div style={{
-          overflowX:"auto",overflowY:"visible",
-          WebkitOverflowScrolling:"touch",
-          border:`2px solid ${selected?.side===side?"#f5c060":"#3a2010"}`,
-          borderRadius:14,
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <p style={{fontSize:9,color:"#7a5030",marginBottom:4,letterSpacing:".1em",fontFamily:"monospace"}}>{label}</p>
+        <div style={{position:"relative",width:rawW,height:rawH,flexShrink:0,
           background:"linear-gradient(145deg,#281a08,#140e04)",
-          paddingBottom:6,paddingTop:4,
-        }}>
-          <div style={{position:"relative",width:rawW,height:rawH,flexShrink:0,minWidth:rawW}}>
-            {buttons.map(btn=>{
-              const note=mode==="abre"?btn.abre:btn.cierra;
-              const color=mode==="abre"?btn.color_abre:btn.color_cierra;
-              const isSel=selected?.id===btn.id&&selected?.side===side;
-              return(
-                <div key={btn.id} onClick={e=>handleBtnClick(btn,side,e)}
-                  style={{position:"absolute",left:btn.x,top:btn.y,width:BTN_SIZE,height:BTN_SIZE,borderRadius:"50%",cursor:"pointer",userSelect:"none",touchAction:"none",
-                    display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                    background:isSel?`radial-gradient(circle at 36% 30%,${color}ff,${color}cc)`:`radial-gradient(circle at 36% 30%,${color}99,${color}44 60%,${color}22)`,
-                    border:`2.5px solid ${isSel?"#f5c060":color+"aa"}`,
-                    boxShadow:isSel?`0 0 0 3px #f5c06088,0 0 18px ${color}cc`:`0 2px 8px rgba(0,0,0,.7)`,
-                    transform:isSel?"scale(1.18)":"scale(1)",transition:"all .15s",zIndex:isSel?30:1}}>
-                  <span style={{fontSize:note.length>2?7:9,fontWeight:800,color:"#fff",fontFamily:"monospace",lineHeight:1,textShadow:"0 1px 3px rgba(0,0,0,.9)"}}>{note}</span>
-                  <span style={{fontSize:6,color:"rgba(255,255,255,.7)",fontFamily:"monospace"}}>{mode==="abre"?(btn.oct_abre??"-"):(btn.oct_cierra??"-")}</span>
-                </div>
-              );
-            })}
-          </div>
+          border:`2px solid ${selected?.side===side?"#f5c060":"#3a2010"}`,borderRadius:14}}>
+          {buttons.map(btn=>{
+            const note=mode==="abre"?btn.abre:btn.cierra;
+            const color=mode==="abre"?btn.color_abre:btn.color_cierra;
+            const isSel=selected?.id===btn.id&&selected?.side===side;
+            return(
+              <div key={btn.id} onClick={e=>handleBtnClick(btn,side,e)}
+                style={{position:"absolute",left:btn.x,top:btn.y,width:BTN_SIZE,height:BTN_SIZE,borderRadius:"50%",cursor:"pointer",userSelect:"none",
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                  background:isSel?`radial-gradient(circle at 36% 30%,${color}ff,${color}cc)`:`radial-gradient(circle at 36% 30%,${color}99,${color}44 60%,${color}22)`,
+                  border:`2.5px solid ${isSel?"#f5c060":color+"aa"}`,
+                  boxShadow:isSel?`0 0 0 3px #f5c06088,0 0 18px ${color}cc`:`0 2px 8px rgba(0,0,0,.7)`,
+                  transform:isSel?"scale(1.15)":"scale(1)",transition:"all .15s",zIndex:isSel?30:1}}>
+                <span style={{fontSize:note.length>2?7:9,fontWeight:800,color:"#fff",fontFamily:"monospace",lineHeight:1,textShadow:"0 1px 3px rgba(0,0,0,.9)"}}>{note}</span>
+                <span style={{fontSize:6,color:"rgba(255,255,255,.7)",fontFamily:"monospace"}}>{mode==="abre"?(btn.oct_abre??"-"):(btn.oct_cierra??"-")}</span>
+              </div>
+            );
+          })}
         </div>
-        <p style={{fontSize:7,color:"#2a1808",textAlign:"center",marginTop:2,fontFamily:"monospace"}}>← deslizá para ver todos →</p>
       </div>
     );
   };
@@ -2287,18 +2173,15 @@ function BandEditor({ initialLeft, initialRight, onSave, onCancel }) {
         {selected&&<button onClick={()=>{setSelected(null);setPopupPos(null);}} style={{marginLeft:"auto",padding:"3px 10px",borderRadius:6,border:"1px solid #3a2010",background:"transparent",color:"#6a4020",fontSize:10,cursor:"pointer"}}>✕</button>}
       </div>
 
-      {/* Teclados: apilados verticalmente, cada uno con su propio scroll horizontal */}
-      <div id="band-editor-cont" style={{position:"relative",display:"flex",flexDirection:"column",gap:12}}>
-        <EditorCanvas buttons={leftBtns}  side="L" label="MANO IZQUIERDA · 33 botones"/>
-        <EditorCanvas buttons={rightBtns} side="R" label="MANO DERECHA · 38 botones"/>
+      <div id="band-editor-cont" style={{position:"relative"}}>
+        <div style={{display:"flex",gap:16,flexWrap:"wrap",justifyContent:"center",paddingBottom:8,overflowX:"auto"}}>
+          <EditorCanvas buttons={leftBtns}  side="L" label="MANO IZQUIERDA"/>
+          <EditorCanvas buttons={rightBtns} side="R" label="MANO DERECHA"/>
+        </div>
 
         {selBtn&&popupPos&&(
-          <div style={{position:"fixed",left:"50%",transform:"translateX(-50%)",bottom:16,
-            width:300,background:"#0e0a02",border:"1.5px solid #f5c060",borderRadius:12,padding:"10px 12px",zIndex:200,boxShadow:"0 8px 40px rgba(0,0,0,.95)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>{selBtn.id} — {selected.side==="L"?"IZQ":"DER"}</span>
-              <button onClick={()=>{setSelected(null);setPopupPos(null);}} style={{background:"transparent",border:"none",color:"#6a4020",fontSize:14,cursor:"pointer",lineHeight:1}}>✕</button>
-            </div>
+          <div style={{position:"absolute",left:Math.max(10,Math.min(popupPos.x-140,600)),top:Math.max(10,popupPos.y-195),
+            width:288,background:"#0e0a02",border:"1.5px solid #f5c060",borderRadius:12,padding:"10px 12px",zIndex:100,boxShadow:"0 8px 32px rgba(0,0,0,.85)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
               <span style={{color:"#f5c060",fontWeight:800,fontSize:12}}>{selBtn.id} — {selected.side==="L"?"IZQ":"DER"}</span>
               <button onClick={()=>{setSelected(null);setPopupPos(null);}} style={{background:"transparent",border:"none",color:"#6a4020",fontSize:14,cursor:"pointer",lineHeight:1}}>✕</button>
@@ -2505,63 +2388,21 @@ function BandoneonTab() {
   },[pressedL,pressedR,bellows,leftBtns,rightBtns]);
 
   // Detección de acorde
-  // Algoritmo: probar cada nota única como raíz potencial (rotación de inversiones).
-  // Para cada candidata se calculan los intervalos desde ella y se evalúa
-  // si coincide con un patrón conocido. Se elige la raíz con mejor match,
-  // priorizando calidades más específicas (m7b5 > dim7 > maj7 > ...).
   const detected = useMemo(()=>{
     if(activeNotes.length<2)return null;
-
-    // Extraer notas únicas (sin octava, sin duplicados por clase de nota)
-    const noteOnly = [...new Set(activeNotes.map(n=>n.replace(/\d+$/,"")))];
-    const uniqueIdxs = [...new Set(noteOnly.map(n=>noteIdxB(n)).filter(i=>i>=0))];
-    if(uniqueIdxs.length<2) return null;
-
-    // Tabla de patrones: calidad → intervalos requeridos (orden importa para prioridad)
-    const PATTERNS = [
-      { q:"m7b5",  ivs:[3,6,10] },
-      { q:"dim7",  ivs:[3,6,9]  },
-      { q:"maj7",  ivs:[4,7,11] },
-      { q:"m7",    ivs:[3,7,10] },
-      { q:"7",     ivs:[4,7,10] },
-      { q:"maj",   ivs:[4,7]    },
-      { q:"m",     ivs:[3,7]    },
-      { q:"dim",   ivs:[3,6]    },
-      { q:"aug",   ivs:[4,8]    },
-      { q:"sus4",  ivs:[5,7]    },
-      { q:"sus2",  ivs:[2,7]    },
-    ];
-
-    // Intentar cada nota única como raíz
-    let bestRoot = null, bestQ = null, bestScore = -1;
-
-    for(const rootIdx of uniqueIdxs){
-      const ivs = uniqueIdxs
-        .map(i => (i - rootIdx + 12) % 12)
-        .filter(i => i !== 0)
-        .sort((a,b)=>a-b);
-      const hasAll = (required) => required.every(r => ivs.includes(r));
-
-      for(let pi=0; pi<PATTERNS.length; pi++){
-        const {q, ivs: req} = PATTERNS[pi];
-        if(hasAll(req)){
-          // Puntuación: favorece patrones con más intervalos coincidentes
-          // y aparece antes en la lista (más específico)
-          const score = req.length * 100 - pi;
-          if(score > bestScore){
-            bestScore = score;
-            bestRoot  = rootIdx;
-            bestQ     = q;
-          }
-          break; // un match por raíz candidata es suficiente
-        }
-      }
-    }
-
-    if(bestRoot === null) return null;
-    const rootEng = CHROMATIC_B[bestRoot];
-    const rootLat = ENG_TO_LAT[rootEng] ?? rootEng;
-    return `${rootLat}${bestQ}`;
+    // activeNotes ahora es "SOL3" — extraer solo la nota para detectar acorde
+    const noteOnly = activeNotes.map(n=>n.replace(/\d+$/,""));
+    const idxs=noteOnly.map(n=>noteIdxB(n)).filter(i=>i>=0).sort((a,b)=>a-b);
+    const root=CHROMATIC_B[idxs[0]];
+    const ivs=idxs.map(i=>(i-idxs[0]+12)%12).sort((a,b)=>a-b);
+    const has=i=>ivs.includes(i);
+    let q="?";
+    if(has(4)&&has(7)&&has(11))q="△7"; else if(has(3)&&has(7)&&has(10))q="m7";
+    else if(has(4)&&has(7)&&has(10))q="7"; else if(has(3)&&has(6)&&has(9))q="°7";
+    else if(has(3)&&has(6)&&has(10))q="ø7"; else if(has(4)&&has(7))q="△";
+    else if(has(3)&&has(7))q="m"; else if(has(3)&&has(6))q="°";
+    const rootLat = ENG_TO_LAT[root]??root;
+    return`${rootLat}${q}`;
   },[activeNotes]);
 
   const getOct = useCallback((btn, bellows) => {
@@ -3119,37 +2960,11 @@ export default function HarmoniaApp(){
                     <div className="flex flex-wrap gap-2 mb-5">
                       {chord.notes.map(n=><Nota key={n} note={n} size="lg"/>)}
                     </div>
-                    {/* Notas del acorde con octava sugerida — sin piano SVG */}
                     {voicing&&(
-                      <div className="rounded-xl p-3 border border-gray-800 mt-1" style={{background:"#0c0f1e"}}>
-                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Notas del acorde</p>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="rounded-lg p-2.5 border" style={{background:"#07101f",borderColor:"#1a3060"}}>
-                            <p className="text-xs font-bold mb-2" style={{color:"#4488ff"}}>← Mano izquierda</p>
-                            <div className="space-y-1.5">
-                              {voicing.L.map((v,i)=>(
-                                <div key={i} className="flex items-center gap-2">
-                                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{background:nc(v.note)}}/>
-                                  <span className="font-bold text-sm" style={{color:nc(v.note)}}>{v.note}</span>
-                                  <span className="text-gray-600 text-xs">oct.{v.oct}</span>
-                                  <span className="text-gray-500 text-xs ml-auto">{v.role}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="rounded-lg p-2.5 border" style={{background:"#071507",borderColor:"#1a4a28"}}>
-                            <p className="text-xs font-bold mb-2 text-green-400">Mano derecha →</p>
-                            <div className="space-y-1.5">
-                              {voicing.R.map((v,i)=>(
-                                <div key={i} className="flex items-center gap-2">
-                                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{background:nc(v.note)}}/>
-                                  <span className="font-bold text-sm" style={{color:nc(v.note)}}>{v.note}</span>
-                                  <span className="text-gray-600 text-xs">oct.{v.oct}</span>
-                                  <span className="text-gray-500 text-xs ml-auto">{v.role}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Voicing real en piano</p>
+                        <div className="rounded-xl p-3 border border-gray-700" style={{background:"#111825"}}>
+                          <Piano leftVoice={voicing.L} rightVoice={voicing.R}/>
                         </div>
                       </div>
                     )}
@@ -3256,36 +3071,10 @@ export default function HarmoniaApp(){
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               {ch.notes.map(n=><Nota key={n} note={n} size="sm"/>)}
                             </div>
-                            {/* Notas del acorde sin piano SVG */}
-                            <div className="rounded-xl p-2.5 border border-gray-800 mb-3" style={{background:"#0c0f1e"}}>
-                              <div className="grid grid-cols-2 gap-2">
-                                <div className="rounded-lg p-2 border" style={{background:"#07101f",borderColor:"#1a3060"}}>
-                                  <p className="text-xs font-bold mb-1.5" style={{color:"#4488ff",fontSize:"10px"}}>← IZQ</p>
-                                  <div className="space-y-1">
-                                    {v.L.map((n,i)=>(
-                                      <div key={i} className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{background:nc(n.note)}}/>
-                                        <span className="font-bold text-xs" style={{color:nc(n.note)}}>{n.note}</span>
-                                        <span className="text-gray-700" style={{fontSize:"9px"}}>oct.{n.oct}</span>
-                                        <span className="text-gray-600 ml-auto" style={{fontSize:"9px"}}>{n.role}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                                <div className="rounded-lg p-2 border" style={{background:"#071507",borderColor:"#1a4a28"}}>
-                                  <p className="text-xs font-bold mb-1.5 text-green-400" style={{fontSize:"10px"}}>DER →</p>
-                                  <div className="space-y-1">
-                                    {v.R.map((n,i)=>(
-                                      <div key={i} className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{background:nc(n.note)}}/>
-                                        <span className="font-bold text-xs" style={{color:nc(n.note)}}>{n.note}</span>
-                                        <span className="text-gray-700" style={{fontSize:"9px"}}>oct.{n.oct}</span>
-                                        <span className="text-gray-600 ml-auto" style={{fontSize:"9px"}}>{n.role}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              </div>
+                            {/* Piano voicing */}
+                            <div className="rounded-xl p-2.5 border border-gray-700 mb-3" style={{background:"#111825"}}>
+                              <p className="text-xs text-gray-600 mb-1.5">Voicing en piano</p>
+                              <Piano leftVoice={v.L} rightVoice={v.R}/>
                             </div>
                             {f&&(
                               <div className="text-sm flex flex-wrap gap-x-4 gap-y-1">

@@ -2632,6 +2632,682 @@ function BandoneonTab() {
 
 
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MAPA DE CONEXIONES ARMÓNICAS
+// Motor: distancias en semitonos absolutos desde la raíz (raíz = 0).
+// Render: spelling enarmónico contextual según función armónica.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ─── TABLA DE SPELLING CONTEXTUAL ────────────────────────────────────────────
+// Para cada función armónica, la nota se deletrea diferente.
+// Regla: Disminuidos de paso ascendente → sostenidos.
+//        Dominantes, intercambios modales → bemoles donde corresponde.
+// La SPELL_TABLE global ya maneja la mayoría; aquí manejamos casos de contexto.
+
+const MAPA_SPELL = {
+  // semitono desde raíz → { dim: nombre en dim, dom: nombre en dom, modal: nombre modal }
+  0:  { sharp:"C",  flat:"C"   },
+  1:  { sharp:"C#", flat:"Db"  },
+  2:  { sharp:"D",  flat:"D"   },
+  3:  { sharp:"D#", flat:"Eb"  },
+  4:  { sharp:"E",  flat:"E"   },
+  5:  { sharp:"F",  flat:"F"   },
+  6:  { sharp:"F#", flat:"Gb"  },
+  7:  { sharp:"G",  flat:"G"   },
+  8:  { sharp:"G#", flat:"Ab"  },
+  9:  { sharp:"A",  flat:"A"   },
+  10: { sharp:"A#", flat:"Bb"  },
+  11: { sharp:"B",  flat:"B"   },
+};
+
+// Transposición: dado un semitono base (0=C) y un desplazamiento, devuelve semitono absoluto (0-11)
+const transp = (base, delta) => (base + delta + 120) % 12;
+
+// Obtener nombre de nota con contexto enarmónico
+// ctx: "sharp" = contexto de sostenido (disminuidos ascendentes, sensibles)
+//      "flat"  = contexto de bemol (dominantes secundarios, intercambios modales, SubV7)
+const mapaNote = (semi, ctx="flat") => MAPA_SPELL[semi % 12]?.[ctx] ?? CHROMATIC[semi % 12];
+
+// Color de la nota — usa la paleta global
+const mapaColor = (semi) => {
+  const n = mapaNote(semi, "flat");
+  return nc(n);
+};
+
+// ─── BASE DE DATOS DE RELACIONES (eje C = 0) ─────────────────────────────────
+// Cada "estación" tiene:
+//   id, label, semi (distancia desde raíz), quality (calidad del acorde)
+//   connections: array de caminos posibles hacia otras estaciones
+//     cada camino: { connector: {label, semi, ctx, type}, destination: {id, label, semi} }
+//
+// Los semitonos son RELATIVOS a la raíz actual (0).
+// Al transponer, simplemente se suma el offset de la nueva raíz.
+
+const MAPA_DB = [
+  // ─── ESTACIÓN I: TÓNICA ────────────────────────────────────────────────────
+  {
+    id: "I", label: "Tónica", degree: "I",
+    semiBase: 0, qualityBase: "maj7",
+    color: "#1E50DC",
+    desc: "Centro tonal. Punto de reposo y origen de todos los movimientos.",
+    connections: [
+      // → II
+      {
+        dest: "II", label: "Hacia II",
+        connectors: [
+          { label: "°7 cromatismo", semi: 1,  ctx: "sharp", type: "dim7",  why: "Disminuido de paso ascendente. El bajo sube cromáticamente C→C#→D." },
+          { label: "V7/II",         semi: 9,  ctx: "flat",  type: "7",     why: "Dominante secundario del II. A7 → Dm (quinta abajo)." },
+          { label: "SubV7/II",      semi: 3,  ctx: "flat",  type: "7",     why: "Sustituto tritonal del V7/II. Comparte el tritono con A7." },
+        ]
+      },
+      // → III
+      {
+        dest: "III", label: "Hacia III",
+        connectors: [
+          { label: "°7 cromatismo", semi: 3,  ctx: "sharp", type: "dim7",  why: "Disminuido ascendente. Bajo: D→D#→E." },
+          { label: "V7/III",        semi: 11, ctx: "flat",  type: "7",     why: "Dominante secundario del III. B7 → Em." },
+          { label: "SubV7/III",     semi: 5,  ctx: "flat",  type: "7",     why: "Sustituto tritonal del B7. Comparte el tritono (D#-A)." },
+        ]
+      },
+      // → IV
+      {
+        dest: "IV", label: "Hacia IV",
+        connectors: [
+          { label: "I7 (pivot)",    semi: 0,  ctx: "flat",  type: "7",     why: "La tónica se convierte en I7. Movimiento de Blues/Tango hacia IV." },
+          { label: "SubV7/IV",      semi: 6,  ctx: "flat",  type: "7",     why: "Sustituto tritonal del C7. Gb7 → F (bajo baja semitono)." },
+        ]
+      },
+      // → V
+      {
+        dest: "V", label: "Hacia V",
+        connectors: [
+          { label: "V7/V",          semi: 2,  ctx: "flat",  type: "7",     why: "Dominante secundario del V. D7 → G7." },
+          { label: "SubV7/V",       semi: 1,  ctx: "flat",  type: "7",     why: "Sustituto tritonal del D7. Db7 → G7 (bajo baja semitono)." },
+        ]
+      },
+      // → VI
+      {
+        dest: "VI", label: "Hacia VI",
+        connectors: [
+          { label: "°7 cromatismo", semi: 8,  ctx: "sharp", type: "dim7",  why: "Disminuido ascendente hacia la relativa. G#°7 → Am." },
+          { label: "V7/VI",         semi: 4,  ctx: "flat",  type: "7",     why: "Dominante secundario del VI. E7 → Am." },
+          { label: "SubV7/VI",      semi: 10, ctx: "flat",  type: "7",     why: "Sustituto tritonal del E7. Bb7 → Am (bajo baja semitono)." },
+        ]
+      },
+    ]
+  },
+
+  // ─── ESTACIÓN II: SUPERTÓNICA / PRE-DOMINANTE ──────────────────────────────
+  {
+    id: "II", label: "Supertónica", degree: "II",
+    semiBase: 2, qualityBase: "m7",
+    color: "#28A03C",
+    desc: "Pre-dominante. Supertónica menor. Puerta natural hacia el V.",
+    connections: [
+      // → III
+      {
+        dest: "III", label: "Hacia III",
+        connectors: [
+          { label: "°7 cromatismo", semi: 3,  ctx: "sharp", type: "dim7",  why: "Disminuido de paso. Bajo: D→D#→E." },
+          { label: "V7/III",        semi: 11, ctx: "flat",  type: "7",     why: "B7 → Em." },
+        ]
+      },
+      // → V
+      {
+        dest: "V", label: "Hacia V",
+        connectors: [
+          { label: "V7/V",          semi: 2,  ctx: "flat",  type: "7",     why: "D7 → G7. El II mismo se vuelve dominante secundario del V." },
+          { label: "SubV7/V",       semi: 8,  ctx: "flat",  type: "7",     why: "Ab7 → G7 (sustituto tritonal del D7)." },
+        ]
+      },
+      // → I (retroceso)
+      {
+        dest: "I", label: "Hacia I",
+        connectors: [
+          { label: "SubV7/I",       semi: 1,  ctx: "flat",  type: "7",     why: "Db7 → C (sustituto tritonal del G7). Cadencia indirecta." },
+        ]
+      },
+      // → VI
+      {
+        dest: "VI", label: "Hacia VI",
+        connectors: [
+          { label: "V7/VI",         semi: 4,  ctx: "flat",  type: "7",     why: "E7 → Am. El II puede girar hacia la relativa menor." },
+        ]
+      },
+    ]
+  },
+
+  // ─── ESTACIÓN III: MEDIANTE ────────────────────────────────────────────────
+  {
+    id: "III", label: "Mediante", degree: "III",
+    semiBase: 4, qualityBase: "m7",
+    color: "#82501E",
+    desc: "Puente entre tónica y subdominante. Color oscuro, sustituto del I.",
+    connections: [
+      // → II (retroceso)
+      {
+        dest: "II", label: "Hacia II",
+        connectors: [
+          { label: "Intercambio m.", semi: 3,  ctx: "flat",  type: "m7",    why: "Ebm7 → Dm. Intercambio modal cromático." },
+          { label: "°7 descend.",   semi: 3,  ctx: "flat",  type: "dim7",  why: "Eb°7 → Dm. Disminuido descendente." },
+          { label: "V7/II",         semi: 9,  ctx: "flat",  type: "7",     why: "A7 → Dm. Dominante secundario." },
+        ]
+      },
+      // → IV
+      {
+        dest: "IV", label: "Hacia IV",
+        connectors: [
+          { label: "I7 pivot",      semi: 0,  ctx: "flat",  type: "7",     why: "C7 → F. La raíz se vuelve dominante del IV (Blues/Gospel)." },
+        ]
+      },
+      // → VI
+      {
+        dest: "VI", label: "Hacia VI",
+        connectors: [
+          { label: "V7/VI",         semi: 4,  ctx: "flat",  type: "7",     why: "E7 → Am. El III mismo actúa como dominante de la relativa." },
+          { label: "SubV7/VI",      semi: 10, ctx: "flat",  type: "7",     why: "Bb7 → Am. Sustituto tritonal del E7." },
+        ]
+      },
+    ]
+  },
+
+  // ─── ESTACIÓN IV: SUBDOMINANTE ─────────────────────────────────────────────
+  {
+    id: "IV", label: "Subdominante", degree: "IV",
+    semiBase: 5, qualityBase: "maj7",
+    color: "#C8B98C",
+    desc: "Función lírica. También puerta al modo menor paralelo (intercambio modal).",
+    connections: [
+      // → V
+      {
+        dest: "V", label: "Hacia V",
+        connectors: [
+          { label: "°7 cromatismo", semi: 6,  ctx: "sharp", type: "dim7",  why: "F#°7 → G7. Disminuido ascendente por semitono." },
+          { label: "V7/V",          semi: 2,  ctx: "flat",  type: "7",     why: "D7 → G7. Dominante secundario del V." },
+          { label: "SubV7/V",       semi: 8,  ctx: "flat",  type: "7",     why: "Ab7 → G7. Sustituto tritonal del D7." },
+          { label: "Bajo crom. ↑",  semi: 5,  ctx: "flat",  type: "paso",  why: "Bajo: F→F#→G. Línea cromática ascendente de bajo." },
+        ]
+      },
+      // → I (intercambio modal)
+      {
+        dest: "I", label: "Intercambio Modal → I",
+        connectors: [
+          { label: "IVm (modal)",   semi: 5,  ctx: "flat",  type: "m7",    why: "Fm → C. El IV mayor cede al IV menor (del modo paralelo). Color oscuro tanguero." },
+          { label: "bVII7 (modal)", semi: 10, ctx: "flat",  type: "7",     why: "Bb7 → C. El VII dominante del modo menor funciona como puerta de regreso a la tónica." },
+          { label: "SubV7/I",       semi: 1,  ctx: "flat",  type: "7",     why: "Db7 → C. Después de F#°7. Bajo: F#→Db→C (tritono)." },
+        ]
+      },
+    ]
+  },
+
+  // ─── ESTACIÓN V: DOMINANTE ─────────────────────────────────────────────────
+  {
+    id: "V", label: "Dominante", degree: "V",
+    semiBase: 7, qualityBase: "7",
+    color: "#E6C814",
+    desc: "Tensión máxima del sistema tonal. El tritono (3ª-7ª) exige resolución.",
+    connections: [
+      // → I (resolución principal)
+      {
+        dest: "I", label: "Resolución → I",
+        connectors: [
+          { label: "V7 → I",        semi: 7,  ctx: "flat",  type: "7",     why: "Resolución auténtica perfecta. El tritono (3ª→7ª) resuelve por semitono." },
+          { label: "SubV7/I",       semi: 1,  ctx: "flat",  type: "7",     why: "Db7 → C. Sustituto tritonal del G7. Bajo baja semitono." },
+        ]
+      },
+      // → VI (resolución deceptiva)
+      {
+        dest: "VI", label: "Resolución Deceptiva → VI",
+        connectors: [
+          { label: "°7 cromatismo", semi: 8,  ctx: "sharp", type: "dim7",  why: "G#°7 → Am. Disminuido de paso hacia la relativa." },
+          { label: "V7/VI",         semi: 4,  ctx: "flat",  type: "7",     why: "E7 → Am. Resolución deceptiva: el V resuelve a la relativa menor." },
+          { label: "SubV7/VI",      semi: 10, ctx: "flat",  type: "7",     why: "Bb7 → Am. Sustituto tritonal del E7." },
+        ]
+      },
+      // → IV (movimiento plagal desde V)
+      {
+        dest: "IV", label: "Hacia IV",
+        connectors: [
+          { label: "Vm7 → IV",      semi: 7,  ctx: "flat",  type: "m7",    why: "Gm7 → C7 → F. El V se vuelve menor, crea cadencia plagal extendida." },
+        ]
+      },
+    ]
+  },
+
+  // ─── ESTACIÓN VI: RELATIVA MENOR ──────────────────────────────────────────
+  {
+    id: "VI", label: "Relativa Menor", degree: "VI",
+    semiBase: 9, qualityBase: "m7",
+    color: "#D22828",
+    desc: "Tónica relativa. Comparte 3 notas con I. Punto de reposo alternativo.",
+    connections: [
+      // → V
+      {
+        dest: "V", label: "Hacia V",
+        connectors: [
+          { label: "SubV7/V",       semi: 8,  ctx: "flat",  type: "7",     why: "Ab7 → G7. Sustituto tritonal desde la relativa menor." },
+          { label: "V7/V",          semi: 2,  ctx: "flat",  type: "7",     why: "D7 → G7. El VI genera dominante secundario del V." },
+        ]
+      },
+      // → I
+      {
+        dest: "I", label: "Hacia I",
+        connectors: [
+          { label: "SubV7/I",       semi: 1,  ctx: "flat",  type: "7",     why: "Db7 → C. Resolución desde la relativa al mayor." },
+        ]
+      },
+      // → IV
+      {
+        dest: "IV", label: "Hacia IV",
+        connectors: [
+          { label: "I7 pivot",      semi: 0,  ctx: "flat",  type: "7",     why: "C7 → F. La tónica actúa como dominante del IV." },
+        ]
+      },
+      // → II (movimiento descendente natural)
+      {
+        dest: "II", label: "Hacia II",
+        connectors: [
+          { label: "VI→II directo", semi: 9,  ctx: "flat",  type: "m7",    why: "Am → Dm. Movimiento diatónico descendente por quintas." },
+        ]
+      },
+    ]
+  },
+];
+
+// ─── ETIQUETAS DE TIPO DE CONECTOR ───────────────────────────────────────────
+const CONNECTOR_STYLES = {
+  "dim7":  { label:"°7",   bg:"#1a0a1a", border:"#7828B4", text:"#c084fc", icon:"°" },
+  "7":     { label:"7",    bg:"#1a0e00", border:"#E6C814", text:"#fbbf24", icon:"♦" },
+  "m7":    { label:"m7",   bg:"#000a1a", border:"#1E50DC", text:"#60a5fa", icon:"m" },
+  "paso":  { label:"paso", bg:"#0a0a0a", border:"#555",    text:"#aaa",    icon:"↕" },
+};
+
+// ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
+function MapaConexiones() {
+  const [rootSemi, setRootSemi]       = useState(0);   // raíz en semitonos (C=0)
+  const [activeStation, setStation]   = useState(null); // id de estación activa
+  const [activeConn, setActiveConn]   = useState(null); // conector seleccionado
+  const [hoveredConn, setHoveredConn] = useState(null);
+
+  // Raíces disponibles con spelling preferido
+  const ROOT_OPTIONS = [
+    {semi:0,  name:"C",  label:"C — Do"},
+    {semi:1,  name:"Db", label:"Db — Re♭"},
+    {semi:2,  name:"D",  label:"D — Re"},
+    {semi:3,  name:"Eb", label:"Eb — Mi♭"},
+    {semi:4,  name:"E",  label:"E — Mi"},
+    {semi:5,  name:"F",  label:"F — Fa"},
+    {semi:6,  name:"F#", label:"F# — Fa♯"},
+    {semi:7,  name:"G",  label:"G — Sol"},
+    {semi:8,  name:"Ab", label:"Ab — La♭"},
+    {semi:9,  name:"A",  label:"A — La"},
+    {semi:10, name:"Bb", label:"Bb — Si♭"},
+    {semi:11, name:"B",  label:"B — Si"},
+  ];
+
+  const rootName = ROOT_OPTIONS[rootSemi]?.name ?? "C";
+
+  // Transponer un semitono relativo a la raíz actual
+  const ts = useCallback((relSemi) => (rootSemi + relSemi) % 12, [rootSemi]);
+
+  // Nombre de un acorde transpuesto con calidad
+  const chordLabel = useCallback((relSemi, type, ctx="flat") => {
+    const abs = ts(relSemi);
+    const noteName = mapaNote(abs, ctx);
+    const quality = {
+      "dim7":"°7", "7":"7", "m7":"m7", "maj7":"△7", "m":"m", "paso":"(paso)"
+    }[type] ?? type;
+    return `${noteName}${quality}`;
+  }, [ts]);
+
+  // Nombre de una estación transpuesta
+  const stationLabel = useCallback((stationDef) => {
+    const abs = ts(stationDef.semiBase);
+    const noteName = mapaNote(abs, "flat");
+    const qual = {"maj7":"△7","m7":"m7","7":"7","m":"m"}[stationDef.qualityBase] ?? "";
+    return `${noteName}${qual}`;
+  }, [ts]);
+
+  // Estación activa seleccionada
+  const activeSt = MAPA_DB.find(s => s.id === activeStation);
+  const connectorInfo = activeConn ?? hoveredConn;
+
+  // Colores de las estaciones (transpuestas)
+  const stColor = useCallback((relSemi) => {
+    const abs = ts(relSemi);
+    return mapaNote(abs, "flat");
+  }, [ts]);
+
+  return (
+    <div style={{fontFamily:"'Crimson Text',Georgia,serif",paddingBottom:"2rem"}}>
+
+      {/* ── HEADER ── */}
+      <div style={{marginBottom:"1.2rem"}}>
+        <h2 style={{fontFamily:"'Libre Baskerville',serif",fontWeight:700,
+          fontSize:"1.3rem",color:"#88aaff",marginBottom:".3rem",letterSpacing:".04em"}}>
+          🗺️ Mapa de Conexiones Armónicas
+        </h2>
+        <p style={{fontSize:".8rem",color:"#555",fontStyle:"italic",lineHeight:1.5}}>
+          Seleccioná una raíz, luego una estación para ver todos los caminos disponibles.
+          Dominantes secundarios · Sustitutos tritonales · Intercambios modales · Cromatismos
+        </p>
+      </div>
+
+      {/* ── SELECTOR DE RAÍZ ── */}
+      <div style={{marginBottom:"1.2rem"}}>
+        <p style={{fontSize:".7rem",color:"#4a4a6a",letterSpacing:".15em",
+          fontFamily:"monospace",marginBottom:".5rem",textTransform:"uppercase"}}>
+          Tonalidad raíz
+        </p>
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {ROOT_OPTIONS.map(r => {
+            const isActive = r.semi === rootSemi;
+            const noteColor = nc(r.name);
+            return (
+              <button key={r.semi}
+                onClick={() => { setRootSemi(r.semi); setStation(null); setActiveConn(null); }}
+                style={{
+                  padding:"5px 10px", borderRadius:8, cursor:"pointer",
+                  fontFamily:"'Libre Baskerville',serif", fontWeight:700, fontSize:".85rem",
+                  background: isActive ? noteColor+"33" : "transparent",
+                  border: `2px solid ${isActive ? noteColor : "#1e1e38"}`,
+                  color: isActive ? noteColor : "#444",
+                  transition:"all .15s",
+                  boxShadow: isActive ? `0 0 12px ${noteColor}44` : "none",
+                }}>
+                {r.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── MAPA DE ESTACIONES ── */}
+      <div style={{marginBottom:"1rem"}}>
+        <p style={{fontSize:".7rem",color:"#4a4a6a",letterSpacing:".15em",
+          fontFamily:"monospace",marginBottom:".6rem",textTransform:"uppercase"}}>
+          Estaciones — seleccioná una para ver los caminos
+        </p>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
+          {MAPA_DB.map(st => {
+            const abs = ts(st.semiBase);
+            const noteName = mapaNote(abs, "flat");
+            const noteColor = nc(noteName);
+            const isActive = activeStation === st.id;
+            const qual = {"maj7":"△7","m7":"m7","7":"7","m":"m"}[st.qualityBase] ?? "";
+
+            return (
+              <button key={st.id}
+                onClick={() => { setStation(isActive ? null : st.id); setActiveConn(null); }}
+                style={{
+                  padding:"10px 8px", borderRadius:12, cursor:"pointer", textAlign:"left",
+                  background: isActive ? noteColor+"22" : "#0c0c1c",
+                  border: `2px solid ${isActive ? noteColor : "#1e1e2e"}`,
+                  boxShadow: isActive ? `0 0 16px ${noteColor}33` : "none",
+                  transition:"all .18s",
+                }}>
+                <div style={{fontSize:".65rem",color:"#555",fontFamily:"monospace",
+                  letterSpacing:".1em",marginBottom:2}}>{st.degree} — {st.label}</div>
+                <div style={{fontFamily:"'Libre Baskerville',serif",fontWeight:700,
+                  fontSize:"1rem",color:noteColor,lineHeight:1}}>
+                  {noteName}{qual}
+                </div>
+                <div style={{fontSize:".6rem",color:"#3a3a5a",marginTop:3,lineHeight:1.3}}>
+                  {st.connections.length} caminos
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── PANEL DE CONEXIONES (cuando hay estación activa) ── */}
+      {activeSt && (
+        <div style={{marginTop:"1rem"}}>
+          {/* Cabecera de la estación */}
+          <div style={{
+            padding:"10px 14px", borderRadius:12, marginBottom:"1rem",
+            background:"#0e0e20", border:"1px solid #2a2a4a"
+          }}>
+            <div style={{display:"flex",alignItems:"baseline",gap:10,flexWrap:"wrap"}}>
+              <span style={{
+                fontFamily:"'Libre Baskerville',serif", fontWeight:700, fontSize:"1.4rem",
+                color: nc(mapaNote(ts(activeSt.semiBase),"flat")),
+              }}>
+                {stationLabel(activeSt)}
+              </span>
+              <span style={{fontSize:".75rem",color:"#555",fontStyle:"italic"}}>
+                {activeSt.desc}
+              </span>
+            </div>
+          </div>
+
+          {/* Grupos de conexiones */}
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            {activeSt.connections.map((group, gi) => {
+              const destSt = MAPA_DB.find(s => s.id === group.dest);
+              if(!destSt) return null;
+              const destAbs = ts(destSt.semiBase);
+              const destName = mapaNote(destAbs, "flat");
+              const destColor = nc(destName);
+              const destQual = {"maj7":"△7","m7":"m7","7":"7","m":"m"}[destSt.qualityBase] ?? "";
+
+              return (
+                <div key={gi} style={{
+                  borderRadius:12, overflow:"hidden",
+                  border:"1px solid #1a1a2e", background:"#09090f"
+                }}>
+                  {/* Cabecera del grupo: origen → destino */}
+                  <div style={{
+                    padding:"8px 12px", background:"#0e0e1c",
+                    borderBottom:"1px solid #1a1a2e",
+                    display:"flex", alignItems:"center", gap:8, flexWrap:"wrap"
+                  }}>
+                    <span style={{fontSize:".7rem",color:"#555",fontFamily:"monospace"}}>
+                      {activeSt.label}
+                    </span>
+                    <span style={{color:"#333",fontSize:".8rem"}}>→</span>
+                    <span style={{
+                      fontFamily:"'Libre Baskerville',serif", fontWeight:700,
+                      fontSize:"1rem", color:destColor
+                    }}>
+                      {destName}{destQual}
+                    </span>
+                    <span style={{fontSize:".65rem",color:"#4a4a6a",fontStyle:"italic"}}>
+                      {group.label}
+                    </span>
+                  </div>
+
+                  {/* Conectores */}
+                  <div style={{padding:"8px 10px",display:"flex",flexDirection:"column",gap:6}}>
+                    {group.connectors.map((conn, ci) => {
+                      const connAbs = ts(conn.semi);
+                      const connName = mapaNote(connAbs, conn.ctx);
+                      const connColor = nc(connName);
+                      const cStyle = CONNECTOR_STYLES[conn.type] ?? CONNECTOR_STYLES["7"];
+                      const connLabel = `${connName}${{"dim7":"°7","7":"7","m7":"m7","paso":""}[conn.type]??conn.type}`;
+                      const connKey = `${gi}-${ci}`;
+                      const isActive = activeConn?.key === connKey;
+                      const isHover = hoveredConn?.key === connKey;
+
+                      return (
+                        <div key={ci}
+                          onClick={() => setActiveConn(
+                            isActive ? null :
+                            { key:connKey, conn, connName, connLabel, connColor, destName, destColor, destQual, group }
+                          )}
+                          onMouseEnter={() => !activeConn && setHoveredConn(
+                            { key:connKey, conn, connName, connLabel, connColor, destName, destColor, destQual, group }
+                          )}
+                          onMouseLeave={() => !activeConn && setHoveredConn(null)}
+                          style={{
+                            display:"flex", alignItems:"center", gap:8, flexWrap:"wrap",
+                            padding:"7px 10px", borderRadius:9, cursor:"pointer",
+                            background: isActive ? cStyle.bg+"cc" : isHover ? cStyle.bg+"88" : cStyle.bg+"44",
+                            border: `1.5px solid ${isActive||isHover ? cStyle.border : cStyle.border+"44"}`,
+                            transition:"all .12s",
+                          }}>
+
+                          {/* Ícono del tipo */}
+                          <span style={{
+                            fontSize:".7rem", fontFamily:"monospace",
+                            background:cStyle.border+"33", border:`1px solid ${cStyle.border}66`,
+                            borderRadius:5, padding:"1px 5px", color:cStyle.text,
+                            flexShrink:0, minWidth:22, textAlign:"center"
+                          }}>
+                            {cStyle.icon}
+                          </span>
+
+                          {/* Nombre del conector */}
+                          <span style={{
+                            fontFamily:"'Libre Baskerville',serif", fontWeight:700,
+                            fontSize:".95rem", color:connColor,
+                            textShadow:`0 0 8px ${connColor}44`
+                          }}>
+                            {connLabel}
+                          </span>
+
+                          {/* Etiqueta de función */}
+                          <span style={{
+                            fontSize:".65rem", color:cStyle.text, fontFamily:"monospace",
+                            opacity:.7
+                          }}>
+                            {conn.label}
+                          </span>
+
+                          {/* Flecha y destino */}
+                          <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+                            <span style={{color:"#2a2a4a",fontSize:".9rem"}}>→</span>
+                            <span style={{
+                              fontFamily:"'Libre Baskerville',serif", fontWeight:700,
+                              fontSize:".85rem", color:destColor
+                            }}>
+                              {destName}{destQual}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── PANEL DE DETALLE DEL CONECTOR SELECCIONADO ── */}
+          {connectorInfo && (
+            <div style={{
+              marginTop:"1rem", padding:"12px 14px", borderRadius:12,
+              background:"#0a0a14", border:`1.5px solid ${connectorInfo.connColor}44`,
+              boxShadow:`0 0 20px ${connectorInfo.connColor}11`
+            }}>
+              <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:8,flexWrap:"wrap"}}>
+                <span style={{
+                  fontFamily:"'Libre Baskerville',serif", fontWeight:700,
+                  fontSize:"1.2rem", color:connectorInfo.connColor
+                }}>
+                  {connectorInfo.connLabel}
+                </span>
+                <span style={{fontSize:".75rem",color:"#555"}}>·</span>
+                <span style={{fontSize:".8rem",color:"#555",fontStyle:"italic"}}>
+                  {connectorInfo.conn.label}
+                </span>
+              </div>
+
+              {/* Ruta: origen → conector → destino */}
+              <div style={{
+                display:"flex",alignItems:"center",gap:6,marginBottom:10,
+                padding:"6px 10px",borderRadius:8,background:"#0d0d1e",flexWrap:"wrap"
+              }}>
+                <span style={{color:nc(mapaNote(ts(activeSt.semiBase),"flat")),fontWeight:700,fontSize:".9rem"}}>
+                  {stationLabel(activeSt)}
+                </span>
+                <span style={{color:"#2a2a4a"}}>→</span>
+                <span style={{
+                  color:connectorInfo.connColor, fontWeight:700, fontSize:".95rem",
+                  padding:"2px 8px", borderRadius:6,
+                  background:connectorInfo.connColor+"18",
+                  border:`1px solid ${connectorInfo.connColor}44`
+                }}>
+                  {connectorInfo.connLabel}
+                </span>
+                <span style={{color:"#2a2a4a"}}>→</span>
+                <span style={{color:connectorInfo.destColor, fontWeight:700, fontSize:".9rem"}}>
+                  {connectorInfo.destName}{connectorInfo.destQual}
+                </span>
+              </div>
+
+              {/* Explicación teórica */}
+              <div style={{
+                padding:"8px 10px", borderRadius:8,
+                background:"#08080e", border:"1px solid #1a1a2e"
+              }}>
+                <p style={{fontSize:".65rem",color:"#4a4a6a",fontFamily:"monospace",
+                  letterSpacing:".1em",marginBottom:4,textTransform:"uppercase"}}>
+                  💡 Por qué funciona
+                </p>
+                <p style={{fontSize:".85rem",color:"#9ca3af",lineHeight:1.6,fontStyle:"italic"}}>
+                  {connectorInfo.conn.why}
+                </p>
+              </div>
+
+              {/* Botón escuchar */}
+              <button
+                onClick={() => {
+                  // Tocar el acorde conector
+                  const abs = ts(connectorInfo.conn.semi);
+                  const noteEng = mapaNote(abs, connectorInfo.conn.ctx);
+                  // Mapear al inglés cromático para playTone
+                  const ENH_TO_STD = {"Db":"C#","Eb":"D#","Fb":"E","Gb":"F#","Ab":"G#","Bb":"A#","Cb":"B"};
+                  const std = ENH_TO_STD[noteEng] ?? noteEng;
+                  const intervals = {"dim7":[0,3,6,9],"7":[0,4,7,10],"m7":[0,3,7,10],"paso":[0]}[connectorInfo.conn.type] ?? [0,4,7];
+                  const CH=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+                  const ri = CH.indexOf(std);
+                  if(ri >= 0) {
+                    intervals.forEach((iv,i) => setTimeout(() => playTone(CH[(ri+iv)%12], 4, 1.0), i*25));
+                  }
+                }}
+                style={{
+                  marginTop:8, padding:"5px 14px", borderRadius:8, cursor:"pointer",
+                  background:"#0d1520", border:`1px solid ${connectorInfo.connColor}44`,
+                  color:connectorInfo.connColor, fontFamily:"monospace", fontSize:".75rem",
+                  fontWeight:700, letterSpacing:".08em"
+                }}>
+                ▶ Escuchar {connectorInfo.connLabel}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── LEYENDA ── */}
+      <div style={{marginTop:"1.5rem",padding:"10px 14px",borderRadius:10,
+        background:"#080810",border:"1px solid #1a1a28"}}>
+        <p style={{fontSize:".65rem",color:"#3a3a5a",fontFamily:"monospace",
+          letterSpacing:".12em",marginBottom:8,textTransform:"uppercase"}}>Leyenda de conectores</p>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {Object.entries(CONNECTOR_STYLES).map(([type, s]) => (
+            <div key={type} style={{display:"flex",alignItems:"center",gap:5}}>
+              <span style={{
+                fontSize:".65rem", background:s.border+"22",
+                border:`1px solid ${s.border}66`,borderRadius:4,
+                padding:"1px 6px", color:s.text, fontFamily:"monospace"
+              }}>{s.icon}</span>
+              <span style={{fontSize:".7rem",color:"#4a4a6a",fontFamily:"monospace"}}>
+                {type === "dim7" ? "Disminuido 7ª" :
+                 type === "7"    ? "Dominante / SubV7" :
+                 type === "m7"   ? "Intercambio Modal" :
+                 "Línea de Bajo"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── VITRAL TAB ───────────────────────────────────────────────────────────────
 function VitralTab(){
   const NOTAS_V=[
@@ -2863,6 +3539,7 @@ export default function HarmoniaApp(){
     {id:"bandoneon", label:"Bandoneón",  icon:"🎵"},
     {id:"circle",    label:"Quintas",    icon:"⭕"},
     {id:"modos",     label:"Modos",      icon:"📐"},
+    {id:"mapa",      label:"Conexiones", icon:"🗺️"},
   ];
 
   return(
@@ -3399,6 +4076,9 @@ export default function HarmoniaApp(){
 
             {/* ══ COLORES — VITRAL ══ */}
             {tab==="colors"&&<VitralTab/>}
+
+            {/* ══ MAPA DE CONEXIONES ARMÓNICAS ══ */}
+            {tab==="mapa"&&<MapaConexiones/>}
 
           </div>
         </div>

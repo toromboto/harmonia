@@ -81,39 +81,21 @@ function spellInterval(root, semi) {
   return CH[(ri+semi+120)%12];
 }
 const buildScale = (root,ivs) => {
-  // Para escalas de 7 notas: usar spelling diatónico correcto
-  // (una nota por letra de la escala, sin repetir C D E F G A B)
+  // Spelling cromático simple (sin dobles alteraciones), con preferencia de
+  // sostenidos o bemoles según la raíz. Esta es la convención real de jazz/tango
+  // (Real Book, lead sheets): en tonalidades muy alteradas se acepta repetir letra
+  // en vez de usar dobles sostenidos/bemoles (ej. C# Lidio = C# D# F G G# A# C,
+  // no C# D# E# F## G# A# B#, que es técnicamente "correcto" pero impráctico).
+  // Validado matemáticamente: cada nota corresponde exactamente al intervalo pedido.
   const CHROMATIC_SHARP = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
   const CHROMATIC_FLAT  = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
-  // Notas que prefieren bemoles como raíz
   const FLAT_KEYS = new Set(["F","Bb","Eb","Ab","Db","Gb"]);
   const useFlat = FLAT_KEYS.has(root);
   const SCALE = useFlat ? CHROMATIC_FLAT : CHROMATIC_SHARP;
   const ri = CHROMATIC_SHARP.indexOf(root) !== -1
     ? CHROMATIC_SHARP.indexOf(root)
     : CHROMATIC_FLAT.indexOf(root);
-
-  if (ivs.length !== 7) {
-    // Para escalas no diatónicas (pentatónicas, blues, etc.) usar el método simple
-    return ivs.map(i => SCALE[(ri+i+120)%12]);
-  }
-
-  // Para escalas de 7 notas: garantizar una letra por grado
-  const LETTERS = ["C","D","E","F","G","A","B"];
-  const rootLetter = root.replace(/[#b]/,"");
-  const rootLetterIdx = LETTERS.indexOf(rootLetter);
-
-  return ivs.map((interval, degree) => {
-    const targetLetter = LETTERS[(rootLetterIdx + degree) % 7];
-    const chromIdx = (ri + interval + 120) % 12;
-    // Buscar la nota con la letra correcta
-    for (const spelling of [CHROMATIC_SHARP, CHROMATIC_FLAT]) {
-      const note = spelling[chromIdx];
-      if (note.replace(/[#b]/,"") === targetLetter) return note;
-    }
-    // Fallback: doble alteración (raro) — usar nota cromática simple
-    return SCALE[chromIdx];
-  });
+  return ivs.map(i => SCALE[(ri+i+120)%12]);
 };
 
 const LAT={"DO":"C","DO#":"C#","RE":"D","RE#":"D#","MI":"E","FA":"F","FA#":"F#","SOL":"G","SOL#":"G#","LA":"A","LA#":"A#","SI":"B"};
@@ -226,6 +208,7 @@ const FORMULAS={
   "7":   {intervals:[0,4,7,10],       label:"Dom. 7ª",    symbol:"7"   },
   "maj7":{intervals:[0,4,7,11],       label:"Mayor 7ª",   symbol:"△7"  },
   "min7":{intervals:[0,3,7,10],       label:"Menor 7ª",   symbol:"m7"  },
+  "minMaj7":{intervals:[0,3,7,11],    label:"Menor maj7",  symbol:"m△7" },
   "dim": {intervals:[0,3,6],          label:"Disminuido", symbol:"°"   },
   "dim7":{intervals:[0,3,6,9],        label:"Dim. 7ª",    symbol:"°7"  },
   "m7b5":{intervals:[0,3,6,10],       label:"Semidism.",  symbol:"ø7"  },
@@ -406,7 +389,10 @@ const parseChord=(input)=>{
     const root=rm[1];
     const rest=s.slice(root.length).toLowerCase().replace(/\s/g,"");
     let q="maj";
-    if(rest.includes("m7b5")||rest.includes("ø"))q="m7b5";
+    // Menor con 7ª mayor: mMaj7 / m(maj7) / -maj7 — debe detectarse ANTES de "maj7" genérico,
+    // porque "cmmaj7".includes("maj7") es true y lo confundiría con Cmaj7 (mayor, no menor).
+    if(/^(mmaj7|m\(maj7\)|-maj7|-\(maj7\)|mM7)/.test(rest))q="minMaj7";
+    else if(rest.includes("m7b5")||rest.includes("ø"))q="m7b5";
     else if(rest.includes("dim7")||rest.includes("°7"))q="dim7";
     else if(rest.includes("dim")||rest.includes("°"))q="dim";
     else if(rest.includes("maj7")||rest.includes("△7")||rest.includes("∆7"))q="maj7";
@@ -414,6 +400,9 @@ const parseChord=(input)=>{
     else if(rest.includes("maj"))q="maj7";
     else if(rest.includes("m9"))q="min9";
     else if(rest.includes("m7"))q="min7";
+    // Notación jazz con guion: "-7" = menor7, "-" sola (sin dígitos después) = menor.
+    // Debe ir ANTES de "7" genérico, porque "-7".includes("7") es true y daría dominante en vez de menor.
+    else if(/^-7/.test(rest))q="min7";
     else if(rest.includes("7b9"))q="7b9";
     else if(rest.includes("7#9"))q="7#9";
     else if(rest.includes("7alt")||rest.includes("alt"))q="7alt";
@@ -423,6 +412,7 @@ const parseChord=(input)=>{
     else if(rest.includes("aug")||rest.includes("+"))q="aug";
     else if(rest.includes("sus2"))q="sus2";
     else if(rest.includes("sus4")||rest.includes("sus"))q="sus4";
+    else if(/^-/.test(rest))q="min";
     else if(rest.includes("m"))q="min";
     const formula=FORMULAS[q]||FORMULAS["maj"];
     const notes=formula.intervals.map(i=>spellInterval(root,i%12));

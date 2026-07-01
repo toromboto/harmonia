@@ -319,36 +319,41 @@ const buildVoicing=(root,quality)=>{
   const ivs=f.intervals;
   const has=s=>ivs.some(i=>(i%12)===s%12);
   const has7=has(10)||has(11);
-  // sp: usa spellInterval para naming diatónico correcto (C#+4=E#, no F)
   const sp=(semi)=>spellInterval(root,semi);
+  const rootAbs=noteIdx(root);
 
   // ── MANO IZQUIERDA: bajo grave (oct 2) ──
   const L=[];
   L.push({note:root, role:"Tónica (bajo)", oct:2});
-  // Quinta en el bajo solo en triadas simples sin 7ª y cuando es justa
   if(!has7 && has(7) && !has(6) && !has(8)){
     L.push({note:sp(7), role:"Quinta", oct:2});
   }
 
-  // ── MANO DERECHA: cuerpo del acorde (oct 3-4) ──
+  // ── MANO DERECHA: ascendente estricto ──
+  // Cada nota nueva sube de octava si su posición cromática no supera a la anterior.
+  // Esto evita que C4 suene por debajo de A4 cuando ambas están en "oct 4"
+  // (ej: Dm7 -> F3, A4, C5 -- no C4 que sonaria una octava debajo de A4).
   const R=[];
-  // 3ª — siempre la primera nota, nombre diatónico correcto
-  if(has(3)) R.push({note:sp(3),  role:"3ª menor", oct:3});
-  if(has(4)) R.push({note:sp(4),  role:"3ª mayor", oct:3});
-  // 5ª — SIEMPRE presente en MD (justa, dim o aum)
-  const oct5a = has7 ? 4 : 3;
-  if(has(7))  R.push({note:sp(7),  role:"5ª justa",  oct:oct5a});
-  if(has(6))  R.push({note:sp(6),  role:"5ª dim.",   oct:oct5a});
-  if(has(8))  R.push({note:sp(8),  role:"5ª aum.",   oct:oct5a});
-  // 7ª
-  if(has(10)) R.push({note:sp(10), role:"7ª menor",  oct:4});
-  if(has(11)) R.push({note:sp(11), role:"7ª mayor",  oct:4});
-  // Extensiones (intervalos > 11 en la fórmula) — oct 5
+  let prevAbs=-1;
+  const push=(semi,role,octHint)=>{
+    const chroma=(rootAbs+semi+120)%12;
+    let oct=octHint;
+    let abs=oct*12+chroma;
+    while(abs<=prevAbs){oct++;abs=oct*12+chroma;}
+    prevAbs=abs;
+    R.push({note:sp(semi),role,oct});
+  };
+
+  if(has(3))  push(3,  "3ª menor", 3);
+  if(has(4))  push(4,  "3ª mayor", 3);
+  const oct5a=has7?4:3;
+  if(has(7))  push(7,  "5ª justa",  oct5a);
+  if(has(6))  push(6,  "5ª dim.",   oct5a);
+  if(has(8))  push(8,  "5ª aum.",   oct5a);
+  if(has(10)) push(10, "7ª menor",  4);
+  if(has(11)) push(11, "7ª mayor",  4);
   const extLabels={1:"b9",2:"9ª",3:"#9",5:"11ª",6:"#11",8:"b13",9:"13ª"};
-  ivs.filter(i=>i>11).forEach(i=>{
-    const s=i%12;
-    R.push({note:sp(s), role:extLabels[s]||"ext.", oct:5});
-  });
+  ivs.filter(i=>i>11).forEach(i=>{push(i%12,extLabels[i%12]||"ext.",5);});
 
   return {L,R};
 };
@@ -586,7 +591,7 @@ const Nota=({note,size="md"})=>{
 const Piano=({leftVoice=[],rightVoice=[]})=>{
   const WHITE=["C","D","E","F","G","A","B"];
   const BLACK=[{n:"C#",a:0},{n:"D#",a:1},{n:"F#",a:3},{n:"G#",a:4},{n:"A#",a:5}];
-  const OCTS=[3,4,5];
+  const OCTS=[2,3,4,5];
   const ww=30,wh=115,bw=18,bh=71;
   const W=WHITE.length*ww*OCTS.length;
 
@@ -662,7 +667,7 @@ const Piano=({leftVoice=[],rightVoice=[]})=>{
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-6 h-2 rounded" style={{background:"linear-gradient(90deg,#28A03C,#D22828,#7828B4)"}}/>
-          M.derecha — 3ª · 7ª · extensiones (oct.4-5)
+          M.derecha — 3ª · 7ª · extensiones (oct.3-5)
         </span>
       </div>
       {/* Detalle de voces */}

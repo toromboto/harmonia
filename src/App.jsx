@@ -315,6 +315,11 @@ const getFns=(q)=>HF[q]||[{fn:"Acorde de color",degree:"?",key:"Uso libre / moda
 // MI: tónica sola en bajo (oct 2)
 // MD: 3ª + 7ª (guía-notas) en oct 4, extensiones en oct 5
 const buildVoicing=(root,quality)=>{
+  // Voicing pedagógico real de piano jazz/tango:
+  // MI: tónica en oct2 (bajo). Quinta en oct2 solo en triadas sin 7ª.
+  // MD: guide tones 3ª (oct3) + 7ª (sigue ascendente).
+  //     En acordes con 7ª, la 5ª se omite (práctica real de piano jazz).
+  //     Extensiones van encima de la 7ª. Todo siempre ascendente.
   const f=FORMULAS[quality]||FORMULAS["maj"];
   const ivs=f.intervals;
   const has=s=>ivs.some(i=>(i%12)===s%12);
@@ -322,17 +327,14 @@ const buildVoicing=(root,quality)=>{
   const sp=(semi)=>spellInterval(root,semi);
   const rootAbs=noteIdx(root);
 
-  // ── MANO IZQUIERDA: bajo grave (oct 2) ──
+  // ── MANO IZQUIERDA ──
   const L=[];
-  L.push({note:root, role:"Tónica (bajo)", oct:2});
+  L.push({note:root, role:"Tónica", oct:2});
   if(!has7 && has(7) && !has(6) && !has(8)){
     L.push({note:sp(7), role:"Quinta", oct:2});
   }
 
-  // ── MANO DERECHA: ascendente estricto ──
-  // Cada nota nueva sube de octava si su posición cromática no supera a la anterior.
-  // Esto evita que C4 suene por debajo de A4 cuando ambas están en "oct 4"
-  // (ej: Dm7 -> F3, A4, C5 -- no C4 que sonaria una octava debajo de A4).
+  // ── MANO DERECHA ──
   const R=[];
   let prevAbs=-1;
   const push=(semi,role,octHint)=>{
@@ -344,16 +346,23 @@ const buildVoicing=(root,quality)=>{
     R.push({note:sp(semi),role,oct});
   };
 
-  if(has(3))  push(3,  "3ª menor", 3);
-  if(has(4))  push(4,  "3ª mayor", 3);
-  const oct5a=has7?4:3;
-  if(has(7))  push(7,  "5ª justa",  oct5a);
-  if(has(6))  push(6,  "5ª dim.",   oct5a);
-  if(has(8))  push(8,  "5ª aum.",   oct5a);
-  if(has(10)) push(10, "7ª menor",  4);
-  if(has(11)) push(11, "7ª mayor",  4);
-  const extLabels={1:"b9",2:"9ª",3:"#9",5:"11ª",6:"#11",8:"b13",9:"13ª"};
-  ivs.filter(i=>i>11).forEach(i=>{push(i%12,extLabels[i%12]||"ext.",5);});
+  // 3ª siempre primero en oct3 (nota que define la calidad del acorde)
+  if(has(3)) push(3, "3ª menor", 3);
+  if(has(4)) push(4, "3ª mayor", 3);
+
+  if(!has7){
+    // Triadas: 3ª + 5ª
+    if(has(7)) push(7, "5ª justa", 3);
+    if(has(6)) push(6, "5ª dim.",  3);
+    if(has(8)) push(8, "5ª aum.",  3);
+  } else {
+    // Acordes con 7ª: guide tones 3ª + 7ª (la 5ª se omite, es práctica real de jazz)
+    if(has(10)) push(10, "7ª menor", 4);
+    if(has(11)) push(11, "7ª mayor", 4);
+    // Extensiones encima de la 7ª
+    const extL={1:"b9",2:"9ª",3:"#9",5:"11ª",6:"#11",8:"b13",9:"13ª"};
+    ivs.filter(i=>i>11).forEach(i=>{ push(i%12, extL[i%12]||"ext.", 4); });
+  }
 
   return {L,R};
 };
@@ -663,11 +672,11 @@ const Piano=({leftVoice=[],rightVoice=[]})=>{
       <div className="flex gap-4 mt-2 text-xs text-gray-500 flex-wrap">
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-6 h-2 rounded" style={{background:"#4488ff"}}/>
-          M.izquierda — tónica (bajo, oct.2)
+          M.izquierda — tónica oct.2 (bajo)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-6 h-2 rounded" style={{background:"linear-gradient(90deg,#28A03C,#D22828,#7828B4)"}}/>
-          M.derecha — 3ª · 7ª · extensiones (oct.3-5)
+          M.derecha — 3ª · 7ª guide tones (oct.3-4) · extensiones
         </span>
       </div>
       {/* Detalle de voces */}

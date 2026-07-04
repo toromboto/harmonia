@@ -272,6 +272,19 @@ const MODE_BY_DEGREE_MINOR=[
   {name:"Mixolidio", ivs:MODES["Mixolidio"], q:"7",   tensions:["9","13"],       avoid:["11"],     degree:"bVII"},
 ];
 
+
+// Calidades diatónicas de cada modo (I..VII desde la tónica del modo)
+const DQ_POR_MODO={
+  "Jónico":    ["maj7","min7","min7","maj7","7",   "min7","m7b5"],
+  "Dórico":    ["min7","min7","maj7","7",   "min7","m7b5","maj7"],
+  "Frigio":    ["min7","maj7","7",   "min7","m7b5","maj7","min7"],
+  "Lidio":     ["maj7","7",   "min7","m7b5","maj7","min7","min7"],
+  "Mixolidio": ["7",   "min7","m7b5","maj7","min7","min7","maj7"],
+  "Eólico":    ["min7","m7b5","maj7","min7","min7","maj7","7"   ],
+  "Locrio":    ["m7b5","maj7","min7","min7","maj7","7",   "min7"],
+};
+const DQ_SIMBOLO={"maj7":"△7","min7":"m7","7":"7","m7b5":"ø7"};
+
 const HF={
   "7":[
     {fn:"V7 → I (dominante)",degree:"V",key:"Resuelve a tónica mayor",mode:"Mixolidio",modeIvs:MODES["Mixolidio"],tensions:["9","13"],avoid:["11"],resolutions:["I△7","I"],why:"El tritono (3ª–7ª) se resuelve por semitono. Tensión máxima del sistema tonal."},
@@ -594,120 +607,34 @@ const Nota=({note,size="md"})=>{
   );
 };
 
-// Piano multi-octava — 3 octavas (C3-B5)
-// Colores: cada tecla activa usa su color tonal propio
-// Diferencia de mano: barra superior azul=MI, barra color tonal=MD
-const Piano=({leftVoice=[],rightVoice=[]})=>{
-  const WHITE=["C","D","E","F","G","A","B"];
-  const BLACK=[{n:"C#",a:0},{n:"D#",a:1},{n:"F#",a:3},{n:"G#",a:4},{n:"A#",a:5}];
-  const OCTS=[2,3,4,5];
-  const ww=30,wh=115,bw=18,bh=71;
-  const W=WHITE.length*ww*OCTS.length;
-
-  const key=(note,oct,x,w,h,isBlack)=>{
-    const L=leftVoice.find(v=>v.note===note&&v.oct===oct);
-    const R=rightVoice.find(v=>v.note===note&&v.oct===oct);
-    const tonal=nc(note);
-    const active=L||R;
-    // fondo: color tonal suave si activo, clásico si no
-    const fill=active
-      ? tonal+(isBlack?"55":"28")
-      : (isBlack?"#1c1a18":"#f7f5ef");
-    const stroke=L?"#4488ff":R?tonal:(isBlack?"#444":"#bbb");
-    const sw=active?2.5:0.8;
-    const dotY=isBlack?h-15:h-25;
-    const lblY=isBlack?h-6:h-10;
-    return(
-      <g key={note+oct} style={{cursor:"pointer"}} onClick={()=>playTone(note,oct,0.7)}>
-        <rect x={x+0.5} y={0} width={w-1} height={h} rx={isBlack?2:3}
-          fill={fill} stroke={stroke} strokeWidth={sw}/>
-        {/* Barra superior: identifica la mano */}
-        {L&&<rect x={x+1} y={0} width={w-2} height={4} rx={1} fill="#4488ff"/>}
-        {R&&<rect x={x+1} y={0} width={w-2} height={4} rx={1} fill={tonal}/>}
-        {/* Punto de color tonal */}
-        {active&&<circle cx={x+w/2} cy={dotY} r={isBlack?3.5:4.5} fill={tonal}/>}
-        {/* Nota */}
-        <text x={x+w/2} y={lblY} textAnchor="middle" fontSize={isBlack?5.5:7}
-          fill={active?(isBlack?"#eee":"#222"):(isBlack?"#555":"#ccc")}
-          fontFamily="serif" fontWeight={active?"bold":"normal"}>{note}</text>
-        {/* Rol */}
-        {active&&!isBlack&&(L||R).role&&(
-          <text x={x+w/2} y={h-30} textAnchor="middle" fontSize="5"
-            fill={tonal} fontFamily="sans-serif">
-            {(L||R).role.split(" ")[0]}
-          </text>
-        )}
-      </g>
-    );
-  };
-
+// Voicing display: notas con octava en orden ascendente real, tocables
+const VoicingDisplay=({leftVoice=[],rightVoice=[]})=>{
+  const all=[...leftVoice,...rightVoice];
+  if(!all.length) return null;
   return(
-    <div>
-      {/* Labels octava */}
-      <div className="flex mb-1">
-        {OCTS.map(o=>(
-          <div key={o} style={{width:WHITE.length*ww+"px",fontSize:"9px",color:"#666",textAlign:"center"}}>
-            Oct.{o}
-          </div>
-        ))}
-      </div>
-      <div className="overflow-x-auto">
-        <svg viewBox={`0 0 ${W} ${wh}`} style={{minWidth:W+"px",height:"125px",display:"block"}}>
-          {/* Separadores */}
-          {OCTS.map((o,oi)=>oi>0&&(
-            <line key={"s"+o} x1={oi*WHITE.length*ww} y1={0}
-              x2={oi*WHITE.length*ww} y2={wh} stroke="#666" strokeWidth="1"/>
-          ))}
-          {/* Blancas */}
-          {OCTS.map((o,oi)=>WHITE.map((n,i)=>
-            key(n,o,oi*WHITE.length*ww+i*ww,ww,wh,false)
-          ))}
-          {/* Negras */}
-          {OCTS.map((o,oi)=>BLACK.map(({n,a})=>
-            key(n,o,oi*WHITE.length*ww+(a+1)*ww-bw/2,bw,bh,true)
-          ))}
-        </svg>
-      </div>
-      {/* Leyenda */}
-      <div className="flex gap-4 mt-2 text-xs text-gray-500 flex-wrap">
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block w-6 h-2 rounded" style={{background:"#4488ff"}}/>
-          M.izquierda — tónica oct.2 (bajo)
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="inline-block w-6 h-2 rounded" style={{background:"linear-gradient(90deg,#28A03C,#D22828,#7828B4)"}}/>
-          M.derecha — 3ª · 7ª guide tones (oct.3-4) · extensiones
-        </span>
-      </div>
-      {/* Detalle de voces */}
-      <div className="grid grid-cols-2 gap-2 mt-3">
-        <div className="rounded-lg p-2.5 border" style={{background:"#07101f",borderColor:"#1a3060"}}>
-          <p className="text-xs font-bold mb-2" style={{color:"#4488ff"}}>← Mano izquierda</p>
-          <div className="space-y-1">
-            {leftVoice.map((v,i)=>(
-              <div key={i} className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{background:nc(v.note)}}/>
-                <span className="font-bold text-sm" style={{color:nc(v.note)}}>{v.note}</span>
-                <span className="text-gray-600 text-xs">oct.{v.oct}</span>
-                <span className="text-gray-500 text-xs ml-auto">{v.role}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-lg p-2.5 border" style={{background:"#071507",borderColor:"#1a4a28"}}>
-          <p className="text-xs font-bold mb-2 text-green-400">Mano derecha →</p>
-          <div className="space-y-1">
-            {rightVoice.map((v,i)=>(
-              <div key={i} className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{background:nc(v.note)}}/>
-                <span className="font-bold text-sm" style={{color:nc(v.note)}}>{v.note}</span>
-                <span className="text-gray-600 text-xs">oct.{v.oct}</span>
-                <span className="text-gray-500 text-xs ml-auto">{v.role}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-wrap items-end gap-2">
+      {/* Separador visual MI / MD */}
+      {leftVoice.map((v,i)=>(
+        <button key={"L"+i} onClick={()=>playTone(v.note,v.oct,0.8)}
+          className="flex flex-col items-center px-3 py-2 rounded-xl border-2 font-bold"
+          style={{backgroundColor:nc(v.note)+"18",borderColor:"#4488ff",minWidth:"44px"}}>
+          <span className="text-base" style={{color:nc(v.note)}}>{v.note}</span>
+          <span className="text-xs font-mono" style={{color:"#4488ff"}}>oct.{v.oct}</span>
+          <span className="text-xs mt-0.5" style={{color:"#4488ff66",fontSize:"9px"}}>{v.role}</span>
+        </button>
+      ))}
+      {leftVoice.length>0&&rightVoice.length>0&&(
+        <span className="text-gray-700 text-lg mb-2">|</span>
+      )}
+      {rightVoice.map((v,i)=>(
+        <button key={"R"+i} onClick={()=>playTone(v.note,v.oct,0.8)}
+          className="flex flex-col items-center px-3 py-2 rounded-xl border-2 font-bold"
+          style={{backgroundColor:nc(v.note)+"18",borderColor:nc(v.note),minWidth:"44px"}}>
+          <span className="text-base" style={{color:nc(v.note)}}>{v.note}</span>
+          <span className="text-xs font-mono" style={{color:nc(v.note)+"bb"}}>oct.{v.oct}</span>
+          <span className="text-xs mt-0.5" style={{color:nc(v.note)+"66",fontSize:"9px"}}>{v.role}</span>
+        </button>
+      ))}
     </div>
   );
 };
@@ -750,6 +677,30 @@ const FnCard=({fn,root,isOpen,onToggle})=>{
               ))}
             </div>
             <p className="text-xs text-gray-600 font-mono">{scale.join(" — ")}</p>
+            {/* Acordes diatónicos del modo */}
+            {scale.length>=7&&DQ_POR_MODO[fn.mode]&&(
+              <div className="mt-2 pt-2 border-t border-gray-800">
+                <p className="text-xs text-gray-600 mb-1.5 uppercase tracking-widest">Acordes diatónicos</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {scale.slice(0,7).map((nota,i)=>{
+                    const calidad=DQ_POR_MODO[fn.mode][i];
+                    const simbolo=DQ_SIMBOLO[calidad]??calidad;
+                    const color=nc(nota);
+                    const chordNotes=[0,2,4,6].map(ci=>scale[(i+ci)%7]);
+                    return(
+                      <button key={i}
+                        onClick={()=>chordNotes.forEach((n,j)=>setTimeout(()=>playTone(n,4,0.8),j*15))}
+                        className="flex flex-col items-center px-2 py-1.5 rounded-lg border font-bold"
+                        style={{backgroundColor:color+"18",borderColor:color+"55",color,minWidth:"40px"}}>
+                        <span style={{fontSize:"9px",opacity:0.55}}>{DN[i]}</span>
+                        <span className="text-sm">{nota}</span>
+                        <span style={{fontSize:"9px",opacity:0.75}}>{simbolo}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           {/* Tensiones y evitar */}
           <div className="grid grid-cols-2 gap-2">
@@ -3643,10 +3594,8 @@ export default function HarmoniaApp(){
                     </div>
                     {voicing&&(
                       <div>
-                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Voicing real en piano</p>
-                        <div className="rounded-xl p-3 border border-gray-700" style={{background:"#111825"}}>
-                          <Piano leftVoice={voicing.L} rightVoice={voicing.R}/>
-                        </div>
+                        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3">Voicing</p>
+                        <VoicingDisplay leftVoice={voicing.L} rightVoice={voicing.R}/>
                       </div>
                     )}
                     <button onClick={()=>playChord(chord.notes)}
@@ -3752,10 +3701,10 @@ export default function HarmoniaApp(){
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               {ch.notes.map(n=><Nota key={n} note={n} size="sm"/>)}
                             </div>
-                            {/* Piano voicing */}
-                            <div className="rounded-xl p-2.5 border border-gray-700 mb-3" style={{background:"#111825"}}>
-                              <p className="text-xs text-gray-600 mb-1.5">Voicing en piano</p>
-                              <Piano leftVoice={v.L} rightVoice={v.R}/>
+                            {/* Voicing */}
+                            <div className="mb-3">
+                              <p className="text-xs text-gray-600 mb-1.5">Voicing</p>
+                              <VoicingDisplay leftVoice={v.L} rightVoice={v.R}/>
                             </div>
                             {f&&(
                               <div className="text-sm flex flex-wrap gap-x-4 gap-y-1">

@@ -128,6 +128,11 @@ vuelve a la rama.
   qué.
 - **Cada archivo de `public/gestos/` lleva su sello `VERSION`.** Si se cambia
   el archivo, sube el sello.
+- **No hay `package-lock.json`, y es a propósito mientras la etapa sea «en
+  desarrollo».** El `.gitignore` lo bloquea para que no vuelva a colarse en un
+  `git add -A`. Qué se gana y qué se pierde con cada opción está desarrollado
+  en `PROTOCOLO-DESARROLLO.md` § 12 del repo `datos`; la decisión sigue
+  abierta (`harmonia:H5`), y adoptarlo es borrar esa línea a propósito.
 - **Las variables de entorno nuevas entran con su fila en la tabla de arriba y
   su línea en `.env.example`, en la misma tanda.**
 

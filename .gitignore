@@ -3,6 +3,13 @@ dist
 .DS_Store
 .vercel
 
+# El lockfile, mientras la etapa sea «en desarrollo» (CLAUDE.md → Al trabajar
+# en este repo). No es la decisión de fondo —está desarrollada en
+# PROTOCOLO-DESARROLLO.md § 12 del repo `datos`, y sigue abierta—: es el
+# candado para que no vuelva a colarse en un `git add -A`, que ya pasó una vez.
+# Adoptarlo es borrar esta línea, a propósito y en una tanda.
+package-lock.json
+
 # Secretos — plantilla del ecosistema (PROTOCOLO-GENERAL.md § 3).
 # El historial de git es permanente: lo que entra acá una vez no se va.
 .env

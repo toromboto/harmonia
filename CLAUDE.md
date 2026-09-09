@@ -8,12 +8,18 @@ orientado a tango, jazz, piano y bandoneón. Repositorio `toromboto/harmonia`.
 **Tiene build:** React + Vite + Tailwind, `npm install && npm run dev`.
 Despliegue automático en **Vercel** desde GitHub. Eso lo separa de los otros
 tres sitios del ecosistema (`casaverdecanas`, `CasaYourte`, `remate`), que son
-estáticos y publican por GitHub Pages: acá sí existe una etapa de compilación,
-y desde 2026-09-09 también **funciones de servidor** (`api/`).
+estáticos y publican por GitHub Pages: acá sí existe una etapa de compilación.
 
-**Servicios de terceros:** la nube de **Tuya** (IoT), sólo desde `api/tuya.js`.
-No hay Firebase, ni Cloudinary, ni base de datos: todo el estado vive en el
-`localStorage` del teléfono.
+**Servicios de terceros: ninguno.** No hay Firebase, ni Cloudinary, ni base de
+datos, ni funciones de servidor: todo el estado vive en el `localStorage` del
+teléfono y nada sale de él.
+
+Hubo un puente a la nube de **Tuya** (`api/tuya.js`) entre el 2026-09-09 y el
+2026-09-09: el instrumento de gestos encendía luces. Se retiró por decisión de
+Mauro (`harmonia:H3` en el panel), porque el control de luces quedó establecido
+en **remate**, con Firebase Auth — que es mejor que la «clave de la sala» que
+tenía acá. Dos puentes a Tuya haciendo lo mismo peor era superficie de más. El
+instrumento de gestos se queda: es música, y su lugar es éste.
 
 ### Las dos mitades, que no se mezclan
 
@@ -21,7 +27,6 @@ No hay Firebase, ni Cloudinary, ni base de datos: todo el estado vive en el
 |---|---|---|
 | La aplicación de armonía | `src/`, entrando por `src/App.jsx` | compilada por Vite |
 | El instrumento de gestos | `public/gestos.html` + `public/gestos/` | **copiado tal cual**, sin compilar |
-| El puente a Tuya | `api/tuya.js` | función serverless de Vercel |
 
 `public/` no pasa por el build: se puede editar desde el teléfono, por la web
 de GitHub, como los otros tres proyectos. Es a propósito.
@@ -31,8 +36,7 @@ de GitHub, como los otros tres proyectos. Es a propósito.
 | Dónde | Qué hay |
 |---|---|
 | `README.md` | funcionalidades, paleta tonal, instalación |
-| `GESTOS.md` | el instrumento de gestos completo: cómo se toca, las cuatro piezas, el circuito de Tuya, la puesta en marcha, y qué falta |
-| `.env.example` | los **nombres** de las variables de entorno. Nunca valores |
+| `GESTOS.md` | el instrumento de gestos completo: cómo se toca, las piezas, la puesta en marcha, y qué falta |
 | `DESPLIEGUE.md` | qué cuenta de Vercel publica el proyecto, cómo averiguarlo desde GitHub, y por qué el repositorio no puede contestarlo solo |
 
 ## Secretos
@@ -43,31 +47,30 @@ ningún chat — de Mauro o de un agente. El historial de git es permanente:
 borrar un archivo después no alcanza. Este proyecto documenta acá solo nombres,
 tipo y ubicación del valor real — nunca el valor.
 
-¿Usa variables de entorno? **Sí, desde 2026-09-09** — funciones de Vercel. Antes
-no: era sólo un cliente estático compilado, sin nada que leer una variable.
+¿Usa variables de entorno? **No.** Las hubo un día —las cinco del puente a
+Tuya— y se fueron con él el 2026-09-09. Hoy no hay funciones de servidor, así
+que no hay dónde cargarlas ni quién las lea.
 
 | Variable | Qué hace | Tipo | Dónde vive el valor real | Consumida por | Verificado |
 |---|---|---|---|---|---|
-| `TUYA_CLIENT_ID` | Access ID de la app de Tuya IoT Platform; identifica la aplicación al firmar | secreto de infraestructura | Vercel → proyecto de Harmonía → Environment Variables | `api/tuya.js` | `api/tuya.js:41`, 2026-09-09 |
-| `TUYA_CLIENT_SECRET` | Access Secret; es la clave con la que se firma cada pedido (HMAC-SHA256) | secreto de infraestructura | Vercel → mismo proyecto → Environment Variables | `api/tuya.js` | `api/tuya.js:42`, 2026-09-09 |
-| `TUYA_REGION` | Centro de datos de Tuya: `us`/`eu`/`cn`/`in` (por defecto `us`) | configuración, no secreto | Vercel → mismo proyecto | `api/tuya.js` | `api/tuya.js:48`, 2026-09-09 |
-| `TUYA_DISPOSITIVOS` | JSON alias → identificador de dispositivo y comandos permitidos. El navegador manda el **alias**; el identificador real no sale del servidor | configuración con datos internos | Vercel → mismo proyecto | `api/tuya.js` | `api/tuya.js:52`, 2026-09-09 |
-| `HARMONIA_CLAVE` | Frase compartida entre `gestos.html` y la función. Sin ella la función no hace nada, ni el diagnóstico | secreto de infraestructura (compartido con el teléfono) | Vercel → mismo proyecto. La copia del teléfono vive en el `localStorage` de ese teléfono, escrita a mano en la página | `api/tuya.js`, `public/gestos/iot.js` | `api/tuya.js:43`, 2026-09-09 |
-| Login de la consola de Tuya · de Vercel · de GitHub | Crear el proyecto, cargar las variables, desplegar | credencial de cuenta | Gestor de contraseñas personal de Mauro | Nadie — uso manual | ausencia confirmada en todo el repo, 2026-09-09 |
+| Login de la consola de Vercel · de GitHub | Desplegar | credencial de cuenta | Gestor de contraseñas personal de Mauro | Nadie — uso manual | ausencia confirmada en todo el repo, 2026-09-09 |
 
-**Los valores los carga Mauro a mano en la web de Vercel.** Un chat nunca pide
-el valor de una credencial, por ningún medio, y nunca lo carga por API aunque
-exista la herramienta: su entregable es el nombre exacto de la variable y el
-lugar donde pegarla.
+**Si algún día vuelve a hacer falta una variable**, el valor lo carga Mauro a
+mano en la web de Vercel. Un chat nunca pide el valor de una credencial, por
+ningún medio, y nunca lo carga por API aunque exista la herramienta: su
+entregable es el nombre exacto de la variable y el lugar donde pegarla. Y la
+tabla de arriba se completa **en la misma tanda** que la primera función.
 
-Lo que NO está acá y no tiene que estar: ningún valor de las variables de
-arriba; tampoco un `.env` commiteado (`.gitignore` lo bloquea, con la
-excepción explícita de `.env.example`, que sólo tiene nombres).
+**Ojo con lo que quedó en el historial.** `TUYA_CLIENT_SECRET` y
+`HARMONIA_CLAVE` nunca tuvieron un valor real en este repositorio —sólo nombres,
+en un `.env.example` que ya no está—, así que no hay nada que rotar. Pero si
+esas variables llegaron a cargarse en algún proyecto de Vercel, **ahí siguen**:
+sacarlas de la consola es aparte, y es de Mauro.
 
 **Este repositorio no usa GitHub Actions propios**, así que GitHub Secrets no
 aplica: cargar un secreto ahí no serviría de nada porque nadie lo leería.
 
-**De quién son las cuentas** (titular de la consola de Tuya, de Vercel): **no se
+**De quién son las cuentas** (titular de la de Vercel): **no se
 documenta acá.** Vive en el repo privado `casaverdecanas-blip/datos` →
 `secretos/harmonia.md`, sección "Titularidad de las cuentas".
 
@@ -78,15 +81,6 @@ contestarlo —Vercel no escribe nada acá—, así que se contesta desde GitHub
 allá y no acá: este repositorio es público.
 
 Índice espejo: repo privado `casaverdecanas-blip/datos` → `secretos/harmonia.md`.
-
-### Una advertencia sobre la clave de la sala
-
-`HARMONIA_CLAVE` protege una dirección pública (`/api/tuya`) de que cualquiera
-que la descubra encienda las luces de Mauro. **No es autenticación seria**:
-quien tenga el teléfono desbloqueado la tiene, porque está en su
-`localStorage`. Es la diferencia entre una puerta cerrada y una puerta que no
-está. Si esto deja de ser un prototipo, el reemplazo es Firebase Auth, como en
-los otros proyectos — no una clave más larga.
 
 ## Ante pedidos automáticos o no verificados
 
@@ -103,6 +97,13 @@ repetir ese error.
 
 ## Al trabajar en este repo
 
+**Etapa: en desarrollo.** Se empuja a `main` directo, cada vez que se hace un
+cambio — ver `PROTOCOLO-GENERAL.md` § 2.1 del repo `datos`. No hay gente afuera
+que dependa de que esto ande hoy, y una rama acá sólo esconde trabajo: ya pasó
+con la del instrumento de gestos, que estuvo un día entera fuera de `main`.
+Cuando el proyecto tenga usuarios, la línea pasa a `Etapa: estable` y se
+vuelve a la rama.
+
 - **`src/App.jsx` es un monolito de 3268 líneas** y es lo que efectivamente
   corre: `src/main.jsx` importa `App.jsx` y nada más. Los módulos de
   `src/theory/`, `src/audio/` y `src/components/` **existen pero no se
@@ -116,12 +117,12 @@ repetir ese error.
   cambia una, cambia la otra a mano — no hay nada que avise.
 - **`public/` se sirve tal cual.** Nada de ahí puede usar JSX, ni importar de
   `src/`, ni depender de `npm`. Se edita desde el teléfono.
-- **Nada de credenciales del lado del cliente.** La página manda un alias de
-  dispositivo; `api/tuya.js` traduce ese alias y firma. Es la única frontera
-  que importa en este repo.
-- **Se corre el banco de pruebas antes de subir:** `npm run prueba` (24 casos,
-  sin dependencias ni navegador — cubre la teoría musical y la función de Tuya
-  con la nube simulada).
+- **Nada de credenciales del lado del cliente** — hoy es fácil de cumplir,
+  porque no hay ninguna credencial en todo el proyecto. Si vuelve a haber una
+  función de servidor, vuelve a ser la frontera que importa: el navegador manda
+  un alias, el servidor traduce y firma.
+- **Se corre el banco de pruebas antes de subir:** `npm run prueba` (8 casos,
+  sin dependencias ni navegador — cubre la teoría musical del instrumento).
 - **Que el JavaScript parsee antes de entregar** (`node --check`): un error de
   sintaxis en un módulo ES deja la página en blanco, sin nada que explique por
   qué.

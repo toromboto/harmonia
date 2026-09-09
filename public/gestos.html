@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <meta name="theme-color" content="#0a0a1a">
 <title>Harmonía · Gestos — instrumento de manos</title>
-<meta name="description" content="Instrumento que se toca con las manos frente a la cámara, y que además enciende luces.">
+<meta name="description" content="Instrumento que se toca con las manos frente a la cámara.">
 <style>
   :root{
     --fondo:#0a0a1a;
@@ -125,24 +125,8 @@
 </details>
 
 <details>
-  <summary>Las luces (Tuya)</summary>
-  <div class="campo">
-    <label for="clave">Clave de la sala</label>
-    <input type="password" id="clave" autocomplete="off" placeholder="la que cargaste en Vercel">
-  </div>
-  <div class="campo"><label for="dispositivo">Alias del dispositivo</label><input type="text" id="dispositivo" value="luz" autocomplete="off"></div>
-  <div class="campo"><label for="comando">Comando</label><input type="text" id="comando" value="switch_1" autocomplete="off"></div>
-  <div class="campo"><label for="iotEncendido">Puño cerrado enciende</label><input type="checkbox" id="iotEncendido" checked></div>
-  <div class="campo">
-    <label for="gatilloNota">Además, al tocar la nota</label>
-    <select id="gatilloNota"></select>
-  </div>
-  <div class="fila">
-    <button id="guardarClave">Guardar clave</button>
-    <button id="probarIot">Probar ahora</button>
-    <button id="diagnostico">Ver qué falta</button>
-  </div>
-  <div class="bitacora" id="bitacora">La clave se guarda sólo en este teléfono. Nunca viaja al repositorio.</div>
+  <summary>La bitácora</summary>
+  <div class="bitacora" id="bitacora">Acá aparece lo que pasa con la cámara y el audio.</div>
 </details>
 
 <details>
@@ -154,11 +138,9 @@
     pellizco, más vibrato. Subir la mano abre el brillo; acercarla a la cámara sube el volumen.
   </p>
   <p style="font-size:.9rem;color:var(--tenue)">
-    <strong style="color:var(--texto)">Mano izquierda — el acompañamiento y la luz.</strong><br>
-    Con la mano abierta suena un acorde del grado donde esté. Cerrando el puño y
-    <em>sosteniéndolo</em> —el anillo naranja marca cuánto falta— se manda la orden al
-    dispositivo Tuya. Se sostiene a propósito: un puño instantáneo aparece solo cada vez
-    que la mano sale del cuadro.
+    <strong style="color:var(--texto)">Mano izquierda — el acompañamiento.</strong><br>
+    Con la mano abierta suena un acorde del grado donde esté. Cerrando el puño el
+    acompañamiento calla: el punto se pone naranja para avisar que la mano está cerrada.
   </p>
   <p style="font-size:.9rem;color:var(--tenue)">
     <strong style="color:var(--texto)">Si las manos salen cambiadas</strong>, tocá «Cambiar mano».
@@ -168,9 +150,8 @@
 
 <p class="nota-al-pie">
   Nada de esto sube fotos ni video a ningún lado: <code>MediaPipe</code> corre entero en el
-  navegador. Lo único que sale del teléfono es, si activás las luces, un pedido a
-  <code>/api/tuya</code> con el alias del dispositivo — nunca una credencial.
-  La documentación está en <code>GESTOS.md</code>.
+  navegador, y el instrumento no le habla a ningún servidor: no hay nada que salga del
+  teléfono. La documentación está en <code>GESTOS.md</code>.
   · <a href="/">Volver a Harmonía</a>
 </p>
 

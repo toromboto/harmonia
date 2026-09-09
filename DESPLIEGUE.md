@@ -26,50 +26,55 @@ contesta GitHub.
 
 ---
 
-## 2. Cómo averiguar cuál es, de lo más seguro a lo menos
+## 2. La respuesta de Mauro, que cambia el problema
 
-Los tres primeros se hacen **desde el teléfono, en la web de GitHub**, sin
-saber ninguna contraseña de Vercel.
+**2026-09-09, respondiendo `harmonia:H1` en el panel:**
 
-### 2.1 · La instalación de la GitHub App *(lo definitivo)*
+> «No tengo acceso a ese repositorio, soy colaborador. Debo desarrollar éste
+> tipo de apps en paralelo en encubadora dentro de repositorio en la cuenta de
+> github de maurogasta@gmail.com.»
 
-`github.com/toromboto/harmonia` → **Settings** → **Integrations** → **GitHub
-Apps**. Si Vercel está conectado, aparece ahí con un botón **Configure**. Ese
-botón lleva a la instalación, y la instalación **nombra la cuenta o el equipo
-de Vercel** al que está atada.
+Eso cierra la pregunta, aunque no con la respuesta que se buscaba. **Los dos
+caminos más seguros dependían de ser dueño del repositorio** —
+`Settings → Integrations → GitHub Apps` y
+`github.com/settings/installations` — y un colaborador no ve ninguno de los
+dos. La cuenta de Vercel de `toromboto/harmonia` no es averiguable desde acá, y
+no porque falte mirar en el lugar correcto: no hay lugar donde mirar.
 
-Si en esa lista **no aparece Vercel**, el proyecto no está conectado a este
-repositorio — con lo cual no hay nada que recuperar y se va derecho al punto 3.
+Y explica por qué apareció: los 50 commits son del usuario `toromboto`, que es
+el dueño. Mauro trabaja adentro del repositorio de otra persona.
 
-### 2.2 · Las aplicaciones autorizadas de tu cuenta
+### La decisión: la incubadora
 
-`github.com/settings/installations` → **Installed GitHub Apps**. Muestra
-todas las instalaciones de Vercel de esta cuenta de GitHub, aunque el
-repositorio no esté entre las suyas.
+Este tipo de aplicación se desarrolla **en paralelo, en un repositorio propio
+de la cuenta `maurogasta@gmail.com`**, y no dentro del repositorio ajeno. No es
+un rodeo administrativo:
 
-### 2.3 · Los despliegues que dejó en el repositorio
+- **Lo que no se puede ver, no se puede administrar.** Un proyecto cuyo
+  despliegue vive en una cuenta a la que no se entra no se puede arreglar
+  cuando falla, ni migrar, ni apagar.
+- **Los secretos no se pueden ubicar.** El § «Titularidad» de
+  `PROTOCOLO-SECRETOS.md` pide anotar de quién es cada consola. Acá la
+  respuesta sería «de alguien más», que no es una respuesta operativa: no dice
+  a qué dirección se pide una recuperación.
+- **Y ya costó algo concreto.** `harmonia:H1` existe por esto, y `harmonia:H2`
+  —completar la titularidad— no se puede cerrar mientras siga así.
 
-En la portada del repositorio, al lado de los commits recientes, o en cualquier
-Pull Request, Vercel deja un **check de `vercel[bot]`** con un enlace
-*Visit Preview* / *Details*. Ese enlace abre el proyecto en Vercel: si estás
-logueado con la cuenta correcta, se abre; si no, dice que no tenés acceso —
-y eso ya es información, porque significa que la cuenta es otra.
+Lo que sigue de esta sección quedaba escrito para el caso de ser dueño del
+repositorio. **Se conserva porque sirve para la incubadora**, donde Mauro sí lo
+va a ser, y para `rematetaller/remate`, que también es suyo.
 
-Si no hay ningún check de `vercel[bot]` en los últimos commits, es muy probable
-que la conexión no exista o se haya roto hace tiempo.
+### Los caminos, para un repositorio propio
 
-### 2.4 · Entrar a Vercel con GitHub
+`Settings → Integrations → GitHub Apps` del repositorio, y
+`github.com/settings/installations` de la cuenta: el primero dice si Vercel
+está conectado a ese repositorio y **nombra la cuenta o el equipo de Vercel**;
+el segundo muestra todas las instalaciones de Vercel de esa cuenta de GitHub,
+aunque el repositorio no esté entre las suyas. Los dos se hacen desde el
+teléfono, en la web de GitHub, sin saber ninguna contraseña de Vercel.
 
-`vercel.com/login` → **Continue with GitHub**, con la cuenta `toromboto`. Si
-esa es la cuenta que creó el proyecto, ahí está el proyecto. Es el camino
-directo — está cuarto sólo porque, si la respuesta es «no aparece nada», no
-distingue entre *no es esta cuenta* y *el proyecto ya no existe*.
-
-### 2.5 · El correo
-
-Buscar **`vercel`** en la casilla. Vercel manda un mail al crear la cuenta, y
-otro cada vez que un despliegue falla. El destinatario de esos mails es la
-dirección de la cuenta.
+Si Vercel no aparece en ninguno de los dos, no hay nada que recuperar: se va
+derecho al punto 3.
 
 ---
 
@@ -108,15 +113,21 @@ En el proyecto viejo: **Settings → Git → Disconnect**, o **Settings → Adva
 
 Desde el 2026-09-09 hay **dos** proyectos del ecosistema que necesitan Vercel:
 
-| Proyecto | Qué despliega |
-|---|---|
-| `toromboto/harmonia` | el sitio entero (build de Vite) y `api/tuya` para el instrumento de gestos |
-| `rematetaller/remate` | **sólo** `api/tuya`, el puente a las luces del depósito. El sitio lo sigue publicando GitHub Pages |
+| Proyecto | Qué despliega | Dueño del repo |
+|---|---|---|
+| `toromboto/harmonia` | el sitio entero (build de Vite). Ya **no** despliega ninguna función: el puente a Tuya se retiró el 2026-09-09 (`harmonia:H3`) | `toromboto` — Mauro es colaborador |
+| `rematetaller/remate` | **sólo** `api/tuya`, el puente a las luces del depósito. El sitio lo sigue publicando GitHub Pages | de Mauro |
+| la incubadora (§ 2) | lo que se desarrolle en paralelo, en la cuenta `maurogasta@gmail.com` | de Mauro |
 
-Son dos **repositorios de dueños de GitHub distintos**, así que la cuenta de
-Vercel va a tener que estar autorizada en los dos. Conviene que sea **una
-sola**: dos cuentas de Vercel es el mismo problema que dos proyectos, un nivel
-más arriba.
+**El único que necesita una función de servidor hoy es `remate`.** Harmonía
+volvió a ser un build estático, así que su despliegue puede seguir como está
+sin que nadie sepa en qué cuenta vive: no hay variables que cargar ahí.
+
+Y donde sí hay que decidir es en `remate` (`remate:L2`, sin responder). Conviene
+que la cuenta de Vercel sea **una sola** para todo lo que venga: dos cuentas de
+Vercel es el mismo problema que dos proyectos, un nivel más arriba. Con lo
+respondido en `harmonia:H1`, la candidata natural es una atada a
+`maurogasta@gmail.com`, que es la cuenta de GitHub donde Mauro es dueño.
 
 ---
 
@@ -128,8 +139,9 @@ va al índice del ecosistema:
 **Repo privado `casaverdecanas-blip/datos` → `secretos/harmonia.md` → sección
 «Titularidad de las cuentas».**
 
-Ahí van el **titular** de la cuenta de Vercel y el de la consola de Tuya: con
-qué dirección de correo se entra y de quién es. **La contraseña no** — ésa vive
+Ahí va el **titular** de la cuenta de Vercel: con qué dirección de correo se
+entra y de quién es. (La consola de Tuya salió de la lista el 2026-09-09, con
+el puente.) **La contraseña no** — ésa vive
 en el gestor de contraseñas y en ningún documento. Y no va en este repositorio,
 que es público, aunque no sea un secreto: es un dato de contacto.
 

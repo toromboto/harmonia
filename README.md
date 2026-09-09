@@ -10,8 +10,8 @@ Aplicación web musical interactiva construida en React + Vite + Tailwind CSS.
 - **Progresión** — Detecta la tonalidad probable de una progresión y asigna grados romanos
 - **Quintas** — Círculo de quintas interactivo con todas las tonalidades
 - **Colores** — Sistema cromático tonal: cada nota tiene un color único
-- **Gestos** — Instrumento que se toca con las manos frente a la cámara, y que
-  además enciende dispositivos Tuya. Página aparte: [`/gestos.html`](public/gestos.html) ·
+- **Gestos** — Instrumento que se toca con las manos frente a la cámara.
+  Página aparte: [`/gestos.html`](public/gestos.html) ·
   documentación en [`GESTOS.md`](GESTOS.md)
 
 ## Sistema de colores tonales
@@ -40,7 +40,7 @@ npm run prueba
 ```
 
 Sin dependencias y sin navegador: corre la teoría musical del instrumento de
-gestos y la función de Tuya entera, con la nube de Tuya simulada.
+gestos — 8 casos.
 
 ## Deploy en Vercel
 
@@ -49,17 +49,15 @@ Este proyecto está configurado para deploy automático desde GitHub en Vercel.
 está en [`DESPLIEGUE.md`](DESPLIEGUE.md)** — el repositorio no lo dice, y no
 puede decirlo: Vercel no escribe nada acá.
 
-Desde 2026-09-09 el despliegue tiene tres partes:
+El despliegue tiene dos partes:
 
 | Qué | Dónde | Cómo llega al aire |
 |---|---|---|
 | La aplicación de armonía | `src/` | compilada por Vite |
 | El instrumento de gestos | `public/gestos.html`, `public/gestos/` | copiado tal cual, sin compilar |
-| El puente a Tuya | `api/tuya.js` | función serverless |
 
-La función necesita variables de entorno cargadas en Vercel. Los **nombres**
-están en [`.env.example`](.env.example); los valores se cargan a mano en
-Vercel → Settings → Environment Variables, y **nunca** entran al repositorio.
+**No hay variables de entorno que cargar.** Las hubo, para el puente a Tuya
+que el instrumento tenía hasta el 2026-09-09; se retiraron con él.
 Después de cargarlas hay que volver a desplegar: Vercel no las aplica a un
 despliegue ya hecho.
 

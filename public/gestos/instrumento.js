@@ -8,7 +8,7 @@
 
 import { rejilla, zonaDe, colorDe, etiquetaDe, nombreDe, acordeDeGrado, ESCALAS } from "./musica.js";
 
-export const VERSION = "gestos-instrumento 1.0";
+export const VERSION = "gestos-instrumento 2.0";
 
 // Umbrales del pellizco, con histéresis. Dos números y no uno: con uno solo,
 // la nota parpadea justo en el borde, que es exactamente donde la mano se
@@ -16,7 +16,6 @@ export const VERSION = "gestos-instrumento 1.0";
 const PELLIZCO_CIERRA = 0.55;
 const PELLIZCO_ABRE   = 0.78;
 
-const PUNO_MS = 700;   // cuánto hay que sostener el puño para disparar
 
 export const AJUSTES_POR_DEFECTO = {
   tonica: "A",
@@ -25,21 +24,16 @@ export const AJUSTES_POR_DEFECTO = {
   octavas: 2,
   latino: false,
   // IoT
-  iotPuno:  { dispositivo: "luz",  comando: "switch_1", valor: "alternar" },
-  iotNota:  null,   // ej. { nota:"E", dispositivo:"rele", comando:"switch_1", valor:true }
   acompanamiento: true,
 };
 
-export function crearInstrumento({ video, canvas, motor, puente, ajustes = {}, alEstado = null }) {
+export function crearInstrumento({ video, canvas, motor, ajustes = {}, alEstado = null }) {
   const cfg = { ...AJUSTES_POR_DEFECTO, ...ajustes };
   const ctx2d = canvas.getContext("2d");
 
   let notas = rejilla(cfg);
   let sonando = false;
   let notaActual = null;
-  let punoDesde = 0;
-  let punoDisparado = false;
-  let ultimoEstadoIot = false;   // para el valor "alternar"
   let acordeActual = null;
   let ultimo = { manos: null, fps: 0 };
 
@@ -62,7 +56,7 @@ export function crearInstrumento({ video, canvas, motor, puente, ajustes = {}, a
   function cuadro(manos, info) {
     ultimo = { manos, fps: info.fps };
     melodia(manos.derecha);
-    armoniaYLuces(manos.izquierda, info.t);
+    armonia(manos.izquierda);
     dibujar(manos);
     avisar();
   }
@@ -92,7 +86,6 @@ export function crearInstrumento({ video, canvas, motor, puente, ajustes = {}, a
       const cambio = midi !== notaActual;
       if (!sonando || cambio) {
         motor.notaOn(midi, { ligado: sonando });
-        if (!sonando || cambio) gatilloDeNota(midi, !sonando || cambio);
         notaActual = midi;
         sonando = true;
       }
@@ -107,11 +100,10 @@ export function crearInstrumento({ video, canvas, motor, puente, ajustes = {}, a
     }
   }
 
-  // ── Mano izquierda: el acorde, y el puño que enciende ────────────────────
-  function armoniaYLuces(mano, t) {
+  // ── Mano izquierda: el acorde ────────────────────────────────────────────
+  function armonia(mano) {
     if (!mano) {
       if (acordeActual) { motor.acordeOff(); acordeActual = null; }
-      punoDesde = 0; punoDisparado = false;
       return;
     }
 
@@ -128,35 +120,6 @@ export function crearInstrumento({ video, canvas, motor, puente, ajustes = {}, a
       motor.acordeOff();
       acordeActual = null;
     }
-
-    // El puño hay que sostenerlo. Un puño instantáneo aparece solo cada vez
-    // que la mano sale del cuadro o se cierra para rascarse la nariz.
-    if (mano.puno) {
-      if (!punoDesde) punoDesde = t;
-      if (!punoDisparado && t - punoDesde >= PUNO_MS) {
-        punoDisparado = true;
-        dispararIot(cfg.iotPuno);
-      }
-    } else {
-      punoDesde = 0;
-      punoDisparado = false;
-    }
-  }
-
-  // ── El gatillo por nota ──────────────────────────────────────────────────
-  function gatilloDeNota(midi, esAtaque) {
-    if (!cfg.iotNota || !esAtaque) return;
-    if (nombreDe(midi) !== cfg.iotNota.nota) return;
-    dispararIot(cfg.iotNota);
-  }
-
-  function dispararIot(accion) {
-    if (!accion || !puente || !puente.encendido) return;
-    let valor = accion.valor;
-    if (valor === "alternar") { ultimoEstadoIot = !ultimoEstadoIot; valor = ultimoEstadoIot; }
-    motor.chasquido(valor === false ? 76 : 88);
-    puente.enviar(accion.dispositivo, accion.comando, valor);
-    avisar({ disparo: { ...accion, valor } });
   }
 
   // ── Dibujo ───────────────────────────────────────────────────────────────
@@ -201,16 +164,6 @@ export function crearInstrumento({ video, canvas, motor, puente, ajustes = {}, a
         : (m.puno ? "rgba(255,190,60,0.95)" : "rgba(120,200,255,0.35)");
       ctx2d.fill();
 
-      if (!esMelodia && m.puno && punoDesde) {
-        // El anillo que se completa mientras se sostiene el puño: sin él, la
-        // espera de 700 ms se siente como que no anda.
-        const avance = Math.min(1, (performance.now() - punoDesde) / PUNO_MS);
-        ctx2d.beginPath();
-        ctx2d.arc(m.x * w, m.y * h, r + 10, -Math.PI / 2, -Math.PI / 2 + avance * Math.PI * 2);
-        ctx2d.strokeStyle = "rgba(255,190,60,0.95)";
-        ctx2d.lineWidth = 4;
-        ctx2d.stroke();
-      }
     }
   }
 

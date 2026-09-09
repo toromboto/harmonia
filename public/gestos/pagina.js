@@ -8,10 +8,9 @@
 import { crearMotor } from "./audio.js";
 import { crearRastreador } from "./manos.js";
 import { crearInstrumento } from "./instrumento.js";
-import { crearPuente, guardarClave, leerClave, hayClave } from "./iot.js";
 import { CROMATICA, ESCALAS, LATINO } from "./musica.js";
 
-export const VERSION = "gestos-pagina 1.0";
+export const VERSION = "gestos-pagina 2.0";
 
 const $ = (id) => document.getElementById(id);
 const AJUSTES_GUARDADOS = "harmonia_gestos_ajustes_v1";
@@ -33,7 +32,6 @@ function anotar(nivel, texto) {
 
 // ─── Piezas ──────────────────────────────────────────────────────────────────
 const motor = crearMotor();
-const puente = crearPuente({ alRegistrar: anotar });
 let instrumento = null;
 let rastreador = null;
 
@@ -52,11 +50,6 @@ for (const n of CROMATICA) {
 for (const [clave, e] of Object.entries(ESCALAS)) {
   $("escala").add(new Option(e.nombre, clave));
 }
-$("gatilloNota").add(new Option("— ninguna —", ""));
-for (const n of CROMATICA) {
-  $("gatilloNota").add(new Option(`${n} · ${LATINO[n]}`, n));
-}
-
 // ─── Estado inicial de los controles ────────────────────────────────────────
 const guardados = cargarAjustes();
 $("tonica").value  = guardados.tonica  ?? "A";
@@ -67,14 +60,8 @@ $("latino").checked = guardados.latino ?? false;
 $("acomp").checked  = guardados.acompanamiento ?? true;
 $("afinacion").value = guardados.afinacionLa ?? 440;
 $("afinacionVal").textContent = $("afinacion").value;
-$("dispositivo").value = guardados.dispositivo ?? "luz";
-$("comando").value     = guardados.comando ?? "switch_1";
-$("gatilloNota").value = guardados.gatilloNota ?? "";
-$("iotEncendido").checked = guardados.iotEncendido ?? true;
-if (hayClave()) $("clave").placeholder = "guardada en este teléfono";
 
 function ajustesActuales() {
-  const gatillo = $("gatilloNota").value;
   return {
     tonica: $("tonica").value,
     escala: $("escala").value,
@@ -83,10 +70,6 @@ function ajustesActuales() {
     latino: $("latino").checked,
     acompanamiento: $("acomp").checked,
     afinacionLa: Number($("afinacion").value) || 440,
-    dispositivo: $("dispositivo").value.trim(),
-    comando: $("comando").value.trim(),
-    gatilloNota: gatillo,
-    iotEncendido: $("iotEncendido").checked,
   };
 }
 
@@ -95,19 +78,14 @@ function aplicar() {
   guardarAjustes(a);
   motor.afinacionLa = a.afinacionLa;
   $("afinacionVal").textContent = a.afinacionLa;
-  puente.encendido = a.iotEncendido;
   if (!instrumento) return;
   instrumento.ajustar({
     tonica: a.tonica, escala: a.escala, octava: a.octava, octavas: a.octavas,
     latino: a.latino, acompanamiento: a.acompanamiento,
-    iotPuno: { dispositivo: a.dispositivo, comando: a.comando, valor: "alternar" },
-    iotNota: a.gatilloNota
-      ? { nota: a.gatilloNota, dispositivo: a.dispositivo, comando: a.comando, valor: true }
-      : null,
   });
 }
 
-for (const id of ["tonica","escala","octava","octavas","latino","acomp","afinacion","dispositivo","comando","gatilloNota","iotEncendido"]) {
+for (const id of ["tonica","escala","octava","octavas","latino","acomp","afinacion"]) {
   $(id).addEventListener("change", aplicar);
 }
 $("afinacion").addEventListener("input", () => { $("afinacionVal").textContent = $("afinacion").value; });
@@ -131,9 +109,7 @@ function mostrar(e) {
     `${e.fps || 0} cuadros/s`,
   ];
   if (e.acorde) partes.push("acorde sostenido");
-  if (puente.pendientes) partes.push("mandando orden…");
   lecturaDatos.textContent = partes.join(" · ");
-  if (e.disparo) anotar("aviso", `gesto → ${e.disparo.dispositivo} ${e.disparo.comando}=${e.disparo.valor}`);
 }
 
 // ─── Encendido ───────────────────────────────────────────────────────────────
@@ -146,7 +122,7 @@ $("empezar").addEventListener("click", async () => {
     if (estado !== "running") anotar("aviso", "el audio quedó suspendido; tocá otra vez");
 
     rastreador = crearRastreador({ video, intercambiarManos: true, espejo: true });
-    instrumento = crearInstrumento({ video, canvas: lienzo, motor, puente, alEstado: mostrar });
+    instrumento = crearInstrumento({ video, canvas: lienzo, motor, alEstado: mostrar });
     aplicar();
 
     await rastreador.arrancar((manos, info) => instrumento.cuadro(manos, info));
@@ -178,33 +154,6 @@ $("intercambiar").addEventListener("click", () => {
   if (!rastreador) return;
   rastreador.intercambiar = !rastreador.intercambiar;
   anotar("aviso", `manos ${rastreador.intercambiar ? "intercambiadas" : "sin intercambiar"}`);
-});
-
-// ─── Luces ───────────────────────────────────────────────────────────────────
-$("guardarClave").addEventListener("click", () => {
-  const v = $("clave").value;
-  if (!v) { anotar("aviso", "escribí la clave antes de guardarla"); return; }
-  guardarClave(v);
-  $("clave").value = "";
-  $("clave").placeholder = "guardada en este teléfono";
-  anotar("ok", "clave guardada en este teléfono");
-});
-
-$("probarIot").addEventListener("click", async () => {
-  const a = ajustesActuales();
-  if (!leerClave()) { anotar("aviso", "primero guardá la clave"); return; }
-  const r = await puente.enviar(a.dispositivo, a.comando, true);
-  if (!r.ok && r.motivo === "muy-seguido") anotar("aviso", "esperá un segundo entre pruebas");
-});
-
-$("diagnostico").addEventListener("click", async () => {
-  const d = await puente.diagnostico();
-  if (d.ok === false && d.motivo) { anotar("err", d.motivo); return; }
-  if (Array.isArray(d.faltan) && d.faltan.length) {
-    anotar("err", `faltan variables en Vercel: ${d.faltan.join(", ")}`);
-  } else {
-    anotar("ok", `región ${d.region} · alias: ${Object.keys(d.dispositivos || {}).join(", ") || "ninguno"}`);
-  }
 });
 
 // Al irse de la página o apagar la pantalla, callar. Un instrumento que sigue

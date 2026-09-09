@@ -1,13 +1,13 @@
 # Gestos — el instrumento que se toca con las manos
 
 Una página de Harmonía que usa la cámara frontal para convertir el movimiento
-de las manos en notas, y ciertos gestos en órdenes a dispositivos Tuya.
+de las manos en notas. Corre entero en el navegador: no le habla a ningún
+servidor.
 
 | | |
 |---|---|
 | La página | `/gestos.html` |
 | Código del cliente | `public/gestos/` |
-| Función de servidor | `api/tuya.js` |
 | Banco de pruebas | `pruebas/gestos.mjs` — `npm run prueba` |
 
 ---
@@ -15,7 +15,7 @@ de las manos en notas, y ciertos gestos en órdenes a dispositivos Tuya.
 ## 1. Qué es, y qué no
 
 **Es** un instrumento: la mano derecha elige y hace sonar una nota, la
-izquierda acompaña con un acorde y dispara una acción física.
+izquierda acompaña con un acorde.
 
 **No es** parte de la aplicación React. `gestos.html` vive en `public/`, así
 que Vite **lo copia tal cual**, sin compilar. Se abre sola, sin `npm install`,
@@ -45,12 +45,12 @@ lo que se paga por no tener build en esta página, y por eso está anotado.
 | Subir o bajar la mano | Abre o cierra el brillo (el filtro). |
 | Acercarse a la cámara | Sube el volumen. |
 
-### Mano izquierda — el acompañamiento y la luz
+### Mano izquierda — el acompañamiento
 
 | Gesto | Qué hace |
 |---|---|
 | Mano abierta | Suena un acorde del grado donde esté la mano. |
-| Puño cerrado, **sostenido** | Manda la orden al dispositivo Tuya. Un anillo naranja muestra cuánto falta. |
+| Puño cerrado | Calla el acorde. El punto se pone naranja para avisar que la mano está cerrada. |
 
 ### Tres decisiones que se sienten al tocar
 
@@ -75,15 +75,14 @@ pantalla, no leyendo la documentación.
 
 ---
 
-## 3. Las cuatro piezas, y por qué están separadas
+## 3. Las cinco piezas, y por qué están separadas
 
 ```
 public/gestos/
   musica.js       escalas, colores, MIDI → Hz.   No sabe que existe una cámara.
   audio.js        Web Audio.                     No sabe que existe una mano.
   manos.js        cámara + MediaPipe.            No sabe que existe el sonido.
-  iot.js          cliente de /api/tuya.          No sabe nada de música.
-  instrumento.js  el único que los conoce a todos: gesto → nota → orden.
+  instrumento.js  el único que los conoce a todos: gesto → nota.
   pagina.js       cableado de los controles de gestos.html.
 ```
 
@@ -115,106 +114,35 @@ ni siquiera llega a encenderse.
 
 ---
 
-## 4. Las luces: cómo se conecta Tuya
+## 4. Puesta en marcha
 
-### El circuito
+No hay nada que configurar: el instrumento no tiene variables de entorno, ni
+función de servidor, ni cuenta de terceros. Alcanza con que la página esté
+publicada.
 
-```
-gestos.html  ──►  /api/tuya  ──►  nube de Tuya  ──►  el dispositivo
-(teléfono)        (Vercel)
-   │                  │
-   │                  └── acá viven TUYA_CLIENT_ID y TUYA_CLIENT_SECRET
-   └── acá vive sólo la clave de la sala, en localStorage
-```
+### Probar en la computadora
 
-**El navegador nunca ve una credencial de Tuya.** Manda un alias
-(`{"dispositivo":"luz"}`) y la función traduce ese alias a un identificador
-real que sólo ella conoce.
-
-### La clave de la sala
-
-`/api/tuya` es una dirección pública, como todo lo que publica Vercel. Sin un
-secreto compartido, cualquiera que la descubra le prende la luz a Mauro desde
-el otro lado del mundo.
-
-`HARMONIA_CLAVE` es esa frase. Se carga en Vercel y se escribe **una vez** en
-la propia página, donde queda en el `localStorage` de ese teléfono. No está en
-el repositorio, no está en el código.
-
-No es autenticación seria —quien tenga el teléfono la tiene— y conviene
-decirlo así en vez de fingir lo contrario: es la diferencia entre una puerta
-cerrada y una puerta que no está. Si algún día esto pasa de prototipo a algo
-que la gente usa, el reemplazo es Firebase Auth, como en los otros proyectos.
-
-### Qué protege la función, además de la clave
-
-- **Cerrado por defecto.** Sin `HARMONIA_CLAVE` cargada, no funciona para
-  nadie. La falta de configuración nunca abre la puerta.
-- **Lista blanca de dispositivos.** Un alias que no está en
-  `TUYA_DISPOSITIVOS` se rechaza.
-- **Lista blanca de comandos.** Sin una lista `comandos` explícita, el único
-  comando permitido es el declarado: tener un alias no habilita mandarle
-  cualquier cosa al aparato.
-- **Límites de valor** por dispositivo (`min` / `max`).
-- **Freno de 700 ms por dispositivo**, del lado del servidor — el del
-  navegador se saltea abriendo las herramientas de desarrollo.
-- **Comparación de la clave en tiempo constante**, y nada de secretos en las
-  respuestas de error. El banco de pruebas lo verifica explícitamente.
-
----
-
-## 5. Puesta en marcha
-
-### En Tuya
-
-1. `iot.tuya.com` → Cloud → Development → **Create Cloud Project**. Anotar el
-   *Access ID* y el *Access Secret*. Elegir el centro de datos que corresponda
-   (para Uruguay, normalmente *Western America*, o sea `us`).
-2. En el proyecto: **Devices → Link App Account**, y vincular la cuenta de la
-   app Smart Life / Tuya Smart donde ya están los dispositivos.
-3. **Service API → Go to Authorize**: habilitar *IoT Core* y *Authorization*.
-4. En Devices, copiar el **Device ID** de cada aparato que se quiera manejar.
-
-### En Vercel
-
-Project → Settings → Environment Variables. Los nombres están en
-`.env.example`. **Los valores los carga Mauro a mano, en la web.** Ningún chat
-los pide ni los carga por API — ver `PROTOCOLO-SECRETOS.md`.
-
-```
-TUYA_CLIENT_ID        el Access ID
-TUYA_CLIENT_SECRET    el Access Secret
-TUYA_REGION           us
-TUYA_DISPOSITIVOS     {"luz":{"id":"...","comando":"switch_1"}}
-HARMONIA_CLAVE        una frase larga, inventada para esto
-```
-
-Después hay que **volver a desplegar**: Vercel no aplica variables nuevas a un
-despliegue ya hecho.
+`npm run dev` sirve la página en `http://localhost:5173/gestos.html` y la
+cámara anda: los navegadores aceptan `localhost` sin https. Desde el teléfono
+hace falta https, o sea el despliegue de Vercel.
 
 ### En el teléfono
 
-Abrir `https://…/gestos.html` → «Las luces» → escribir la clave → **Guardar
-clave** → **Ver qué falta**. Si algo no está cargado, esa respuesta lo dice por
-su nombre exacto, sin decir ningún valor.
-
-### Probar sin Vercel
-
-`npm run dev` sirve la página en `http://localhost:5173/gestos.html` y la
-cámara anda (los navegadores aceptan `localhost` sin https). **Pero `/api/` no
-existe en el servidor de Vite**: las luces sólo funcionan con `vercel dev` o
-ya desplegado.
+Abrir `https://…/gestos.html` → **Encender la cámara**. Hace falta dar permiso
+de cámara y un toque para que el navegador deje sonar el audio; los dos son
+del navegador, no de la página. Lo que pase con la cámara y el audio se
+escribe en «La bitácora».
 
 ---
 
-## 6. Lo que todavía no está
+## 5. Lo que todavía no está
 
-- **No hay control local.** Todo pasa por la nube de Tuya, así que hay entre
-  200 y 600 ms de ida y vuelta. Para prender una luz al final de una frase
-  está bien; para que la luz siga el ritmo, no. El camino sería `tuyapi` por
-  red local, y necesita la *local key* de cada dispositivo.
-- **Un solo gesto de disparo.** El puño. Cruzar una zona de la pantalla y los
-  gestos de dos manos combinados quedaron para después.
+- **Ya no enciende luces.** Lo hizo un día. Se retiró el 2026-09-09
+  (`harmonia:H3`): el control de luces quedó en **remate**, con Firebase Auth,
+  y dos puentes a Tuya en el ecosistema era el mismo trabajo hecho dos veces,
+  peor de este lado. Si vuelve, vuelve con autenticación de verdad.
+- **Pocos gestos.** El pellizco y la mano abierta. Cruzar una zona de la
+  pantalla y los gestos de dos manos combinados quedaron para después.
 - **La melodía es monofónica.** Una nota por vez, con ligado. Un acorde con la
   mano derecha necesitaría varias voces, y el pellizco ya no alcanzaría como
   disparador.
@@ -225,15 +153,16 @@ ya desplegado.
 
 ---
 
-## 7. Al tocar este código
+## 6. Al tocar este código
 
-- **Los cuatro módulos no se conocen entre sí.** Si una función se necesita en
-  dos, sube a `musica.js` o se pasa como parámetro; no se copia.
-- **Nada de credenciales del lado del cliente**, nunca, por ninguna razón. La
-  página manda un alias; la función traduce.
+- **Los módulos no se conocen entre sí.** Si una función se necesita en dos,
+  sube a `musica.js` o se pasa como parámetro; no se copia.
+- **Nada de credenciales del lado del cliente**, nunca, por ninguna razón. Hoy
+  es fácil: no hay ninguna credencial en el proyecto. Si vuelve a haber una
+  función de servidor, la página manda un alias y la función traduce.
 - **Se corre el banco de pruebas antes de subir**: `npm run prueba`. Cubre la
-  teoría musical y la función de Tuya entera con la nube simulada — 24 casos.
-  Lo que necesita cámara o Web Audio no se prueba ahí: se prueba con la mano.
+  teoría musical del instrumento — 8 casos. Lo que necesita cámara o Web Audio
+  no se prueba ahí: se prueba con la mano.
 - **Que el JavaScript parsee antes de entregar** (`node --check`): un error de
   sintaxis en un módulo ES deja la página en blanco, sin nada que explique por
   qué.
@@ -242,4 +171,4 @@ ya desplegado.
 
 ---
 
-*Primera versión: 2026-09-09.*
+*Primera versión: 2026-09-09. Sin el puente a Tuya desde el 2026-09-09.*

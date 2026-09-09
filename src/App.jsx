@@ -2734,6 +2734,15 @@ export default function HarmoniaApp(){
                 <span>{t.label}</span>
               </button>
             ))}
+            {/* Gestos vive fuera de esta aplicación: es una página estática de
+                public/, sin React ni build. Por eso es un enlace y no una tab.
+                Ver GESTOS.md. */}
+            <a href="/gestos.html"
+              className="w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all"
+              style={{borderLeft:"3px solid transparent",color:"#666",textDecoration:"none"}}>
+              <span>👋</span>
+              <span>Gestos</span>
+            </a>
           </nav>
         </div>
 

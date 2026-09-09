@@ -1,4 +1,16 @@
 node_modules
 dist
-.env
 .DS_Store
+.vercel
+
+# Secretos — plantilla del ecosistema (PROTOCOLO-GENERAL.md § 3).
+# El historial de git es permanente: lo que entra acá una vez no se va.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*-service-account*.json
+firebase-adminsdk*.json
+.firebase/
+.firebaserc

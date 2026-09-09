@@ -45,6 +45,9 @@ gestos y la función de Tuya entera, con la nube de Tuya simulada.
 ## Deploy en Vercel
 
 Este proyecto está configurado para deploy automático desde GitHub en Vercel.
+**Qué cuenta de Vercel lo publica, cómo averiguarlo y cómo dejarlo anotado
+está en [`DESPLIEGUE.md`](DESPLIEGUE.md)** — el repositorio no lo dice, y no
+puede decirlo: Vercel no escribe nada acá.
 
 Desde 2026-09-09 el despliegue tiene tres partes:
 

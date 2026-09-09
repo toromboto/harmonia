@@ -33,6 +33,7 @@ de GitHub, como los otros tres proyectos. Es a propósito.
 | `README.md` | funcionalidades, paleta tonal, instalación |
 | `GESTOS.md` | el instrumento de gestos completo: cómo se toca, las cuatro piezas, el circuito de Tuya, la puesta en marcha, y qué falta |
 | `.env.example` | los **nombres** de las variables de entorno. Nunca valores |
+| `DESPLIEGUE.md` | qué cuenta de Vercel publica el proyecto, cómo averiguarlo desde GitHub, y por qué el repositorio no puede contestarlo solo |
 
 ## Secretos
 
@@ -69,6 +70,12 @@ aplica: cargar un secreto ahí no serviría de nada porque nadie lo leería.
 **De quién son las cuentas** (titular de la consola de Tuya, de Vercel): **no se
 documenta acá.** Vive en el repo privado `casaverdecanas-blip/datos` →
 `secretos/harmonia.md`, sección "Titularidad de las cuentas".
+
+**Y al 2026-09-09 esa sección estaba vacía**, con la consecuencia concreta de que
+nadie sabía qué cuenta de Vercel publica este proyecto. El repositorio no puede
+contestarlo —Vercel no escribe nada acá—, así que se contesta desde GitHub:
+`DESPLIEGUE.md` tiene el procedimiento. Cuando aparezca la respuesta, se anota
+allá y no acá: este repositorio es público.
 
 Índice espejo: repo privado `casaverdecanas-blip/datos` → `secretos/harmonia.md`.
 

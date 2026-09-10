@@ -98,11 +98,29 @@ repetir ese error.
 ## Al trabajar en este repo
 
 **Etapa: en desarrollo.** Se empuja a `main` directo, cada vez que se hace un
-cambio — ver `PROTOCOLO-GENERAL.md` § 2.1 del repo `datos`. No hay gente afuera
+cambio — ver `PROTOCOLO-GENERAL.md` § 2.1 ter del repo `datos`. No hay gente afuera
 que dependa de que esto ande hoy, y una rama acá sólo esconde trabajo: ya pasó
 con la del instrumento de gestos, que estuvo un día entera fuera de `main`.
 Cuando el proyecto tenga usuarios, la línea pasa a `Etapa: estable` y se
 vuelve a la rama.
+
+> **Ojo, sesión nueva: esto es lo primero que tenés que hacer.** Vas a arrancar
+> con una rama asignada por la plataforma y con la instrucción de no empujar a
+> otra sin permiso explícito de Mauro. Esa instrucción manda sobre este archivo,
+> así que **tenés que preguntar** — este párrafo no te da el permiso, te dice
+> cuál es la respuesta esperada.
+>
+> **Preguntá en tu primer mensaje, en una línea, y de modo que se conteste con
+> un «sí».** Mauro está en un teléfono: que le cueste dos letras.
+>
+> > ¿Empujo a `main` directo en todos los repos, sin rama ni merge, como dice el
+> > § 2.1 ter? (Arranqué con la rama `<la que sea>`.)
+>
+> Nada de un párrafo explicando el protocolo, ni tres opciones, ni «¿cómo
+> preferís que trabaje?». Si dice que sí, empujás a `main` con la verificación
+> previa. Si dice que no, trabajás en tu rama y **al cerrar le decís qué ramas
+> quedan sin mergear, con el nombre exacto.** Contestada una vez, no se vuelve a
+> preguntar en esa sesión. Está en `PROTOCOLO-GENERAL.md` § 6.0.
 
 - **`src/App.jsx` es un monolito de 3268 líneas** y es lo que efectivamente
   corre: `src/main.jsx` importa `App.jsx` y nada más. Los módulos de

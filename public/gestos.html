@@ -152,9 +152,13 @@
   Nada de esto sube fotos ni video a ningún lado: <code>MediaPipe</code> corre entero en el
   navegador, y el instrumento no le habla a ningún servidor: no hay nada que salga del
   teléfono. La documentación está en <code>GESTOS.md</code>.
-  · <a href="/">Volver a Harmonía</a>
+  · <a href="./">Volver a Harmonía</a>
 </p>
 
-<script type="module" src="/gestos/pagina.js"></script>
+<!-- Ruta RELATIVA a propósito: `/gestos/…` sólo resuelve si la página vive
+     en la raíz de un dominio. Así anda igual ahí y en un GitHub Pages de
+     proyecto (usuario.github.io/repo/), que es donde se puede probar sin
+     depender de la cuenta de Vercel que nadie sabe cuál es (harmonia:H1). -->
+<script type="module" src="./gestos/pagina.js"></script>
 </body>
 </html>

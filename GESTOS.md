@@ -120,6 +120,36 @@ No hay nada que configurar: el instrumento no tiene variables de entorno, ni
 función de servidor, ni cuenta de terceros. Alcanza con que la página esté
 publicada.
 
+### Dónde puede vivir esta página
+
+**No necesita el build.** `gestos.html` y `public/gestos/*.js` son HTML y módulos
+ES servidos tal cual: no importan nada de `src/`, no usan JSX, no dependen de
+`npm`. Vite los copia, no los compila. Eso significa que **la página se puede
+publicar en cualquier hosting estático con https**, no sólo donde viva Harmonía.
+
+Requisitos reales, que son tres:
+
+1. **https.** `getUserMedia` no existe en http salvo en `localhost`. Cualquier
+   GitHub Pages o Vercel lo da solo.
+2. **Internet en la primera carga**, para dos CDN: el bundle y el `wasm` de
+   MediaPipe (`cdn.jsdelivr.net`) y el modelo de manos
+   (`storage.googleapis.com`). Se bajan al **encender la cámara**, no al abrir
+   la página — así, si no llegan, falla el encendido y lo dice, en vez de dejar
+   la página en blanco.
+3. **Un toque.** El navegador no deja sonar audio ni abrir la cámara sin un
+   gesto del usuario. Por eso existe el botón «Encender la cámara».
+
+Desde el 2026-09-10 las rutas de `gestos.html` son **relativas** (`./gestos/…`),
+así que la página anda igual en la raíz de un dominio y en un GitHub Pages de
+proyecto (`usuario.github.io/repo/`). Con rutas absolutas, lo segundo daba 404 y
+la página quedaba muda.
+
+> Esto importa por `harmonia:H1`: no se sabe con qué cuenta de Vercel se
+> despliega este repositorio, y Mauro es colaborador, no dueño, así que no puede
+> averiguarlo. **Para probar el instrumento no hace falta resolver eso**: alcanza
+> con publicar estos archivos en un repositorio propio con Pages — que es
+> justamente la «incubadora» que decidió el 2026-09-10.
+
 ### Probar en la computadora
 
 `npm run dev` sirve la página en `http://localhost:5173/gestos.html` y la

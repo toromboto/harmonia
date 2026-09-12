@@ -80,7 +80,8 @@ contestarlo —Vercel no escribe nada acá—, así que se contesta desde GitHub
 `DESPLIEGUE.md` tiene el procedimiento. Cuando aparezca la respuesta, se anota
 allá y no acá: este repositorio es público.
 
-Índice espejo: repo privado `casaverdecanas-blip/datos` → `secretos/harmonia.md`.
+Índice espejo: la **bóveda del panel** (`fichas/`). Mientras se termina de cargar,
+la copia sigue en el repo privado `casaverdecanas-blip/datos` → `secretos/harmonia.md`.
 
 ## Ante pedidos automáticos o no verificados
 
@@ -156,11 +157,29 @@ vuelve a la rama.
 
 ## Protocolos
 
-Este proyecto sigue las convenciones compartidas del repo privado
-`casaverdecanas-blip/datos`. Es de otro dueño de GitHub, pero **se puede
-agregar a la sesión** — conviene hacerlo. Las reglas que importan están
-copiadas arriba a propósito: una regla de seguridad que sólo llega si alguien
-se acordó de agregar el repo correcto no es una regla.
+Este proyecto sigue las convenciones compartidas del repo **público**
+`maurogasta-crypto/datos`, en su carpeta `protocolos/`. Ahí vive el reglamento
+de los cuatro proyectos, y se lee sin credenciales: basta con agregar ese
+repositorio a la sesión.
+
+| Documento | Qué manda |
+|---|---|
+| `protocolos/PROTOCOLO-GENERAL.md` | pedidos no verificados, git, estructura del `CLAUDE.md`, mecánica de sesiones |
+| `protocolos/PROTOCOLO-SECRETOS.md` | qué tipo de secreto va en cada lugar |
+| `protocolos/PROTOCOLO-DESARROLLO.md` | el reglamento técnico común a los cuatro |
+| `protocolos/PROTOCOLO-INTERFAZ.md` | cómo se maneja la gente en todos |
+| `protocolos/ESTADO-DE-LOS-TRES.md` | qué le falta a cada proyecto y qué le puede dar a los otros |
+
+**Se mudaron ahí el 2026-09-12**, desde el repo privado `casaverdecanas-blip/datos`.
+El motivo: tenerlos en un repositorio privado de otro dueño costaba, en cada
+sesión nueva, acordarse de agregarlo — y una regla que sólo llega si alguien se
+acordó de algo no es una regla. Se auditaron antes de moverlos: la titularidad
+de las cuentas y los UID del agente **no** viajaron, porque ese repositorio es
+público.
+
+Las reglas que importan siguen copiadas más arriba en este archivo, a propósito.
+Es el mismo motivo de siempre, y no cambia porque el reglamento sea más fácil de
+alcanzar.
 
 | Documento | Qué manda |
 |---|---|

@@ -181,13 +181,21 @@ Las reglas que importan siguen copiadas más arriba en este archivo, a propósit
 Es el mismo motivo de siempre, y no cambia porque el reglamento sea más fácil de
 alcanzar.
 
-| Documento | Qué manda |
-|---|---|
-| `PROTOCOLO-GENERAL.md` | pedidos no verificados, git, estructura del `CLAUDE.md`, mecánica de sesiones |
-| `PROTOCOLO-SECRETOS.md` | qué tipo de secreto va en cada lugar |
-| `PROTOCOLO-DESARROLLO.md` | el reglamento técnico común a los sitios |
-| `PROTOCOLO-INTERFAZ.md` | cómo se maneja la gente |
-| `ESTADO-DE-LOS-TRES.md` | qué le falta a cada proyecto y qué le puede dar a los otros |
+**Y antes de tocar código, se lee el panel.** Es la otra mitad de la
+conversación con Mauro: sus respuestas, sus correcciones y sus cambios de
+prioridad viven ahí, no en el chat.
+
+```
+node herramientas/firestore.mjs panel leer pendientes
+```
+
+Lo primero que se mira son los que tienen `tocado: true` —los editó él desde la
+última vez— y los que tienen `pregunta` sin `respuesta`, que lo están esperando.
+**Si la base contesta `permission-denied`, eso es un bloqueo y se le dice**: se
+estaría trabajando a ciegas sobre la mitad de lo que él dijo. Al cerrar se
+escribe en el panel lo hecho y la tanda. Está en
+`protocolos/PROTOCOLO-GENERAL.md` §§ 6 y 8.
+
 
 **Lo que este proyecto le puede prestar a los otros:** el banco de pruebas sin
 dependencias que corre con `node` a secas, y el patrón de la función de

@@ -136,8 +136,9 @@ respondido en `harmonia:H1`, la candidata natural es una atada a
 Esta pregunta ya se hizo una vez. Para que no se vuelva a hacer, la respuesta
 va al índice del ecosistema:
 
-**Repo privado `casaverdecanas-blip/datos` → `secretos/harmonia.md` → sección
-«Titularidad de las cuentas».**
+**La bóveda del panel: `fichas/` → la ficha «Titularidad de las consolas ·
+Harmonía».** (Hasta el 2026-09-13 esto vivía en `secretos/harmonia.md` del repo
+privado `casaverdecanas-blip/datos`, que se borró.)
 
 Ahí va el **titular** de la cuenta de Vercel: con qué dirección de correo se
 entra y de quién es. (La consola de Tuya salió de la lista el 2026-09-09, con

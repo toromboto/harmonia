@@ -71,8 +71,8 @@ sacarlas de la consola es aparte, y es de Mauro.
 aplica: cargar un secreto ahí no serviría de nada porque nadie lo leería.
 
 **De quién son las cuentas** (titular de la de Vercel): **no se
-documenta acá.** Vive en el repo privado `casaverdecanas-blip/datos` →
-`secretos/harmonia.md`, sección "Titularidad de las cuentas".
+documenta acá.** Vive en la **bóveda del panel**, en la ficha «Titularidad de
+las consolas · Harmonía» de `fichas/`.
 
 **Y al 2026-09-09 esa sección estaba vacía**, con la consecuencia concreta de que
 nadie sabía qué cuenta de Vercel publica este proyecto. El repositorio no puede
@@ -81,7 +81,8 @@ contestarlo —Vercel no escribe nada acá—, así que se contesta desde GitHub
 allá y no acá: este repositorio es público.
 
 Índice espejo: la **bóveda del panel** (`fichas/`). Mientras se termina de cargar,
-la copia sigue en el repo privado `casaverdecanas-blip/datos` → `secretos/harmonia.md`.
+es desde el 2026-09-13 el único lugar donde eso está escrito: el repo privado que
+tenía la copia se borró, después de pasar su contenido a la bóveda.
 
 ## Ante pedidos automáticos o no verificados
 
@@ -170,7 +171,8 @@ repositorio a la sesión.
 | `protocolos/PROTOCOLO-INTERFAZ.md` | cómo se maneja la gente en todos |
 | `protocolos/ESTADO-DE-LOS-TRES.md` | qué le falta a cada proyecto y qué le puede dar a los otros |
 
-**Se mudaron ahí el 2026-09-12**, desde el repo privado `casaverdecanas-blip/datos`.
+**Se mudaron ahí el 2026-09-12**, desde el repo privado `casaverdecanas-blip/datos`,
+que se borró el 2026-09-13 una vez vacío.
 El motivo: tenerlos en un repositorio privado de otro dueño costaba, en cada
 sesión nueva, acordarse de agregarlo — y una regla que sólo llega si alguien se
 acordó de algo no es una regla. Se auditaron antes de moverlos: la titularidad

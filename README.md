@@ -57,9 +57,10 @@ El despliegue tiene dos partes:
 | El instrumento de gestos | `public/gestos.html`, `public/gestos/` | copiado tal cual, sin compilar |
 
 **No hay variables de entorno que cargar.** Las hubo, para el puente a Tuya
-que el instrumento tenía hasta el 2026-09-09; se retiraron con él.
-Después de cargarlas hay que volver a desplegar: Vercel no las aplica a un
-despliegue ya hecho.
+que el instrumento tenía hasta el 2026-09-09; se retiraron con él, junto con
+`api/tuya.js` y el `.env.example`. Hoy no hay función de servidor que las lea,
+así que no hay nada que cargar en la consola de Vercel ni nada que redesplegar
+por ese motivo.
 
 
 # Functional Harmony Lab

@@ -138,7 +138,8 @@ va al índice del ecosistema:
 
 **La bóveda del panel: `fichas/` → la ficha «Titularidad de las consolas ·
 Harmonía».** (Hasta el 2026-09-13 esto vivía en `secretos/harmonia.md` del repo
-privado `casaverdecanas-blip/datos`, que se borró.)
+privado `casaverdecanas-blip/datos`, que se vació ese día y Mauro borró el
+2026-09-14.)
 
 Ahí va el **titular** de la cuenta de Vercel: con qué dirección de correo se
 entra y de quién es. (La consola de Tuya salió de la lista el 2026-09-09, con

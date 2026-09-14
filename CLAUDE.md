@@ -71,7 +71,7 @@ sacarlas de la consola es aparte, y es de Mauro.
 aplica: cargar un secreto ahí no serviría de nada porque nadie lo leería.
 
 **De quién son las cuentas** (titular de la de Vercel): **no se
-documenta acá.** Vive en la **bóveda del panel**, en la ficha «Titularidad de
+documenta acá.** Vive en las **fichas del panel**, en «Titularidad de
 las consolas · Harmonía» de `fichas/`.
 
 **Y al 2026-09-09 esa sección estaba vacía**, con la consecuencia concreta de que
@@ -80,9 +80,16 @@ contestarlo —Vercel no escribe nada acá—, así que se contesta desde GitHub
 `DESPLIEGUE.md` tiene el procedimiento. Cuando aparezca la respuesta, se anota
 allá y no acá: este repositorio es público.
 
-Índice espejo: la **bóveda del panel** (`fichas/`). Mientras se termina de cargar,
-es desde el 2026-09-13 el único lugar donde eso está escrito: el repo privado que
-tenía la copia se borró, después de pasar su contenido a la bóveda.
+Índice espejo: las **fichas del panel** (`fichas/`). Mientras se termina de cargar,
+son desde el 2026-09-13 el único lugar donde eso está escrito: el repo privado que
+tenía la copia se borró, después de pasar su contenido a las fichas.
+**Ojo con la palabra, que hasta el 2026-09-14 nombraba dos cosas.** La
+**bóveda** es `claves/`, y ahí va sólo lo que **abre algo** —contraseñas,
+códigos de recuperación, segundos factores—, que no toca nadie más que Mauro.
+La titularidad **no abre nada**: es un dato de contacto, va en `fichas/`, y
+desde las reglas v4 la administra el equipo. Lo dijo él así: «a la bóveda sólo
+irían contenedores que tengan claves de acceso». Ver
+`PROTOCOLO-SECRETOS.md` § "Titularidad".
 
 ## Ante pedidos automáticos o no verificados
 

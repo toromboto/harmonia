@@ -136,8 +136,9 @@ respondido en `harmonia:H1`, la candidata natural es una atada a
 Esta pregunta ya se hizo una vez. Para que no se vuelva a hacer, la respuesta
 va al índice del ecosistema:
 
-**La bóveda del panel: `fichas/` → la ficha «Titularidad de las consolas ·
-Harmonía».** (Hasta el 2026-09-13 esto vivía en `secretos/harmonia.md` del repo
+**Las fichas del panel: `fichas/` → «Titularidad de las consolas ·
+Harmonía».** (La *bóveda* es `claves/` y es otra cosa: ahí va sólo lo que abre
+algo. Ver `PROTOCOLO-SECRETOS.md` § «Titularidad».) (Hasta el 2026-09-13 esto vivía en `secretos/harmonia.md` del repo
 privado `casaverdecanas-blip/datos`, que se vació ese día y Mauro borró el
 2026-09-14.)
 

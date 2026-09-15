@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0a0a1a">
+<title>Harmonía · Práctica — los doce colores, de memoria</title>
+<meta name="description" content="Los tres ejercicios del capítulo 0 del manual de color, más el nivel 2 del capítulo 9.">
+<style>
+  :root{
+    --fondo:#0a0a1a;
+    --panel:#0f1024;
+    --panel2:#151733;
+    --borde:#232544;
+    --texto:#e8e8f4;
+    --tenue:#8b8ca8;
+    --acento:#4488ff;
+    --si:#7fc794;
+    --no:#e9736a;
+    --ojo:#e0b45a;
+    --piso: env(safe-area-inset-bottom, 0px);
+    --techo: env(safe-area-inset-top, 0px);
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  html,body{margin:0;padding:0;background:var(--fondo);color:var(--texto);
+    overscroll-behavior-y:contain}
+  body{
+    font:16px/1.55 'Crimson Text',Georgia,serif;
+    padding:calc(var(--techo) + 12px) 13px calc(var(--piso) + 28px);
+    max-width:620px;margin:0 auto;
+    -webkit-text-size-adjust:100%;
+    -webkit-tap-highlight-color:transparent;
+  }
+  h1{font-family:'Libre Baskerville',Georgia,serif;font-size:1.3rem;margin:0 0 2px;letter-spacing:.03em}
+  h1 .a{color:#4488ff}h1 .b{color:#cc4444}h1 .c{color:#f1b302}
+  .sub{color:var(--tenue);font-size:.84rem;font-style:italic;margin:0 0 14px}
+  a{color:var(--acento)}
+
+  /* ── Selector de modo ────────────────────────────── */
+  .modos{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+  .modos button{
+    font:inherit;font-size:.82rem;color:var(--tenue);background:var(--panel);
+    border:1px solid var(--borde);border-radius:99px;padding:7px 13px;cursor:pointer;
+    min-height:40px;
+  }
+  .modos button[aria-pressed="true"]{
+    color:var(--texto);border-color:var(--acento);background:#16224a;font-weight:600;
+  }
+
+  .comoVa{
+    background:var(--panel);border:1px solid var(--borde);border-radius:12px;
+    padding:11px 13px;margin:0 0 13px;font-size:.88rem;color:var(--tenue);
+  }
+  .comoVa b{color:var(--texto);font-weight:600}
+  .comoVa .dellibro{
+    display:block;margin-top:5px;font:.68rem ui-monospace,Menlo,monospace;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--ojo);
+  }
+
+  /* ── La pregunta ─────────────────────────────────── */
+  .escena{
+    background:var(--panel);border:1px solid var(--borde);border-radius:18px;
+    padding:16px 14px;margin:0 0 12px;
+  }
+  .muestra-color{
+    height:150px;border-radius:14px;border:1px solid var(--borde);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .muestra-nota{
+    height:150px;border-radius:14px;border:1px solid var(--borde);background:var(--panel2);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Libre Baskerville',Georgia,serif;font-size:3.4rem;letter-spacing:.04em;
+  }
+  .pedido{text-align:center;font-size:.9rem;color:var(--tenue);margin:11px 0 0}
+  .pedido b{color:var(--texto)}
+
+  /* ── Las respuestas ──────────────────────────────── */
+  .opciones{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:12px 0 0}
+  .opciones button{
+    font:inherit;color:var(--texto);background:var(--panel2);border:1px solid var(--borde);
+    border-radius:13px;min-height:62px;cursor:pointer;display:flex;align-items:center;
+    justify-content:center;gap:9px;padding:8px;
+  }
+  .opciones button .tinte{
+    width:100%;height:44px;border-radius:9px;border:1px solid rgba(255,255,255,.18);
+  }
+  .opciones button .nombre{
+    font-family:'Libre Baskerville',Georgia,serif;font-size:1.3rem;letter-spacing:.03em;
+  }
+  .opciones button:active{background:#252850}
+  .opciones button[disabled]{cursor:default}
+  .opciones button.bien{border-color:var(--si);box-shadow:0 0 0 2px rgba(127,199,148,.28)}
+  .opciones button.mal{border-color:var(--no);opacity:.85}
+  .opciones button.apagada{opacity:.32}
+
+  .veredicto{
+    min-height:44px;display:flex;align-items:center;justify-content:center;gap:9px;
+    margin:12px 0 0;font-size:.95rem;text-align:center;
+  }
+  .veredicto.bien{color:var(--si)}
+  .veredicto.mal{color:var(--no)}
+  .veredicto .ch{width:20px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.25)}
+
+  .seguir{
+    width:100%;font:inherit;font-size:1rem;color:var(--texto);background:#1e3a7a;
+    border:1px solid #3a5fbf;border-radius:13px;min-height:52px;cursor:pointer;margin:10px 0 0;
+  }
+  .seguir[hidden]{display:none}
+
+  /* ── Marcador ────────────────────────────────────── */
+  .marcador{
+    display:flex;gap:9px;margin:0 0 12px;
+  }
+  .marcador div{
+    flex:1;background:var(--panel);border:1px solid var(--borde);border-radius:12px;
+    padding:9px 6px;text-align:center;
+  }
+  .marcador b{
+    display:block;font-family:'Libre Baskerville',Georgia,serif;font-size:1.35rem;
+    font-variant-numeric:tabular-nums;
+  }
+  .marcador span{font:.64rem ui-monospace,Menlo,monospace;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--tenue)}
+
+  /* ── Lo que cuesta ───────────────────────────────── */
+  details{background:var(--panel);border:1px solid var(--borde);border-radius:12px;
+    margin:12px 0 0;padding:0 13px}
+  details[open]{padding-bottom:12px}
+  summary{cursor:pointer;padding:12px 0;font-size:.9rem;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸ ";color:var(--tenue)}
+  details[open] summary::before{content:"▾ "}
+  .flojas{display:flex;flex-direction:column;gap:6px}
+  .flojas i{display:flex;align-items:center;gap:9px;font-style:normal;font-size:.86rem}
+  .flojas i b{width:22px;height:22px;border-radius:6px;flex:0 0 auto;
+    border:1px solid rgba(255,255,255,.22)}
+  .flojas i em{font-style:normal;color:var(--tenue);margin-left:auto;
+    font:.76rem ui-monospace,Menlo,monospace}
+  .vacio{color:var(--tenue);font-size:.86rem;margin:0 0 4px}
+
+  .abajo{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin:16px 0 0;font-size:.8rem;color:var(--tenue)}
+  .abajo button{font:inherit;font-size:.8rem;color:var(--tenue);background:none;
+    border:1px solid var(--borde);border-radius:9px;padding:8px 11px;cursor:pointer;min-height:40px}
+  .pie{color:var(--tenue);font-size:.76rem;margin-top:18px;text-align:center;line-height:1.6}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<h1><span class="a">Prác</span><span class="b">ti</span><span class="c">ca</span></h1>
+<p class="sub">Los doce colores, hasta que salgan sin pensar. Cinco minutos por día alcanzan.</p>
+
+<div class="modos" id="modos" role="group" aria-label="Elegí el ejercicio"></div>
+
+<div class="comoVa" id="comoVa"></div>
+
+<div class="marcador">
+  <div><b id="m-racha">0</b><span>Racha</span></div>
+  <div><b id="m-bien">0</b><span>Aciertos</span></div>
+  <div><b id="m-punt">—</b><span>De cada 10</span></div>
+</div>
+
+<div class="escena">
+  <div id="muestra" class="muestra-color" role="img" aria-label="La pregunta"></div>
+  <p class="pedido" id="pedido"></p>
+  <div class="opciones" id="opciones"></div>
+  <div class="veredicto" id="veredicto"></div>
+  <button class="seguir" id="seguir" hidden>Siguiente</button>
+</div>
+
+<details>
+  <summary>Lo que te está costando</summary>
+  <div id="flojas"><p class="vacio">Todavía no hay datos. Contestá unas cuantas y acá aparece qué notas se te resisten — son las que el ejercicio te va a repetir más.</p></div>
+</details>
+
+<div class="abajo">
+  <button id="sonido" aria-pressed="true">🔊 Sonido</button>
+  <button id="reiniciar">Empezar de nuevo</button>
+</div>
+
+<p class="pie">
+  <a href="./codigo.html">El Código</a> · <a href="./gestos.html">Gestos</a> · <a href="./">Harmonía</a><br>
+  <span id="sellos"></span>
+</p>
+
+<script type="module">
+import * as P from "./codigo/practica.js";
+import * as C from "./codigo/color.js";
+import * as T from "./codigo/teoria.js";
+import { crearMotor } from "./gestos/audio.js";
+import { midiDe } from "./gestos/musica.js";
+
+const $ = (id) => document.getElementById(id);
+const lat = (n) => (T.LATINO[n] || n).replace("#", "♯");
+
+// ── Sonido ───────────────────────────────────────────────────────────────────
+// El motor es el mismo del instrumento de gestos. Se despierta con el primer
+// toque y no antes: un AudioContext creado sin gesto queda suspendido y calla
+// para siempre sin decir por qué.
+const motor = crearMotor({ la: 440 });
+let conSonido = true;
+let apagar = null;
+
+async function sonar(nota) {
+  if (!conSonido) return;
+  try {
+    await motor.despertar();
+    if (apagar) clearTimeout(apagar);
+    motor.notaOn(midiDe(nota, 4));
+    apagar = setTimeout(() => motor.notaOff({ caida: 0.25 }), 620);
+  } catch (e) { /* sin audio se sigue practicando igual */ }
+}
+
+$("sonido").addEventListener("click", () => {
+  conSonido = !conSonido;
+  $("sonido").setAttribute("aria-pressed", String(conSonido));
+  $("sonido").textContent = conSonido ? "🔊 Sonido" : "🔇 Sin sonido";
+  if (!conSonido) motor.silencio();
+});
+
+// ── Sesión ───────────────────────────────────────────────────────────────────
+let modo = "tira";
+let sesion = P.crearSesion({ modo, opciones: 4 });
+
+$("modos").innerHTML = Object.entries(P.MODOS)
+  .map(([k, m]) => `<button type="button" data-modo="${k}" aria-pressed="${k === modo}">${m.nombre}</button>`)
+  .join("");
+
+$("modos").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-modo]");
+  if (!b || b.dataset.modo === modo) return;
+  modo = b.dataset.modo;
+  arrancar();
+});
+
+function arrancar() {
+  sesion = P.crearSesion({ modo, opciones: 4 });
+  $("modos").querySelectorAll("button[data-modo]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.modo === modo)));
+  const d = P.MODOS[modo];
+  $("comoVa").innerHTML = `<b>${d.nombre}.</b> ${d.comoVa}<span class="dellibro">${d.delLibro}</span>`;
+  pintarMarcador();
+  pintarFlojas();
+  preguntar();
+}
+
+function pintarMarcador() {
+  const m = sesion.marcador;
+  $("m-racha").textContent = m.racha;
+  $("m-bien").textContent = `${m.aciertos}/${m.total}`;
+  $("m-punt").textContent = m.total ? (m.puntaje * 10).toFixed(1) : "—";
+}
+
+function pintarFlojas() {
+  const f = sesion.flojas();
+  if (!f.length) {
+    $("flojas").innerHTML = '<p class="vacio">Todavía no hay datos. Contestá unas cuantas y acá aparece qué notas se te resisten — son las que el ejercicio te va a repetir más.</p>';
+    return;
+  }
+  $("flojas").innerHTML = '<div class="flojas">' + f.map((x) =>
+    `<i><b style="background:${x.color}"></b>${lat(x.nota)}<em>${x.aciertos} de ${x.vistas}</em></i>`
+  ).join("") + "</div>";
+}
+
+function preguntar() {
+  const q = sesion.siguiente();
+
+  if (q.muestra === "color") {
+    $("muestra").className = "muestra-color";
+    $("muestra").style.background = q.colorMostrado;
+    $("muestra").textContent = "";
+    $("muestra").setAttribute("aria-label", "Un color, para nombrar la nota");
+  } else {
+    $("muestra").className = "muestra-nota";
+    $("muestra").style.background = "";
+    $("muestra").textContent = lat(q.nota);
+    $("muestra").setAttribute("aria-label", "La nota " + lat(q.nota));
+  }
+
+  $("pedido").innerHTML = modo === "quinta"
+    ? "¿Cuál es la <b>quinta</b> de esta nota?"
+    : q.contesta === "nota" ? "¿Qué <b>nota</b> es?" : "¿De qué <b>color</b> es?";
+
+  $("opciones").innerHTML = q.alternativas.map((a) =>
+    q.contesta === "nota"
+      ? `<button type="button" data-r="${a}"><span class="nombre">${lat(a)}</span></button>`
+      : `<button type="button" data-r="${a}" aria-label="${lat(a)}"><span class="tinte" style="background:${C.colorDeNota(a)}"></span></button>`
+  ).join("");
+
+  $("veredicto").textContent = "";
+  $("veredicto").className = "veredicto";
+  $("seguir").hidden = true;
+}
+
+$("opciones").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-r]");
+  if (!b || b.disabled) return;
+  const q = sesion.actual;
+  const r = sesion.responder(b.dataset.r);
+  if (r.yaRespondida) return;
+
+  $("opciones").querySelectorAll("button").forEach((x) => {
+    x.disabled = true;
+    if (x.dataset.r === r.correcta) x.classList.add("bien");
+    else if (x === b) x.classList.add("mal");
+    else x.classList.add("apagada");
+  });
+
+  const color = C.colorDeNota(r.correcta);
+  $("veredicto").className = "veredicto " + (r.acierto ? "bien" : "mal");
+  $("veredicto").innerHTML = r.acierto
+    ? `Bien. <span class="ch" style="background:${color}"></span> ${lat(r.correcta)}`
+    : `Era <span class="ch" style="background:${color}"></span> <b>${lat(r.correcta)}</b>`;
+
+  // Suena la correcta, siempre — también cuando se erró. Es el momento en que
+  // el color, el nombre y el sonido están los tres juntos en la cabeza.
+  sonar(r.correcta);
+
+  pintarMarcador();
+  pintarFlojas();
+  $("seguir").hidden = false;
+  $("seguir").focus();
+});
+
+$("seguir").addEventListener("click", preguntar);
+$("reiniciar").addEventListener("click", arrancar);
+
+// Enter o espacio para seguir, que en una tanda larga es la diferencia entre
+// practicar y estar apuntando a un botón.
+document.addEventListener("keydown", (ev) => {
+  if ((ev.key === "Enter" || ev.key === " ") && !$("seguir").hidden) {
+    ev.preventDefault();
+    preguntar();
+  }
+});
+
+$("sellos").textContent = `${P.VERSION} · ${C.VERSION} · ${T.VERSION}`;
+arrancar();
+</script>
+
+</body>
+</html>

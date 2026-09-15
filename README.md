@@ -17,6 +17,10 @@ Aplicación web musical interactiva construida en React + Vite + Tailwind CSS.
   números calculados en pantalla. Desarrollo **paralelo**: no toca la app
   compilada. Página aparte: [`/codigo.html`](public/codigo.html) ·
   documentación en [`EL-CODIGO.md`](EL-CODIGO.md)
+- **Práctica** — Los tres ejercicios del capítulo 0 del manual, más el nivel 2
+  del capítulo 9: los doce colores hasta que salgan sin pensar, con sonido y
+  con repetición de lo que cuesta. Página aparte:
+  [`/practica.html`](public/practica.html)
 
 ## Sistema de colores tonales
 
@@ -52,7 +56,7 @@ Sin dependencias y sin navegador. Encadena los dos bancos:
 | Banco | Qué cubre | Casos |
 |---|---|---|
 | `pruebas/gestos.mjs` | la teoría musical del instrumento de gestos | 8 |
-| `pruebas/codigo.mjs` | el motor de color y la teoría de «El Código», más el módulo que vive adentro de `codigo.html` | 41 |
+| `pruebas/codigo.mjs` | el motor de color, la teoría y los ejercicios de «El Código», más los módulos que viven adentro de los `.html` | 60 |
 
 El segundo compara contra **valores publicados** —los cents de la serie de
 armónicos, la curva de sRGB, el rango del espectro visible— y no contra lo que
@@ -73,6 +77,7 @@ El despliegue tiene dos partes:
 | La aplicación de armonía | `src/` | compilada por Vite |
 | El instrumento de gestos | `public/gestos.html`, `public/gestos/` | copiado tal cual, sin compilar |
 | El Código | `public/codigo.html`, `public/codigo/` | copiado tal cual, sin compilar |
+| La práctica | `public/practica.html` | copiado tal cual, sin compilar |
 
 **No hay variables de entorno que cargar.** Las hubo, para el puente a Tuya
 que el instrumento tenía hasta el 2026-09-09; se retiraron con él, junto con

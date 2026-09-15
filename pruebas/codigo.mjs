@@ -319,6 +319,212 @@ await prueba("los sellos están puestos", () => {
   assert.match(T.VERSION, /^codigo-teoria /);
 });
 
+// ═══ practica.js — los ejercicios del capítulo 0 ═════════════════════════════
+// Un ejercicio de memoria falla en silencio: si repitiera siempre las mismas
+// tres notas, o si la respuesta correcta cayera siempre en el mismo botón,
+// nadie lo nota mirándolo — y el ejercicio deja de servir. Por eso el azar se
+// inyecta y acá se cuenta el reparto de verdad.
+const P = await import("../public/codigo/practica.js");
+
+// Azar previsible: recorre una lista y vuelve a empezar.
+const azarDe = (lista) => { let i = 0; return () => lista[i++ % lista.length]; };
+
+titulo("practica.js — las preguntas");
+
+await prueba("los cuatro modos son los del libro, y se sabe de dónde salen", () => {
+  assert.deepEqual(Object.keys(P.MODOS), ["tira", "rueda", "tarjeta", "quinta"]);
+  Object.values(P.MODOS).forEach((m) => {
+    assert.ok(m.nombre && m.comoVa && m.delLibro, "un modo sin ficha completa");
+    assert.ok(["color", "nota"].includes(m.muestra));
+    assert.ok(["color", "nota"].includes(m.contesta));
+  });
+  assert.ok(!P.esModo("cualquiera"));
+});
+
+await prueba("un modo inventado no arranca una sesión", () => {
+  assert.throws(() => P.crearSesion({ modo: "inventado" }), /modo desconocido/);
+});
+
+await prueba("la pregunta trae siempre la correcta entre las alternativas", () => {
+  const s = P.crearSesion({ modo: "tira", opciones: 4, azar: Math.random });
+  for (let i = 0; i < 200; i++) {
+    const q = s.siguiente();
+    assert.equal(q.alternativas.length, 4);
+    assert.ok(q.alternativas.includes(q.correcta), "la correcta no está");
+    assert.equal(new Set(q.alternativas).size, 4, "hay alternativas repetidas");
+    s.responder(q.correcta);
+  }
+});
+
+await prueba("la cantidad de alternativas se acota a lo posible", () => {
+  assert.equal(P.crearSesion({ opciones: 1 }).siguiente().alternativas.length, 2);
+  assert.equal(P.crearSesion({ opciones: 99 }).siguiente().alternativas.length, 12);
+});
+
+await prueba("en el modo de la quinta se pregunta una nota y se contesta otra", () => {
+  const s = P.crearSesion({ modo: "quinta", opciones: 4 });
+  for (let i = 0; i < 60; i++) {
+    const q = s.siguiente();
+    assert.equal(q.correcta, T.desde(q.nota, 7), `la quinta de ${q.nota}`);
+    assert.notEqual(q.correcta, q.nota);
+    // Y el giro que muestra es el del capítulo 8, siempre el mismo.
+    assert.equal(q.giro, 210);
+    s.responder(q.correcta);
+  }
+});
+
+await prueba("en los otros tres modos se contesta la misma nota que se muestra", () => {
+  ["tira", "rueda", "tarjeta"].forEach((m) => {
+    const s = P.crearSesion({ modo: m });
+    const q = s.siguiente();
+    assert.equal(q.correcta, q.nota);
+    assert.equal(q.giro, 0);
+  });
+});
+
+await prueba("nunca se repite la misma nota dos veces seguidas", () => {
+  // Acertar por inercia no es acordarse.
+  const s = P.crearSesion({ modo: "tira" });
+  let anterior = null;
+  for (let i = 0; i < 300; i++) {
+    const q = s.siguiente();
+    assert.notEqual(q.nota, anterior, `se repitió ${q.nota}`);
+    s.responder(q.correcta);
+    anterior = q.nota;
+  }
+});
+
+await prueba("con el tiempo salen las doce notas, no un puñado", () => {
+  const s = P.crearSesion({ modo: "rueda" });
+  const vistas = new Set();
+  for (let i = 0; i < 400; i++) { const q = s.siguiente(); vistas.add(q.nota); s.responder(q.correcta); }
+  assert.equal(vistas.size, 12, `sólo aparecieron ${vistas.size} notas`);
+});
+
+await prueba("la correcta no cae siempre en el mismo botón", () => {
+  // Con 4 opciones y reparto parejo, cada posición debería llevarse ~25%.
+  const s = P.crearSesion({ modo: "tira", opciones: 4 });
+  const posiciones = [0, 0, 0, 0];
+  for (let i = 0; i < 1200; i++) {
+    const q = s.siguiente();
+    posiciones[q.alternativas.indexOf(q.correcta)]++;
+    s.responder(q.correcta);
+  }
+  posiciones.forEach((v, i) =>
+    assert.ok(v > 180 && v < 420, `la posición ${i} salió ${v} veces de 1200`));
+});
+
+titulo("practica.js — el marcador y los pesos");
+
+await prueba("acertar suma, fallar corta la racha", () => {
+  const s = P.crearSesion({ modo: "tira" });
+  let q = s.siguiente(); s.responder(q.correcta);
+  q = s.siguiente(); s.responder(q.correcta);
+  assert.equal(s.marcador.racha, 2);
+  assert.equal(s.marcador.aciertos, 2);
+  q = s.siguiente();
+  const mal = q.alternativas.find((a) => a !== q.correcta);
+  const r = s.responder(mal);
+  assert.equal(r.acierto, false);
+  assert.equal(r.correcta, q.correcta);
+  assert.equal(s.marcador.racha, 0);
+  assert.equal(s.marcador.fallos, 1);
+  assert.equal(s.marcador.mejorRacha, 2, "la mejor racha no se pierde");
+  cerca(s.marcador.puntaje, 2 / 3, 1e-9, "el puntaje");
+});
+
+await prueba("responder dos veces la misma pregunta no cuenta dos veces", () => {
+  // Si contara, bastaría con tocar todos los botones para tener 100%.
+  const s = P.crearSesion({ modo: "tira" });
+  const q = s.siguiente();
+  s.responder(q.correcta);
+  const otra = s.responder(q.correcta);
+  assert.equal(otra.yaRespondida, true);
+  assert.equal(otra.acierto, null);
+  assert.equal(s.marcador.total, 1);
+});
+
+await prueba("fallar una nota la hace pesar más; acertarla, menos", () => {
+  const s = P.crearSesion({ modo: "tira" });
+  const q = s.siguiente();
+  const i = T.indiceDe(q.correcta);
+  const antes = s.pesos[i];
+  s.responder(q.alternativas.find((a) => a !== q.correcta));
+  assert.ok(s.pesos[i] > antes, "fallar tendría que subir el peso");
+});
+
+await prueba("los pesos no se escapan ni a cero ni al infinito", () => {
+  const s = P.crearSesion({ modo: "tira" });
+  for (let i = 0; i < 500; i++) {
+    const q = s.siguiente();
+    // Siempre mal: el peso de todas tendría que subir, pero con techo.
+    s.responder(q.alternativas.find((a) => a !== q.correcta));
+  }
+  s.pesos.forEach((p) => assert.ok(p <= 12 && p >= 0.25, `peso fuera de rango: ${p}`));
+  const s2 = P.crearSesion({ modo: "tira" });
+  for (let i = 0; i < 500; i++) { const q = s2.siguiente(); s2.responder(q.correcta); }
+  s2.pesos.forEach((p) => assert.ok(p >= 0.25, `peso hundido: ${p}`));
+});
+
+await prueba("la nota que se falla vuelve a salir más seguido", () => {
+  // Es la razón de ser del peso, y es lo que no se ve mirando la pantalla.
+  const s = P.crearSesion({ modo: "tira" });
+  // Se falla adrede todo lo que sea Do; el resto se acierta.
+  let salidasDo = 0;
+  for (let i = 0; i < 600; i++) {
+    const q = s.siguiente();
+    if (q.correcta === "C") {
+      salidasDo++;
+      s.responder(q.alternativas.find((a) => a !== "C"));
+    } else {
+      s.responder(q.correcta);
+    }
+  }
+  // Con reparto parejo el Do saldría ~50 de 600. Castigado, muchas más.
+  assert.ok(salidasDo > 120, `el Do salió sólo ${salidasDo} veces de 600`);
+});
+
+await prueba("«flojas» lista lo que cuesta, y sólo lo ya visto", () => {
+  const s = P.crearSesion({ modo: "tira" });
+  assert.deepEqual(s.flojas(), [], "sin preguntas no hay nada que listar");
+  for (let i = 0; i < 40; i++) {
+    const q = s.siguiente();
+    if (q.correcta === "E") s.responder(q.alternativas.find((a) => a !== "E"));
+    else s.responder(q.correcta);
+  }
+  const f = s.flojas();
+  assert.ok(f.length > 0);
+  f.forEach((x) => {
+    assert.ok(x.vistas > 0);
+    assert.match(x.color, /^#[0-9a-f]{6}$/i);
+    assert.ok(x.latino, "falta el nombre en latino");
+  });
+  assert.equal(f[0].nota, "E", "la más floja tendría que ser la que se falló");
+});
+
+await prueba("el azar se puede inyectar, así que el reparto es comprobable", () => {
+  // Con un azar que siempre devuelve casi cero, sale siempre la primera
+  // candidata disponible — que por la regla de no repetir va alternando.
+  const s = P.crearSesion({ modo: "tira", azar: azarDe([0]) });
+  const a = s.siguiente(); s.responder(a.correcta);
+  const b = s.siguiente(); s.responder(b.correcta);
+  assert.notEqual(a.nota, b.nota);
+});
+
+await prueba("elegirConPeso respeta el peso, y un peso cero no sale nunca", () => {
+  const items = ["a", "b", "c"];
+  assert.equal(P.elegirConPeso(items, [1, 0, 0], () => 0.5), "a");
+  assert.equal(P.elegirConPeso(items, [0, 1, 0], () => 0.5), "b");
+  assert.equal(P.elegirConPeso(items, [0, 0, 1], () => 0.99), "c");
+  // Todos en cero no puede romper: devuelve algo.
+  assert.ok(items.includes(P.elegirConPeso(items, [0, 0, 0], () => 0.5)));
+});
+
+await prueba("responder sin pregunta en curso avisa, no rompe en silencio", () => {
+  const s = P.crearSesion({ modo: "tira" });
+  assert.throws(() => s.responder("C"), /no hay pregunta/);
+});
+
 // ═══ La página ═══════════════════════════════════════════════════════════════
 // El módulo que vive adentro de `codigo.html` se corre acá contra un DOM de
 // mentira. No es un lujo: la primera vez que se corrió encontró un `NaN°`
@@ -329,17 +535,29 @@ titulo("codigo.html — el módulo de la página");
 const { readFile } = await import("node:fs/promises");
 const raizRepo = new URL("../", import.meta.url);
 
+// El DOM de mentira. No pretende ser un navegador: alcanza para que el módulo
+// arranque, dibuje la primera pantalla y se le pueda disparar un `change`. Lo
+// que hay debajo —qué se pregunta, cómo se puntúa, cómo se reparte el azar— ya
+// está cubierto arriba, sin pantalla de por medio.
 const nodos = new Map();
 const nodo = (id) => ({
-  id, innerHTML: "", textContent: "", value: "", style: {},
+  id, innerHTML: "", textContent: "", value: "", className: "", hidden: false,
+  disabled: false, style: {}, dataset: {},
+  setAttribute() {}, getAttribute() { return null; }, focus() {},
+  classList: { add() {}, remove() {}, toggle() {} },
+  querySelectorAll() { return []; },
+  querySelector() { return null; },
+  closest() { return null; },
   addEventListener(_ev, fn) { (this._h ||= []).push(fn); },
-  disparar() { (this._h || []).forEach((f) => f()); },
+  disparar(ev = {}) { (this._h || []).forEach((f) => f(ev)); },
 });
 globalThis.document = {
+  _h: [],
   getElementById(id) {
     if (!nodos.has(id)) nodos.set(id, nodo(id));
     return nodos.get(id);
   },
+  addEventListener(_ev, fn) { this._h.push(fn); },
 };
 
 await prueba("el script de la página corre entero, sin reventar", async () => {
@@ -364,6 +582,35 @@ await prueba("ningún texto armado por la página imprime NaN ni undefined", () 
     const t = (n.innerHTML || "") + (n.textContent || "");
     assert.ok(!/NaN|undefined|Infinity/.test(t), `${id} imprime un valor roto: ${t.slice(0, 120)}`);
   });
+});
+
+await prueba("el script de practica.html también arranca y dibuja", async () => {
+  // Cada página se prueba con sus propios nodos: si compartieran el mapa, una
+  // podría tapar un fallo de la otra dejando algo ya escrito.
+  const antes = new Map(nodos);
+  nodos.clear();
+  try {
+    const html = await readFile(new URL("public/practica.html", raizRepo), "utf8");
+    const m = html.match(/<script type="module">([\s\S]*?)<\/script>/);
+    assert.ok(m, "no se encontró el módulo dentro del html");
+    const js = m[1]
+      .replace(/\.\/codigo\//g, new URL("public/codigo/", raizRepo).href)
+      .replace(/\.\/gestos\//g, new URL("public/gestos/", raizRepo).href);
+    await import("data:text/javascript;base64," + Buffer.from(js).toString("base64"));
+
+    // Arrancó: hay ejercicio elegido, hay pregunta en pantalla y hay opciones.
+    ["modos", "comoVa", "opciones", "pedido", "flojas", "sellos"]
+      .forEach((id) => assert.ok(nodos.get(id)?.innerHTML || nodos.get(id)?.textContent,
+        `${id} quedó vacío al abrir`));
+    assert.match(nodos.get("sellos").textContent, /codigo-practica /);
+    nodos.forEach((n, id) => {
+      const t = (n.innerHTML || "") + (n.textContent || "");
+      assert.ok(!/NaN|undefined|Infinity/.test(t), `${id} imprime un valor roto`);
+    });
+  } finally {
+    nodos.clear();
+    antes.forEach((v, k) => nodos.set(k, v));
+  }
 });
 
 await prueba("cualquier acorde se puede pintar sin error", () => {

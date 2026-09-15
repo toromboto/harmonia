@@ -6,9 +6,9 @@ como estaba.
 
 | | |
 |---|---|
-| Página | [`/codigo.html`](public/codigo.html) |
-| Piezas | `public/codigo/color.js` · `public/codigo/teoria.js` |
-| Banco de pruebas | `pruebas/codigo.mjs` — 41 casos, sin dependencias ni navegador |
+| Páginas | [`/codigo.html`](public/codigo.html) — la teoría · [`/practica.html`](public/practica.html) — los ejercicios |
+| Piezas | `public/codigo/color.js` · `teoria.js` · `practica.js` |
+| Banco de pruebas | `pruebas/codigo.mjs` — 60 casos, sin dependencias ni navegador |
 | Origen | *Manual de teoría musical a través del color*, de toromboto (v14) |
 
 ## Por qué está aparte
@@ -156,6 +156,36 @@ Son decisiones de toromboto, no de quien programa:
    chocó contra el mismo problema de doce contra siete y lo resolvió con la misma
    impureza deliberada que el marrón de este sistema. Contado así, deja de ser el
    contraejemplo del capítulo y pasa a ser su precedente.
+
+## La práctica
+
+`public/practica.html` son los tres ejercicios que el manual propone en su
+primera página, corriendo de verdad:
+
+| | Del libro |
+|---|---|
+| **La tira, a ciegas** — se muestra un color, se nombra la nota | ejercicio 1, capítulo 0 |
+| **La rueda, salteada** — igual, pero sin orden cromático | ejercicio 2, capítulo 0 |
+| **Tarjetas invertidas** — se muestra el nombre, se elige el color | ejercicio 3, capítulo 0 |
+| **La quinta, sin contar** — se muestra una nota, se señala su quinta | nivel 2, capítulo 9 |
+
+Esta parte **no depende de las correcciones**: el libro la especifica y no está
+en discusión. Por eso entró en la misma tanda sin esperar a nadie.
+
+Tres decisiones que no son de trámite:
+
+- **Lo que se falla vuelve más seguido.** Cada nota lleva un peso: fallarla lo
+  triplica, acertarla lo baja, con techo y con piso. Sin eso, un ejercicio de
+  doce notas le dedica el mismo tiempo a la que ya sabés de memoria que a la que
+  nunca te sale — que es exactamente al revés de lo que hace falta.
+- **Suena la nota correcta, también cuando se erró.** Es el momento en que el
+  color, el nombre y el sonido están los tres juntos en la cabeza. El motor es
+  el mismo del instrumento de gestos, sin copiarlo.
+- **La lógica no vive en el `.html`.** `practica.js` decide todo sin tocar una
+  línea de pantalla, y por eso se puede probar lo que a ojo no se ve: que
+  salgan las doce notas y no un puñado, que la correcta no caiga siempre en el
+  mismo botón, que no se repita la misma nota dos veces seguidas, que responder
+  dos veces no cuente dos veces. Un ejercicio de memoria roto no avisa.
 
 ## La paleta no se copia acá
 

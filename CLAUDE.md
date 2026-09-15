@@ -21,16 +21,23 @@ en **remate**, con Firebase Auth — que es mejor que la «clave de la sala» qu
 tenía acá. Dos puentes a Tuya haciendo lo mismo peor era superficie de más. El
 instrumento de gestos se queda: es música, y su lugar es éste.
 
-### Las tres piezas, que no se mezclan
+### Las cuatro piezas, que no se mezclan
 
 | | Dónde | Cómo se sirve |
 |---|---|---|
 | La aplicación de armonía | `src/`, entrando por `src/App.jsx` | compilada por Vite |
 | El instrumento de gestos | `public/gestos.html` + `public/gestos/` | **copiado tal cual**, sin compilar |
 | El Código (desarrollo paralelo) | `public/codigo.html` + `public/codigo/` | **copiado tal cual**, sin compilar |
+| La práctica | `public/practica.html`, sobre `public/codigo/practica.js` | **copiado tal cual**, sin compilar |
 
 `public/` no pasa por el build: se puede editar desde el teléfono, por la web
 de GitHub, como los otros tres proyectos. Es a propósito.
+
+**La práctica entró el 15-sep-2026, junto con «El Código».** Son los tres
+ejercicios del capítulo 0 del manual —la tira a ciegas, la rueda salteada y las
+tarjetas invertidas— más el nivel 2 del capítulo 9. No depende de las
+correcciones: el libro los especifica y no están en discusión. Usa el motor de
+audio del instrumento de gestos sin copiarlo.
 
 **«El Código» entró el 15-sep-2026 y es deliberadamente paralelo.** Es la
 versión del sistema de colores con la física revisada, y vive aparte porque
@@ -169,24 +176,37 @@ vuelve a la rama.
   un alias, el servidor traduce y firma.
 - **Se corren los bancos de pruebas antes de subir:** `npm run prueba`, que
   encadena los dos, sin dependencias ni navegador. `pruebas/gestos.mjs` (8
-  casos) cubre la teoría musical del instrumento; `pruebas/codigo.mjs` (41)
-  cubre el motor de color y la teoría de «El Código».
+  casos) cubre la teoría musical del instrumento; `pruebas/codigo.mjs` (60)
+  cubre el motor de color, la teoría y los ejercicios de «El Código».
 - **El banco de «El Código» compara contra valores PUBLICADOS, no contra sí
   mismo.** Los cents de la serie de armónicos, la curva de sRGB y el rango del
   visible se afirman contra la literatura. Es a propósito: lo que ahí se
   entrega es una explicación de teoría musical para alguien que no sabe música,
   y un número mal puesto enseña algo falso sin que nadie lo note. Una prueba
   que sólo comprueba que el código hace lo que el código hace no sirve para eso.
-- **El módulo que vive adentro de `codigo.html` se corre en el banco**, contra
-  un DOM de mentira. No es un lujo: la primera corrida encontró un `NaN°`
-  impreso en pantalla, que `node --check` no agarra porque el archivo parsea
-  perfecto.
+- **Los módulos que viven adentro de los `.html` se corren en el banco**,
+  contra un DOM de mentira. No es un lujo: la primera corrida encontró un
+  `NaN°` impreso en pantalla, que `node --check` no agarra porque el archivo
+  parsea perfecto. El DOM falso no simula clics — para eso está la regla de
+  abajo.
+- **La lógica no vive en el `.html`.** `practica.js` decide qué se pregunta,
+  si la respuesta estuvo bien y qué nota vuelve a salir, sin tocar una línea de
+  pantalla; el `.html` es cableado. Es lo que permite probar de verdad un
+  ejercicio de memoria: que salgan las doce notas y no un puñado, que la
+  correcta no caiga siempre en el mismo botón, que lo que se falla vuelva más
+  seguido. Nada de eso se ve mirando la pantalla, y un ejercicio de memoria roto
+  no avisa.
 - **Que el JavaScript parsee antes de entregar** (`node --check`): un error de
   sintaxis en un módulo ES deja la página en blanco, sin nada que explique por
   qué.
 - **Cada archivo de `public/gestos/` y de `public/codigo/` lleva su sello
-  `VERSION`.** Si se cambia el archivo, sube el sello. En «El Código» el sello
-  se imprime al pie de la página, así que se ve sin abrir el código.
+  `VERSION`.** Si se cambia el archivo, sube el sello. En «El Código» y en la
+  práctica el sello se imprime al pie de la página, así que se ve sin abrir el
+  código.
+- **El motor de audio es uno solo.** `public/gestos/audio.js` lo usan el
+  instrumento y la práctica. Del lado de `public/` no se duplica nada: la
+  paleta sale de `gestos/musica.js` y el sonido de `gestos/audio.js`. Lo que se
+  saque o se renombre ahí rompe las dos páginas, y los bancos lo cubren.
 - **No hay `package-lock.json`, y es a propósito mientras la etapa sea «en
   desarrollo».** El `.gitignore` lo bloquea para que no vuelva a colarse en un
   `git add -A`. Qué se gana y qué se pierde con cada opción está desarrollado

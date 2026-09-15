@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a1a">
+<title>Harmonía · El Código — los colores, con los números a la vista</title>
+<meta name="description" content="Versión paralela del sistema de colores tonales: lo mismo, con la física revisada y todo calculado en pantalla.">
+<style>
+  :root{
+    --fondo:#0a0a1a;
+    --panel:#0f1024;
+    --panel2:#151733;
+    --borde:#232544;
+    --texto:#e8e8f4;
+    --tenue:#8b8ca8;
+    --acento:#4488ff;
+    --si:#7fc794;
+    --no:#e9736a;
+    --ojo:#e0b45a;
+    --piso: env(safe-area-inset-bottom, 0px);
+    --techo: env(safe-area-inset-top, 0px);
+  }
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  html,body{margin:0;padding:0;background:var(--fondo);color:var(--texto)}
+  body{
+    font:16px/1.6 'Crimson Text',Georgia,serif;
+    padding:calc(var(--techo) + 14px) 14px calc(var(--piso) + 40px);
+    max-width:760px;margin:0 auto;
+    -webkit-text-size-adjust:100%;
+  }
+  h1{font-family:'Libre Baskerville',Georgia,serif;font-size:1.55rem;margin:0 0 4px;letter-spacing:.03em;line-height:1.2}
+  h1 .a{color:#4488ff}h1 .b{color:#cc4444}h1 .c{color:#f1b302}
+  h2{font-family:'Libre Baskerville',Georgia,serif;font-size:1.12rem;margin:0 0 4px;line-height:1.3}
+  .sub{color:var(--tenue);font-size:.88rem;font-style:italic;margin:0 0 18px}
+  p{margin:0 0 10px}
+  a{color:var(--acento)}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85em;color:var(--tenue)}
+
+  section{
+    background:var(--panel);border:1px solid var(--borde);border-radius:16px;
+    padding:16px 15px;margin:14px 0;
+  }
+  .criollo{
+    font-size:.88rem;color:var(--ojo);border-left:2px solid var(--ojo);
+    padding:2px 0 2px 11px;margin:0 0 12px;font-style:italic;
+  }
+  .nota-pie{font-size:.8rem;color:var(--tenue);margin:10px 0 0}
+
+  /* ── Tira de colores ─────────────────────────────── */
+  .tira{display:flex;border-radius:9px;overflow:hidden;border:1px solid var(--borde);height:60px}
+  .tira div{flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+  .tira span{font:600 .58rem ui-monospace,Menlo,monospace;background:rgba(255,255,255,.85);
+    color:#141a22;padding:1px 3px;border-radius:2px}
+
+  /* ── Controles ───────────────────────────────────── */
+  .mandos{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 14px}
+  select,button{font:inherit;color:var(--texto);background:#1a1c38;border:1px solid var(--borde);
+    border-radius:10px;padding:9px 12px;min-height:44px}
+  select{flex:1 1 130px}
+  button{cursor:pointer}
+  button:active{background:#252850}
+  label{display:block;font-size:.76rem;color:var(--tenue);margin:0 0 3px}
+  .campo{flex:1 1 130px}
+
+  /* ── Comparación de mezclas ──────────────────────── */
+  .mezclas{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:11px}
+  .caja{background:var(--panel2);border:1px solid var(--borde);border-radius:12px;padding:11px;
+    display:flex;flex-direction:column;gap:7px}
+  .caja .muestra{height:70px;border-radius:8px;border:1px solid var(--borde)}
+  .caja h3{margin:0;font-size:.9rem;font-family:'Libre Baskerville',Georgia,serif}
+  .caja .dato{font:.74rem/1.45 ui-monospace,Menlo,monospace;color:var(--tenue)}
+  .caja.mal{border-color:#4a2622}
+  .caja.bien{border-color:#25462e}
+  .sello{font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase}
+  .sello.mal{color:var(--no)}
+  .sello.bien{color:var(--si)}
+  .sello.otro{color:var(--tenue)}
+
+  .notas-ac{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 0}
+  .notas-ac i{display:flex;align-items:center;gap:6px;font-style:normal;font-size:.8rem;
+    background:var(--panel2);border:1px solid var(--borde);border-radius:99px;padding:3px 10px 3px 4px}
+  .notas-ac b{width:18px;height:18px;border-radius:50%;display:block;border:1px solid rgba(255,255,255,.25)}
+
+  /* ── Tablas ──────────────────────────────────────── */
+  .tabla-env{overflow-x:auto;margin:0 -15px;padding:0 15px}
+  table{border-collapse:collapse;width:100%;font-size:.84rem}
+  th{text-align:left;font:600 .64rem ui-monospace,Menlo,monospace;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--tenue);padding:0 10px 7px 0;
+    border-bottom:1px solid var(--borde);white-space:nowrap}
+  td{padding:7px 10px 7px 0;border-bottom:1px solid #1b1d38;vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  td.n{font-family:ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ch{width:19px;height:19px;border-radius:4px;display:inline-block;vertical-align:middle;
+    border:1px solid rgba(255,255,255,.22);margin-right:5px}
+  .si{color:var(--si)}
+  .no{color:var(--no)}
+  .barrita{display:inline-block;height:6px;border-radius:99px;background:var(--acento);vertical-align:middle}
+
+  ul{margin:0 0 10px;padding-left:1.15em}
+  li{margin:0 0 7px}
+  .pie{color:var(--tenue);font-size:.78rem;margin-top:22px;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+
+<h1><span class="a">El</span> <span class="b">Có</span><span class="c">digo</span></h1>
+<p class="sub">Los doce colores del manual de toromboto, con la física revisada y todos los números calculados acá, en esta página.</p>
+
+<section>
+  <h2>Qué es esto, y qué no</h2>
+  <p class="criollo">Es una versión en paralelo. No reemplaza nada de lo que ya funciona en Harmonía.</p>
+  <p>El <i>Manual de teoría musical a través del color</i> propone algo simple: que cada una de las doce notas tenga un color fijo, para poder <b>reconocerla</b> en vez de calcularla. Eso funciona, y esta página no lo discute.</p>
+  <p>Lo que sí hace es revisar las partes donde el manual habla de <b>física</b> —de luz, de frecuencias, de ángulos— y comprobarlas. Algunas se confirman con más fuerza de la que el propio libro les da. Otras dos no se sostienen, y acá están corregidas y, sobre todo, <b>mostradas</b>: cada número que vas a leer lo calcula esta página al abrirse. No hay ninguna tabla escrita a mano.</p>
+  <p>Está aparte a propósito: la app de armonía sigue como está hasta que se decida qué pasa con estas correcciones.</p>
+</section>
+
+<section>
+  <h2>Las doce notas</h2>
+  <p class="criollo">Doce notas, doce colores. Abajo de cada uno, su «matiz»: qué color es, en grados de la rueda.</p>
+  <div class="tira" id="tira" role="img" aria-label="Los doce colores tonales en orden, de Do a Si"></div>
+  <p class="nota-pie" id="pie-tira"></p>
+</section>
+
+<section>
+  <h2>Mezclar color es mezclar luz</h2>
+  <p class="criollo">Un acorde son varias notas juntas. Si cada nota es un color, el acorde es una mezcla. El problema es que la computadora, si se la deja sola, mezcla mal.</p>
+  <p>Una pantalla no guarda los colores como cantidad de luz. Los guarda con una curva, para aprovechar mejor los 256 valores que tiene cada canal. La consecuencia es esta: <b>el valor del medio, 128, no es media luz — es el 21,8%.</b></p>
+  <p>Así que promediar los números de dos colores no da la mezcla de sus luces: da algo <b>más oscuro</b>. Para mezclar bien hay que deshacer la curva primero, mezclar ahí, y volver. Elegí un acorde y mirá la diferencia:</p>
+
+  <div class="mandos">
+    <div class="campo">
+      <label for="raiz">Nota de base</label>
+      <select id="raiz"></select>
+    </div>
+    <div class="campo">
+      <label for="tipo">Tipo de acorde</label>
+      <select id="tipo"></select>
+    </div>
+  </div>
+
+  <div class="mezclas">
+    <div class="caja mal">
+      <span class="sello mal">Como mezcla hoy</span>
+      <div class="muestra" id="m-pantalla"></div>
+      <h3>Promediando números</h3>
+      <div class="dato" id="d-pantalla"></div>
+    </div>
+    <div class="caja bien">
+      <span class="sello bien">Mezcla correcta</span>
+      <div class="muestra" id="m-luz"></div>
+      <h3>Promediando luz</h3>
+      <div class="dato" id="d-luz"></div>
+    </div>
+    <div class="caja">
+      <span class="sello otro">Haces apilados</span>
+      <div class="muestra" id="m-suma"></div>
+      <h3>Sumando luz</h3>
+      <div class="dato" id="d-suma"></div>
+    </div>
+  </div>
+
+  <div class="notas-ac" id="notas-ac"></div>
+  <p class="nota-pie" id="pie-mezcla"></p>
+
+  <p style="margin-top:14px">Y hay un segundo enredo, más chico pero que conviene desarmar. El manual dice que el modelo de luz es «como sumar haces de proyector: cuantos más colores se suman, más se acerca a blanco». <b>Sumar hace eso. Promediar, no.</b> Son dos operaciones distintas y la app promedia. Mirá qué pasa con la luz a medida que se agregan notas:</p>
+  <div class="tabla-env">
+    <table>
+      <thead><tr><th>Notas</th><th>Promediando</th><th>Luz</th><th>Sumando</th><th>Luz</th></tr></thead>
+      <tbody id="t-blanco"></tbody>
+    </table>
+  </div>
+  <p class="nota-pie">Ninguna de las dos está «mal» a secas: promediar mantiene el color cerca de la tónica, que es justo lo que el capítulo 10 busca. Lo que está mal es <i>describir</i> un promedio como si fuera una suma.</p>
+</section>
+
+<section>
+  <h2>Los ángulos son de lugar, no de color</h2>
+  <p class="criollo">El capítulo 8 dice que el tritono —el intervalo que suena a peligro— cae en el par de colores de máximo contraste. Sobre esta paleta, eso no pasa.</p>
+  <p>Hay que separar dos cosas que se parecen y no son lo mismo:</p>
+  <ul>
+    <li><b>El ángulo de lugar.</b> Las doce notas están repartidas en una rueda, así que cada semitono son 30 grados. Seis semitonos son media vuelta. Esto es <span class="si">siempre cierto</span>, y es lo que hace que un acorde sea una figura que gira: la forma de Do mayor, rotada, es Fa mayor. Eso funciona y es lo mejor del capítulo.</li>
+    <li><b>La distancia de color.</b> Que dos notas estén enfrentadas en la rueda no quiere decir que sus colores se opongan — porque los doce colores <b>no</b> avanzan parejo. El manual los rompe a propósito, para que cada uno se reconozca rápido. Es una buena decisión, pero tiene este precio.</li>
+  </ul>
+  <p>Los seis tritonos, medidos:</p>
+  <div class="tabla-env">
+    <table>
+      <thead><tr><th>Par</th><th>Vuelta</th><th>Distancia de color</th><th></th></tr></thead>
+      <tbody id="t-tritonos"></tbody>
+    </table>
+  </div>
+  <p class="nota-pie" id="pie-tritonos"></p>
+</section>
+
+<section>
+  <h2>La mezcla orienta, no determina</h2>
+  <p class="criollo">El capítulo 5 dice que los siete colores nuevos salen de mezclar los cinco primeros. Salen de ahí, sí — pero después se los retoca.</p>
+  <p>Cada fila compara el promedio literal de los dos colores «padres» con el color que el sistema efectivamente le da a la nota:</p>
+  <div class="tabla-env">
+    <table>
+      <thead><tr><th>Mezcla</th><th>Promedio</th><th>Asignado</th><th>Distancia</th></tr></thead>
+      <tbody id="t-mezclas"></tbody>
+    </table>
+  </div>
+  <p class="nota-pie" id="pie-mezclas"></p>
+  <p style="margin-top:10px">Esto no debilita el sistema: lo explica. Los colores se suben de intensidad para que se distingan de un vistazo, que es <i>toda</i> la razón de ser del método. Decirlo evita que alguien pruebe el promedio, vea que no da, y desconfíe de lo demás.</p>
+</section>
+
+<section>
+  <h2>Lo que la física sí sostiene</h2>
+  <p class="criollo">Estas tres el manual las tiene bien, y son más fuertes de lo que él mismo dice.</p>
+
+  <h3 style="font-family:'Libre Baskerville',Georgia,serif;font-size:.98rem;margin:14px 0 4px">1 · Una nota nunca suena sola</h3>
+  <p>Cuando tocás una sola tecla, no suena una frecuencia: suena esa y una fila de frecuencias más agudas encima, siempre en el mismo orden. Eso se llama <b>serie de armónicos</b>, y es el motivo por el que dos notas «pegan» o no.</p>
+  <p>El orden en que aparecen es exactamente el que el capítulo 10 usa para repartir el peso de cada nota en la mezcla: primero la quinta, después la tercera, después la séptima, después la novena. <span class="si">Eso está bien.</span> Y de paso explica por qué el piano está un poco desafinado a propósito:</p>
+  <div class="tabla-env">
+    <table>
+      <thead><tr><th>Armónico</th><th>Es la…</th><th>Nota</th><th>Contra el piano</th></tr></thead>
+      <tbody id="t-armonicos"></tbody>
+    </table>
+  </div>
+  <p class="nota-pie">Sobre un Do. La última columna dice cuánto se aparta lo natural de la tecla, en «cents» — un semitono son 100. Las octavas son lo único que cae clavado; todo lo demás el piano lo corre un poco para que se pueda tocar en cualquier tono. Ese es el <i>temperamento</i> del que habla el capítulo 7, y es real.</p>
+
+  <h3 style="font-family:'Libre Baskerville',Georgia,serif;font-size:.98rem;margin:18px 0 4px">2 · El sonido no se puede convertir en color</h3>
+  <p>Se probó de la manera más directa: subir cada nota cuarenta octavas, hasta meterla en el rango de la luz, y ver de qué color queda. No cierra, y no por poco — <b>media escala se va del rango visible.</b></p>
+  <div class="tabla-env">
+    <table>
+      <thead><tr><th>Nota</th><th>Hz</th><th>Sube a</th><th>Dónde cae</th></tr></thead>
+      <tbody id="t-octavas"></tbody>
+    </table>
+  </div>
+  <p class="nota-pie" id="pie-octavas"></p>
+
+  <h3 style="font-family:'Libre Baskerville',Georgia,serif;font-size:.98rem;margin:18px 0 4px">3 · Las piedras tampoco</h3>
+  <p>El manual asigna una piedra a cada nota y se pregunta si habrá una relación real. La probó contra la dureza de cada piedra —un dato de gemología, ajeno a todo esto— y le dio que no. Recalculado acá:</p>
+  <p class="dato" id="d-mohs" style="font:.9rem/1.6 ui-monospace,Menlo,monospace;color:var(--texto);background:var(--panel2);border:1px solid var(--borde);border-radius:10px;padding:11px"></p>
+  <p class="nota-pie">Que dé cero <b>es el buen resultado</b>, y es el mejor argumento del libro entero: si hubiera dado una relación fuerte, habría que sospechar que se forzó algo. Un sistema de colores para leer música no necesita que la naturaleza lo respalde. Necesita ser claro y consistente, y lo es.</p>
+</section>
+
+<p class="pie">
+  <a href="./gestos.html">Instrumento de gestos</a> · <a href="./">Harmonía</a><br>
+  <span id="sellos"></span>
+</p>
+
+<script type="module">
+import * as C from "./codigo/color.js";
+import * as T from "./codigo/teoria.js";
+
+const $ = (id) => document.getElementById(id);
+const lat = (n) => T.enLatino(n).replace("#", "♯");
+const gr = (v) => Math.round(v) + "°";
+const pc = (v) => (v * 100).toFixed(1) + "%";
+
+// ─── La tira de los doce ─────────────────────────────────────────────────────
+$("tira").innerHTML = T.CROMATICA.map((n) =>
+  `<div style="background:${C.colorDeNota(n)}"><span>${lat(n)} ${gr(C.matiz(C.colorDeNota(n)))}</span></div>`
+).join("");
+
+{
+  // El dato que más importa de la tira se calcula, no se afirma: cuántas notas
+  // seguidas comparten prácticamente el mismo matiz.
+  let mayorRacha = 0, racha = 1;
+  for (let i = 1; i < 12; i++) {
+    const sep = C.separacionDeMatiz(C.colorDeNota(T.CROMATICA[i]), C.colorDeNota(T.CROMATICA[i - 1]));
+    if (sep <= 15) { racha++; mayorRacha = Math.max(mayorRacha, racha); } else racha = 1;
+  }
+  $("pie-tira").textContent =
+    `Fijate de Mi a Sol: ${mayorRacha} notas seguidas con casi el mismo matiz, que se distinguen por ` +
+    `claridad y no por color. Es a propósito —el marrón y el beige no existen en el arcoíris—, y es ` +
+    `lo que hace que la rueda se lea rápido. También es lo que rompe los ángulos del capítulo 8.`;
+}
+
+// ─── Mezcla de acordes ───────────────────────────────────────────────────────
+$("raiz").innerHTML = T.CROMATICA.map((n) => `<option value="${n}">${lat(n)}</option>`).join("");
+$("tipo").innerHTML = Object.entries(T.TIPOS)
+  .map(([k, v]) => `<option value="${k}">${v.nombre}</option>`).join("");
+$("raiz").value = "C";
+$("tipo").value = "mayor";
+
+function pintarAcorde() {
+  const raiz = $("raiz").value, tipo = $("tipo").value;
+  const notas = T.notasDe(raiz, tipo);
+  const colores = notas.map(C.colorDeNota);
+  const pesos = C.pesosRaizDominante(colores.length, 0.8);
+
+  const enPantalla = C.mezclarEnPantalla(colores, pesos);
+  const enLuz = C.mezclarEnLuz(colores, pesos);
+  const suma = C.sumarLuz(colores);
+
+  $("m-pantalla").style.background = enPantalla;
+  $("m-luz").style.background = enLuz;
+  $("m-suma").style.background = suma;
+
+  $("d-pantalla").innerHTML = `${enPantalla}<br>luz: ${pc(C.luminancia(enPantalla))}`;
+  $("d-luz").innerHTML = `${enLuz}<br>luz: ${pc(C.luminancia(enLuz))}`;
+  $("d-suma").innerHTML = `${suma}<br>luz: ${pc(C.luminancia(suma))}`;
+
+  $("notas-ac").innerHTML = notas.map((n, i) =>
+    `<i><b style="background:${colores[i]}"></b>${lat(n)}${i === 0 ? " · base" : ""}</i>`).join("");
+
+  const lp = C.luminancia(enPantalla), ll = C.luminancia(enLuz);
+  const dif = lp > 0 ? ((ll - lp) / lp) * 100 : 0;
+  $("pie-mezcla").innerHTML =
+    `<b>${T.nombreDeAcorde(raiz, tipo, true).replace("#", "♯")}</b> — ${T.TIPOS[tipo].criollo}. ` +
+    `La mezcla correcta tiene <b>${dif >= 0 ? "+" : ""}${dif.toFixed(0)}%</b> de luz respecto de la de hoy. ` +
+    (Math.abs(dif) > 40
+      ? "A esta altura ya no es un matiz: es otro color."
+      : "Acá la diferencia es chica, pero el método es el mismo para todos.");
+}
+$("raiz").addEventListener("change", pintarAcorde);
+$("tipo").addEventListener("change", pintarAcorde);
+pintarAcorde();
+
+// ─── ¿Se acerca al blanco? ───────────────────────────────────────────────────
+{
+  const ir = ["C", "E", "G", "B", "D", "F#", "A"];
+  $("t-blanco").innerHTML = ir.map((_, i) => {
+    if (i === 0) return "";
+    const ns = ir.slice(0, i + 1).map(C.colorDeNota);
+    const prom = C.mezclarEnLuz(ns), sum = C.sumarLuz(ns);
+    return `<tr>
+      <td class="n">${i + 1}</td>
+      <td><span class="ch" style="background:${prom}"></span></td>
+      <td class="n">${pc(C.luminancia(prom))}</td>
+      <td><span class="ch" style="background:${sum}"></span></td>
+      <td class="n">${pc(C.luminancia(sum))}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ─── Los seis tritonos ───────────────────────────────────────────────────────
+{
+  const pares = [["C", "F#"], ["C#", "G"], ["D", "G#"], ["D#", "A"], ["E", "A#"], ["F", "B"]];
+  const medidos = pares.map(([a, b]) => ({
+    a, b, giro: T.giroEntre(a, b),
+    sep: C.separacionDeMatiz(C.colorDeNota(a), C.colorDeNota(b)),
+  })).sort((x, y) => y.sep - x.sep);
+
+  $("t-tritonos").innerHTML = medidos.map((m) => `<tr>
+    <td><span class="ch" style="background:${C.colorDeNota(m.a)}"></span><span class="ch" style="background:${C.colorDeNota(m.b)}"></span> ${lat(m.a)} · ${lat(m.b)}</td>
+    <td class="n">${gr(m.giro)}</td>
+    <td class="n">${gr(m.sep)}</td>
+    <td><span class="barrita" style="width:${Math.round((m.sep / 180) * 54)}px"></span></td>
+  </tr>`).join("");
+
+  // El puesto de Fa·Si entre los 66 pares posibles, contado de verdad.
+  const todos = [];
+  for (let i = 0; i < 12; i++) for (let j = i + 1; j < 12; j++) {
+    const a = T.CROMATICA[i], b = T.CROMATICA[j];
+    todos.push({
+      a, b,
+      giro: T.giroEntre(a, b),
+      sep: C.separacionDeMatiz(C.colorDeNota(a), C.colorDeNota(b)),
+    });
+  }
+  todos.sort((x, y) => y.sep - x.sep);
+  const puesto = todos.findIndex((p) => p.a === "F" && p.b === "B") + 1;
+  const faSi = todos[puesto - 1];
+
+  // Los punteros de arriba vienen empatados dentro de una décima de grado, así
+  // que nombrar a uno solo sería elegir por redondeo. Se cuentan los que estén
+  // a menos de medio grado del primero y se dicen todos.
+  const cabeza = todos.filter((p) => todos[0].sep - p.sep < 0.5);
+  const nombrar = (p) =>
+    `${lat(p.a)} · ${lat(p.b)} (${p.giro === 180 ? "tritono" : p.giro === 210 ? "quinta justa" : gr(p.giro)})`;
+
+  $("pie-tritonos").innerHTML =
+    `Todos dan media vuelta —eso es lo que los hace tritonos— y ninguno llega a oponerse en color. ` +
+    `<b>Fa y Si, el par que el libro nombra como el de máximo contraste, queda en ${gr(faSi.sep)}: ` +
+    `puesto ${puesto} entre los ${todos.length} pares posibles.</b> ` +
+    (cabeza.length > 1
+      ? `Y arriba de todo hay un empate técnico, a ${gr(todos[0].sep)}: ${cabeza.map(nombrar).join(" y ")}. ` +
+        `Que una quinta justa —el intervalo <i>más consonante</i> que existe— contraste tanto como el ` +
+        `tritono es la prueba de que en esta paleta el color no sigue al intervalo.`
+      : `El que más contrasta de toda la rueda es ${nombrar(todos[0])}, con ${gr(todos[0].sep)}.`);
+}
+
+// ─── Las mezclas del capítulo 5 ──────────────────────────────────────────────
+{
+  const casos = [
+    ["G", "A", "G#"], ["E", "G", "F"], ["A", "C", "B"],
+    ["A", "B", "A#"], ["D", "E", "D#"], ["C", "D", "C#"], ["E", "G", "F#"],
+  ];
+  const filas = casos.map(([x, y, z]) => {
+    const prom = C.mezclarEnPantalla([C.colorDeNota(x), C.colorDeNota(y)]);
+    const asig = C.colorDeNota(z);
+    return { x, y, z, prom, asig, d: C.distanciaRGB(prom, asig) };
+  }).sort((a, b) => a.d - b.d);
+
+  $("t-mezclas").innerHTML = filas.map((f) => `<tr>
+    <td>${lat(f.x)} + ${lat(f.y)} → <b>${lat(f.z)}</b></td>
+    <td><span class="ch" style="background:${f.prom}"></span></td>
+    <td><span class="ch" style="background:${f.asig}"></span></td>
+    <td class="n ${f.d < 20 ? "si" : f.d > 120 ? "no" : ""}">${Math.round(f.d)}</td>
+  </tr>`).join("");
+
+  const exacta = filas.filter((f) => f.d < 20);
+  const lejos = filas[filas.length - 1];
+  $("pie-mezclas").innerHTML =
+    `Distancia 0 sería el mismo color; el máximo posible es 441. ` +
+    (exacta.length
+      ? `<b>Sólo ${exacta.length === 1 ? "una de las siete" : exacta.length + " de las siete"} coincide de verdad ` +
+        `(${exacta.map((f) => lat(f.x) + " + " + lat(f.y)).join(", ")}).</b> `
+      : `<b>Ninguna de las siete coincide con el promedio literal.</b> `) +
+    `La más lejana es ${lat(lejos.x)} + ${lat(lejos.y)} → ${lat(lejos.z)}, a ${Math.round(lejos.d)}: ahí ya es otro color, ` +
+    `y el propio libro lo admite entre líneas cuando dice que ese se hace «en dos pasos».`;
+}
+
+// ─── Serie de armónicos ──────────────────────────────────────────────────────
+{
+  const CUAL = { 1: "fundamental", 2: "octava", 3: "quinta", 4: "octava", 5: "tercera mayor",
+    6: "quinta", 7: "séptima", 8: "octava", 9: "novena", 10: "tercera mayor",
+    11: "entre cuarta y tritono", 12: "quinta", 13: "sexta" };
+  $("t-armonicos").innerHTML = T.serieDeArmonicos(13).map((a) => {
+    const d = a.desviacion;
+    const txt = Math.abs(d) < 0.01 ? "clavado"
+      : `${d > 0 ? "+" : ""}${d.toFixed(1)} cents`;
+    const cl = Math.abs(d) < 0.01 ? "si" : Math.abs(d) > 30 ? "no" : "";
+    return `<tr>
+      <td class="n">${a.n}</td>
+      <td>${CUAL[a.n] || ""}</td>
+      <td><span class="ch" style="background:${C.colorDeNota(a.nota)}"></span>${lat(a.nota)}</td>
+      <td class="n ${cl}">${txt}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ─── Cuarenta octavas ────────────────────────────────────────────────────────
+{
+  const todas = T.CROMATICA.map((n) => T.subirOctavas(n));
+  $("t-octavas").innerHTML = todas.map((x) => `<tr>
+    <td><span class="ch" style="background:${C.colorDeNota(x.nota)}"></span>${lat(x.nota)}</td>
+    <td class="n">${x.hz.toFixed(1)}</td>
+    <td class="n">${Math.round(x.nm)} nm</td>
+    <td class="${x.visible ? "si" : "no"}">${x.zona}</td>
+  </tr>`).join("");
+
+  const fuera = todas.filter((x) => !x.visible).length;
+  const la = todas.find((x) => x.nota === "A");
+  const doo = todas.find((x) => x.nota === "C");
+  $("pie-octavas").innerHTML =
+    `<b>${fuera} de las 12 quedan fuera del visible.</b> El Do se va a ${Math.round(doo.nm)} nm, ` +
+    `que es infrarrojo: invisible. Y el La cae en ${Math.round(la.nm)} nm, que es naranja —no rojo, ` +
+    `que es el color que el sistema le da—. Es decir: si hubiera una correspondencia física, ` +
+    `contradiría al propio manual. Por eso el manual no la usa, y hace bien.`;
+}
+
+// ─── Mohs ────────────────────────────────────────────────────────────────────
+{
+  const xs = T.PIEDRAS.map((p) => T.frecuencia(p.nota));
+  const ys = T.PIEDRAS.map((p) => p.mohs);
+  const r = T.correlacion(xs, ys);
+  $("d-mohs").innerHTML =
+    `r = ${r.toFixed(3)} &nbsp;·&nbsp; r² = ${(r * r).toFixed(3)}<br>` +
+    `<span style="color:var(--tenue)">Explica el ${(r * r * 100).toFixed(1)}% de la variación. ` +
+    `Sobre ${T.PIEDRAS.length} piedras, una por nota.</span>`;
+}
+
+$("sellos").textContent = `${C.VERSION} · ${T.VERSION}`;
+</script>
+
+</body>
+</html>

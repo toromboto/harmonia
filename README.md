@@ -13,18 +13,26 @@ Aplicación web musical interactiva construida en React + Vite + Tailwind CSS.
 - **Gestos** — Instrumento que se toca con las manos frente a la cámara.
   Página aparte: [`/gestos.html`](public/gestos.html) ·
   documentación en [`GESTOS.md`](GESTOS.md)
+- **El Código** — El sistema de colores con la física revisada y todos los
+  números calculados en pantalla. Desarrollo **paralelo**: no toca la app
+  compilada. Página aparte: [`/codigo.html`](public/codigo.html) ·
+  documentación en [`EL-CODIGO.md`](EL-CODIGO.md)
 
 ## Sistema de colores tonales
 
-| Nota | Color     | Hex     |
-|------|-----------|---------|
-| C    | Azul      | #1E50DC |
-| D    | Verde     | #28A03C |
-| E    | Marrón    | #82501E |
-| F    | Beige     | #C8B98C |
-| G    | Amarillo  | #E6C814 |
-| A    | Rojo      | #D22828 |
-| B    | Violeta   | #7828B4 |
+Los doce semitonos, cada uno con su color. La fuente es la constante `NC` de
+`src/App.jsx`; esta tabla es una copia y por lo tanto es la que puede mentir.
+**Ante una diferencia, manda el archivo** — ya pasó: hasta el 15-sep-2026 acá
+figuraban siete hexes que no eran los del código, ninguno de los siete.
+
+| Nota | Color     | Hex     |     | Nota | Color        | Hex     |
+|------|-----------|---------|-----|------|--------------|---------|
+| C    | Azul      | #002e93 |     | F#   | Beige        | #ecd9a3 |
+| C#   | Celeste   | #23879f |     | G    | Amarillo     | #f1b302 |
+| D    | Verde     | #357a25 |     | G#   | Naranja      | #dc7212 |
+| D#   | Oliva     | #91a51e |     | A    | Rojo         | #cd2821 |
+| E    | Marrón    | #845523 |     | A#   | Rosa         | #da4571 |
+| F    | Dorado    | #b8823c |     | B    | Violeta      | #672e87 |
 
 ## Instalación local
 
@@ -39,8 +47,17 @@ npm run dev
 npm run prueba
 ```
 
-Sin dependencias y sin navegador: corre la teoría musical del instrumento de
-gestos — 8 casos.
+Sin dependencias y sin navegador. Encadena los dos bancos:
+
+| Banco | Qué cubre | Casos |
+|---|---|---|
+| `pruebas/gestos.mjs` | la teoría musical del instrumento de gestos | 8 |
+| `pruebas/codigo.mjs` | el motor de color y la teoría de «El Código», más el módulo que vive adentro de `codigo.html` | 41 |
+
+El segundo compara contra **valores publicados** —los cents de la serie de
+armónicos, la curva de sRGB, el rango del espectro visible— y no contra lo que
+devuelve el propio código: lo que ahí se explica es teoría musical para alguien
+que no la sabe, y un número mal puesto enseña algo falso sin que se note.
 
 ## Deploy en Vercel
 
@@ -55,6 +72,7 @@ El despliegue tiene dos partes:
 |---|---|---|
 | La aplicación de armonía | `src/` | compilada por Vite |
 | El instrumento de gestos | `public/gestos.html`, `public/gestos/` | copiado tal cual, sin compilar |
+| El Código | `public/codigo.html`, `public/codigo/` | copiado tal cual, sin compilar |
 
 **No hay variables de entorno que cargar.** Las hubo, para el puente a Tuya
 que el instrumento tenía hasta el 2026-09-09; se retiraron con él, junto con

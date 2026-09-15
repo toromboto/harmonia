@@ -21,15 +21,23 @@ en **remate**, con Firebase Auth — que es mejor que la «clave de la sala» qu
 tenía acá. Dos puentes a Tuya haciendo lo mismo peor era superficie de más. El
 instrumento de gestos se queda: es música, y su lugar es éste.
 
-### Las dos mitades, que no se mezclan
+### Las tres piezas, que no se mezclan
 
 | | Dónde | Cómo se sirve |
 |---|---|---|
 | La aplicación de armonía | `src/`, entrando por `src/App.jsx` | compilada por Vite |
 | El instrumento de gestos | `public/gestos.html` + `public/gestos/` | **copiado tal cual**, sin compilar |
+| El Código (desarrollo paralelo) | `public/codigo.html` + `public/codigo/` | **copiado tal cual**, sin compilar |
 
 `public/` no pasa por el build: se puede editar desde el teléfono, por la web
 de GitHub, como los otros tres proyectos. Es a propósito.
+
+**«El Código» entró el 15-sep-2026 y es deliberadamente paralelo.** Es la
+versión del sistema de colores con la física revisada, y vive aparte porque
+*corrige* al manual en dos puntos: no puede pisar la pestaña «El Código» de
+`src/App.jsx` hasta que toromboto decida qué hace con esas dos correcciones.
+Que esté en `public/` no es comodidad: es lo que garantiza que no pueda romper
+la app compilada, porque no comparte con ella ni una línea de código.
 
 ## Documentación técnica
 
@@ -37,6 +45,7 @@ de GitHub, como los otros tres proyectos. Es a propósito.
 |---|---|
 | `README.md` | funcionalidades, paleta tonal, instalación |
 | `GESTOS.md` | el instrumento de gestos completo: cómo se toca, las piezas, la puesta en marcha, y qué falta |
+| `EL-CODIGO.md` | el desarrollo paralelo del sistema de colores: qué del manual se ratificó, qué se corrigió, con qué se comprobó |
 | `DESPLIEGUE.md` | qué cuenta de Vercel publica el proyecto, cómo averiguarlo desde GitHub, y por qué el repositorio no puede contestarlo solo |
 
 ## Secretos
@@ -142,19 +151,42 @@ vuelve a la rama.
   `NC`, la del *Manual de teoría musical a través del color*). Está **copiada**
   en `public/gestos/musica.js`, porque esa página no pasa por el build. Si
   cambia una, cambia la otra a mano — no hay nada que avise.
+
+  **Copias hay DOS, y no tres.** `public/codigo/` no hace una tercera:
+  importa la de `musica.js`, que es la única del lado de `public/`. Cuando
+  toque tocar la paleta son dos archivos, no tres.
+
+  **Y ojo con el `README.md`.** Hasta el 15-sep-2026 su tabla de la paleta
+  publicaba **siete hexes que no eran los del código** — ninguno de los siete
+  coincidía. Se corrigió contra `src/App.jsx`, que es la fuente. La regla es la
+  misma que en CasaYourte: ante una discrepancia entre una tabla de la
+  documentación y el archivo, **manda el archivo**, y se corrige la tabla.
 - **`public/` se sirve tal cual.** Nada de ahí puede usar JSX, ni importar de
   `src/`, ni depender de `npm`. Se edita desde el teléfono.
 - **Nada de credenciales del lado del cliente** — hoy es fácil de cumplir,
   porque no hay ninguna credencial en todo el proyecto. Si vuelve a haber una
   función de servidor, vuelve a ser la frontera que importa: el navegador manda
   un alias, el servidor traduce y firma.
-- **Se corre el banco de pruebas antes de subir:** `npm run prueba` (8 casos,
-  sin dependencias ni navegador — cubre la teoría musical del instrumento).
+- **Se corren los bancos de pruebas antes de subir:** `npm run prueba`, que
+  encadena los dos, sin dependencias ni navegador. `pruebas/gestos.mjs` (8
+  casos) cubre la teoría musical del instrumento; `pruebas/codigo.mjs` (41)
+  cubre el motor de color y la teoría de «El Código».
+- **El banco de «El Código» compara contra valores PUBLICADOS, no contra sí
+  mismo.** Los cents de la serie de armónicos, la curva de sRGB y el rango del
+  visible se afirman contra la literatura. Es a propósito: lo que ahí se
+  entrega es una explicación de teoría musical para alguien que no sabe música,
+  y un número mal puesto enseña algo falso sin que nadie lo note. Una prueba
+  que sólo comprueba que el código hace lo que el código hace no sirve para eso.
+- **El módulo que vive adentro de `codigo.html` se corre en el banco**, contra
+  un DOM de mentira. No es un lujo: la primera corrida encontró un `NaN°`
+  impreso en pantalla, que `node --check` no agarra porque el archivo parsea
+  perfecto.
 - **Que el JavaScript parsee antes de entregar** (`node --check`): un error de
   sintaxis en un módulo ES deja la página en blanco, sin nada que explique por
   qué.
-- **Cada archivo de `public/gestos/` lleva su sello `VERSION`.** Si se cambia
-  el archivo, sube el sello.
+- **Cada archivo de `public/gestos/` y de `public/codigo/` lleva su sello
+  `VERSION`.** Si se cambia el archivo, sube el sello. En «El Código» el sello
+  se imprime al pie de la página, así que se ve sin abrir el código.
 - **No hay `package-lock.json`, y es a propósito mientras la etapa sea «en
   desarrollo».** El `.gitignore` lo bloquea para que no vuelva a colarse en un
   `git add -A`. Qué se gana y qué se pierde con cada opción está desarrollado
@@ -221,4 +253,8 @@ Code: gasta de la suscripción y no cuesta aparte, lee y escribe en el panel, y
 dependencias que corre con `node` a secas, y el patrón de la función de
 servidor con lista blanca de destinos —el navegador manda un alias, el servidor
 traduce— que sirve igual para cualquier cosa que hoy se llame desde el cliente
-con una credencial cerca.
+con una credencial cerca. Y desde el 15-sep-2026, dos cosas más: **correr el
+módulo de un `.html` contra un DOM de mentira** —que atrapa el `NaN` en
+pantalla que `node --check` deja pasar— y **el desarrollo paralelo en
+`public/`** como forma de probar un cambio grande sin poder romper lo que ya
+anda.

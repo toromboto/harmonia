@@ -198,6 +198,12 @@ escribe en «La bitácora».
   qué.
 - **Si cambia la paleta de `src/App.jsx`, cambia también la de
   `public/gestos/musica.js`.** Son copias a propósito, y no hay nada que avise.
+- **`musica.js` ya no lo usa sólo el instrumento.** Desde el 15-sep-2026,
+  `public/codigo/` importa de acá la paleta y la cromática, en vez de hacer una
+  tercera copia (ver `EL-CODIGO.md`). O sea que este archivo pasó a ser el
+  núcleo compartido del lado de `public/`: **lo que se saque o se renombre acá
+  rompe también esa página.** Los dos bancos de pruebas lo cubren, y `npm run
+  prueba` corre los dos.
 
 ---
 

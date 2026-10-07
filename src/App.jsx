@@ -3337,13 +3337,7 @@ function EntrenadorTab({preset}={}){
   const [escDir,setEscDir]=useState("sube"), [escStart,setEscStart]=useState(-1), [escModo,setEscModo]=useState("ver");
   const [prog,setProg]=useState({i:1,err:0,hint:false,wrong:null});
   const escTimers=useRef([]);
-  const esProfe = !window.__ALUMNO;
-  const [digBase,setDigBase]=useState({});
-  const [digLocal,setDigLocal]=useState(()=>{ try{ return JSON.parse(localStorage.getItem("harmonia_digitacion")||"{}"); }catch(e){ return {}; } });
   const [info,setInfo]=useState(null);   // ventana de la tecla (escalas)
-  useEffect(()=>{ let vivo=true;
-    fetch("digitaciones.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(vivo&&j&&typeof j==="object"&&!Array.isArray(j)) setDigBase(j); }).catch(()=>{});
-    return ()=>{vivo=false;}; },[]);
   useEffect(()=>()=>escTimers.current.forEach(clearTimeout),[]);
   // Ejercicio asignado por el profesor: deja el entrenador listo para practicarlo
   useEffect(()=>{
@@ -3351,7 +3345,7 @@ function EntrenadorTab({preset}={}){
     setBellows(preset.fuelle==="cierra"?"cierra":"abre");
     if(preset.tipo==="escala"){
       setModo("escalas"); setEscRoot(preset.root||"C"); setEscTipo(preset.escala||"mayor"); setEscMano(preset.mano==="izq"?"izq":"der");
-      setEscDir(preset.dir==="baja"?"baja":"sube"); setEscStart(-1); setEscModo(preset.modoEj==="practica"?"practica":"ver");
+      setEscDir(preset.dir==="baja"?"baja":"sube"); setEscStart(preset.inicio===undefined?-1:preset.inicio); setEscModo(preset.modoEj==="practica"?"practica":"ver");
       setView(preset.mano==="izq"?"izquierda":"derecha");
     } else if(preset.tipo==="acorde"){
       setModo("acordes"); acorde.setAll(preset.ac||{}); setView("ambas");
@@ -3415,16 +3409,12 @@ function EntrenadorTab({preset}={}){
   const itemDe = (btn)=> itemsMano([btn],bellows)[0];
   const etiqueta = (it)=> (escDeletreo[it.pc]||CROM_SIMPLE[CHROMATIC[it.pc]]) + it.oct;
   const tocarItem = (it)=> playBand(CHROMATIC[it.pc], it.oct);
-  // Digitación: dedo recomendado por nota para ESTA escala/mano/sentido/fuelle/nota de inicio (la carga el profesor)
-  const digKey = escR.route.length ? [escTipo,escRoot,escMano,escDir,bellows,etiqueta(escR.route[0].item)].join("|") : "";
-  const digEf  = {...digBase,...digLocal};
-  const dedos  = (digKey && digEf[digKey]) || [];
-  const guardarDig = (arr)=>{ const n={...digLocal,[digKey]:arr}; if(!arr.some(x=>x)) delete n[digKey]; setDigLocal(n); try{ localStorage.setItem("harmonia_digitacion",JSON.stringify(n)); }catch(e){} };
-  const ponerDedo = (i,n)=>{ const arr=escR.route.map((_,k)=>dedos[k]||0); arr[i]=n; guardarDig(arr); };
-  const NOM_DEDO=["Sin dedo","1 · índice","2 · medio","3 · anular","4 · meñique"];
+  // Digitación: viene dentro del ejercicio asignado (solo si la configuración sigue siendo la del ejercicio)
+  const sigAct = [escTipo,escRoot,escMano,escDir,bellows,escStart].join("|");
+  const sigPre = (preset&&preset.tipo==="escala") ? [preset.escala||"mayor",preset.root||"C",preset.mano==="izq"?"izq":"der",preset.dir==="baja"?"baja":"sube",preset.fuelle==="cierra"?"cierra":"abre",preset.inicio===undefined?-1:preset.inicio].join("|") : "";
+  const dedos  = (preset&&preset.dedos&&sigAct===sigPre) ? preset.dedos : (preset&&preset.ruta&&sigAct===sigPre ? preset.ruta.map(p=>p.d||"") : []);
   const notaOct = (btn)=>{ const it=itemDe(btn); return CROM_SIMPLE[CHROMATIC[it.pc]]+it.oct; };
   const funcionDe = (pc)=>{ const k=escNombres.findIndex(n=>noteIdx(n)===pc); if(k<0) return null; const lab=GRADO_LABEL[escIvs[k]]; return romano?aRomano(lab):lab; };
-  const descargarDig = ()=>{ const b=new Blob([JSON.stringify(digEf,null,1)],{type:"application/json"}), a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="digitaciones.json"; document.body.appendChild(a); a.click(); a.remove(); };
   const verDedo = (i)=> escModo==="ver" || i<prog.i || (prog.hint && i===prog.i);
   const gradoTxt = (r,i)=>{ const n=escIvs.length; const esOct = escR.route.length===n+1 && (escDir!=="baja" ? i===n : i===0); const lab = esOct ? "8" : GRADO_LABEL[escIvs[r.deg]]; return romano ? aRomano(lab) : lab; };
   const escEscuchar = ()=>{
@@ -3447,7 +3437,7 @@ function EntrenadorTab({preset}={}){
     const it = itemDe(btn), col = nc(CHROMATIC[it.pc]), ri = escIdxById[btn.id], enEsc = escPcSet.has(it.pc);
     const num = (n,sub,bg,ded)=> <span style={{display:"flex",flexDirection:"column",alignItems:"center",lineHeight:1.05,color:txtSobre(bg)}}>
         <b style={{fontSize:String(n).length>2?11:14}}>{n}</b><span style={{fontSize:8.5,fontWeight:800,fontFamily:"monospace"}}>{sub}</span>
-        {ded ? <span style={{position:"absolute",top:-8,right:-8,width:18,height:18,borderRadius:"50%",background:"#fff",color:"#111",fontSize:11,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 1px 4px rgba(0,0,0,.7)"}}>{ded}</span> : null}</span>;
+        {ded ? <span style={{position:"absolute",top:-8,right:-8,minWidth:18,height:18,padding:"0 3px",borderRadius:9,background:"#fff",color:"#111",fontSize:11,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 1px 4px rgba(0,0,0,.7)"}}>{ded}</span> : null}</span>;
     if(escModo==="ver"){
       if(ri!==undefined) return {bg:col, border:"3px solid #fff", glow:`0 0 14px ${col}cc`, content:num(gradoTxt(escR.route[ri],ri),etiqueta(it),col,verDedo(ri)?dedos[ri]:0)};
       if(enEsc) return {bg:col+"55", border:`2px solid ${col}`, glow:"none", content:<span style={{fontSize:8.5,fontWeight:700,color:"#ddd",fontFamily:"monospace"}}>{etiqueta(it)}</span>};
@@ -3559,11 +3549,6 @@ function EntrenadorTab({preset}={}){
             <span style={uiLabel}>Función</span>
             <button style={uiPill(romano)} onClick={()=>setRomano(true)}>I · II · III</button>
             <button style={uiPill(!romano)} onClick={()=>setRomano(false)}>1 · 2 · 3</button>
-            {esProfe && <>
-              <span style={{width:10}}/>
-              <button style={uiPill(false)} onClick={descargarDig}>⬇ digitaciones.json</button>
-              {dedos.some(x=>x) && <button style={uiPill(false)} onClick={()=>guardarDig([])}>Borrar esta digitación</button>}
-            </>}
           </div>
           {/* fila coloreada sugerida */}
           <div style={{display:"flex",gap:6}}>
@@ -3575,9 +3560,8 @@ function EntrenadorTab({preset}={}){
               </div>);})}
           </div>
           <p style={{fontSize:11,color:"#8a8a8a",margin:"8px 0 0"}}>
-            {dedos.some(x=>x) ? "Dedo recomendado (☝): 1 índice · 2 medio · 3 anular · 4 meñique. Tocá una tecla del teclado para ver su octava y su dedo."
-              : esProfe ? "Tocá una tecla del camino (con número blanco) para ver su octava y asignarle el dedo: se abre una ventanita junto a la tecla. Se guarda en este navegador; para tus alumnos descargá digitaciones.json."
-              : "Tocá una tecla para ver su octava. La digitación todavía no está cargada para esta escala."}
+            {dedos.some(x=>x) ? "Dedos sugeridos (☝): 1 índice · 2 medio · 3 anular · 4 meñique. Con \"1/2\" podés usar cualquiera de los dos. Tocá una tecla para ver su octava y su dedo."
+              : "Tocá una tecla del camino para ver su octava y su función. Los dedos aparecen cuando el ejercicio viene de una tarea de tu profesor."}
           </p>
           {escR.missing.length>0 && <p style={{fontSize:11.5,color:"#c9a25a",margin:"10px 0 0"}}>⚠ Con este fuelle y esta mano no hay {escR.missing.length>1?"notas":"una nota"} más arriba/abajo ({escR.missing.map(pc=>escDeletreo[pc]||CROM_SIMPLE[CHROMATIC[pc]]).join(", ")}). Probá el otro sentido del fuelle, la otra mano u otra octava de inicio.</p>}
           {escModo==="practica" && (
@@ -3682,9 +3666,9 @@ function EntrenadorTab({preset}={}){
       {modo==="escalas" && info && (()=>{
         const it=itemDe(info.btn), ri=escIdxById[info.btn.id], col=nc(CHROMATIC[it.pc]);
         const fn = ri!==undefined ? gradoTxt(escR.route[ri],ri) : funcionDe(it.pc);
-        const ded = ri!==undefined ? (dedos[ri]||0) : 0;
+        const ded = ri!==undefined ? (dedos[ri]||"") : "";
         return (
-          <PopoverAnclado rect={info.rect} onClose={()=>setInfo(null)} width={262} estimado={esProfe&&ri!==undefined?250:190}>
+          <PopoverAnclado rect={info.rect} onClose={()=>setInfo(null)} width={262} estimado={190}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
               <div style={{width:42,height:42,borderRadius:"50%",background:col,border:"2px solid rgba(255,255,255,.4)",flexShrink:0}}/>
               <div style={{minWidth:0}}>
@@ -3697,21 +3681,9 @@ function EntrenadorTab({preset}={}){
               <span><span style={{color:"#8a8a8a"}}>Función </span><b>{fn||"fuera de la escala"}</b></span>
             </div>
             {ri!==undefined ? (
-              esProfe ? (
-                <>
-                  <div style={{fontSize:10,letterSpacing:"0.14em",color:"#8a8a8a",textTransform:"uppercase",marginBottom:6}}>Dedo recomendado</div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:5}}>
-                    {[0,1,2,3,4].map(n=>(
-                      <button key={n} title={NOM_DEDO[n]} onClick={()=>ponerDedo(ri,n)} style={uiPill(ded===n,{padding:"7px 0",textAlign:"center",fontSize:13})}>{n===0?"—":n}</button>
-                    ))}
-                  </div>
-                  <div style={{fontSize:11,color:"#8a8a8a",marginTop:6}}>{NOM_DEDO[ded]}</div>
-                </>
-              ) : (
-                <div style={{fontSize:13}}>{ded ? <>Dedo recomendado: <b>{NOM_DEDO[ded]}</b></> : <span style={{color:"#8a8a8a"}}>Digitación todavía no cargada.</span>}</div>
-              )
+              <div style={{fontSize:13}}>{ded ? <>Dedo sugerido: <b>{ded.includes("/")?("uno de estos: "+nomDedo(ded)):(ded+" · "+nomDedo(ded))}</b></> : <span style={{color:"#8a8a8a"}}>Sin dedo indicado para esta nota.</span>}</div>
             ) : (
-              <div style={{fontSize:11.5,color:"#8a8a8a"}}>Esta tecla no está en el camino sugerido, por eso no tiene dedo asignado.</div>
+              <div style={{fontSize:11.5,color:"#8a8a8a"}}>Esta tecla no está en el camino sugerido.</div>
             )}
             <div style={{display:"flex",gap:6,marginTop:10}}>
               <button style={uiPill(false,{flex:1})} onClick={()=>tocarItem(it)}>▶ Escuchar</button>
@@ -4090,21 +4062,45 @@ function CirculoQuintas(){
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ─── ORGANIZADOR DE CLASES (solo profesor) y MIS TAREAS (alumnos) ────────────
-// Los datos viajan en un archivo "clases.json" que se copia junto a index.html.
+// Cada ejercicio de escala viaja COMPLETO: camino, octavas, frecuencias y digitación.
+// Los datos se publican en "clases.json" junto a index.html.
 // ═══════════════════════════════════════════════════════════════════════════
 const ORG_KEY = "harmonia_org";
 const idn = ()=>Math.random().toString(36).slice(2,8);
 const cargarOrg = ()=>{ try{ const j=JSON.parse(localStorage.getItem(ORG_KEY)||"null"); if(j&&Array.isArray(j.clases)) return {alumnos:j.alumnos||[],clases:j.clases,asign:j.asign||{}}; }catch(e){} return {alumnos:[],clases:[],asign:{}}; };
-const EJ_NUEVO = {tipo:"escala",root:"C",escala:"mayor",mano:"der",dir:"sube",fuelle:"abre",modoEj:"ver",ac:ACORDE_INI,texto:""};
+const EJ_NUEVO = {tipo:"escala",root:"C",escala:"mayor",mano:"der",dir:"sube",fuelle:"abre",modoEj:"ver",inicio:-1,dedos:[],ac:ACORDE_INI,texto:"",indic:""};
 const inpS = {background:"#0e0e10",border:"1px solid #2a2a2e",borderRadius:9,padding:"7px 10px",color:"#ececec",fontSize:13,fontFamily:UI_FONT,minWidth:0};
-const Sel = ({v,set,opts,w})=>(<select style={{...inpS,width:w}} value={v} onChange={e=>set(e.target.value)}>{opts.map(o=>(<option key={o[0]} value={o[0]}>{o[1]}</option>))}</select>);
+const Sel = ({v,set,opts,w})=>(<select style={{...inpS,width:w}} value={v} onChange={e=>set(e.target.value)}>{opts.map(o=>(<option key={String(o[0])} value={o[0]}>{o[1]}</option>))}</select>);
 const OPT_MANO=[["der","Mano derecha"],["izq","Mano izquierda"]], OPT_DIR=[["sube","Sube"],["baja","Baja"]], OPT_FUELLE=[["abre","Abriendo"],["cierra","Cerrando"]], OPT_MODO=[["ver","Ver la escala"],["practica","Practicar"]];
+const DEDO_OPC=[["","—"],["1","1"],["2","2"],["3","3"],["4","4"],["1/2","1 o 2"],["2/3","2 o 3"],["3/4","3 o 4"]];
+const NOM_DEDO_1={1:"índice",2:"medio",3:"anular",4:"meñique"};
+const nomDedo = (d)=>String(d).split("/").map(x=>NOM_DEDO_1[x]||x).join(" o ");
+const fmtHz = (h)=>h.toFixed(2).replace(".",",");
+
+// Camino completo de una escala sobre el teclado del profesor: función, nota con octava, frecuencia y tecla.
+function rutaDeEjercicio(e, btns){
+  const esc=ESC_ENT.find(x=>x.id===e.escala)||ESC_ENT[0];
+  const ivs=(e.escala==="menorM"&&e.dir==="baja")?ESC_ENT[1].ivs:esc.ivs;
+  const root=e.root||"C", rootPc=noteIdx(root), dir=e.dir==="baja"?"baja":"sube";
+  const manoBtns=e.mano==="izq"?btns.left:btns.right;
+  const r=rutaEscala(manoBtns,e.fuelle==="cierra"?"cierra":"abre",rootPc,ivs,dir,e.inicio===undefined?-1:e.inicio);
+  const nom={}; buildScale(root,ivs).forEach(n=>{ nom[noteIdx(n)]=nombreLat(n); });
+  const nombreDe=(it)=>(nom[it.pc]||CROM_SIMPLE[CHROMATIC[it.pc]])+it.oct;
+  const n=ivs.length;
+  const pasos=r.route.map((st,i)=>{
+    const esOct=r.route.length===n+1&&(dir!=="baja"?i===n:i===0);
+    const it=st.item;
+    return {g:esOct?"8":GRADO_LABEL[ivs[st.deg]],pc:it.pc,n:nombreDe(it),hz:Math.round(440*Math.pow(2,(it.midi-69)/12)*100)/100,b:it.b.id};
+  });
+  return {pasos,inicios:r.tonics.map(nombreDe),faltan:r.missing.map(pc=>nom[pc]||CROM_SIMPLE[CHROMATIC[pc]]),usado:r.startUsed};
+}
 
 function descEj(e){
   if(e.tipo==="escala"){
     const esc=ESC_ENT.find(x=>x.id===e.escala)||ESC_ENT[0];
     const nom = esc.id==="crom" ? `Escala cromática desde ${nombreLat(e.root||"C")}` : `Escala de ${nombreLat(e.root||"C")} ${esc.nombre.toLowerCase()}`;
-    return `${nom} · ${e.mano==="izq"?"mano izquierda":"mano derecha"} · ${e.dir==="baja"?"baja":"sube"} · ${e.fuelle==="cierra"?"cerrando":"abriendo"}${e.modoEj==="practica"?" · practicar":""}`;
+    const desde = e.ruta&&e.ruta[0] ? ` · desde ${e.ruta[0].n}` : "";
+    return `${nom}${desde} · ${e.mano==="izq"?"mano izquierda":"mano derecha"} · ${e.dir==="baja"?"baja":"sube"} · ${e.fuelle==="cierra"?"cerrando":"abriendo"}${e.modoEj==="practica"?" · practicar":""}`;
   }
   if(e.tipo==="acorde") return `Acorde ${calcAcorde({...ACORDE_INI,...(e.ac||{})},false).name} · ${e.fuelle==="cierra"?"cerrando":"abriendo"}`;
   return e.texto||"Tarea";
@@ -4112,6 +4108,8 @@ function descEj(e){
 
 function OrganizadorTab({onProbar}){
   const [org,setOrg]=useState(cargarOrg);
+  const btns=useMemo(()=>loadBtns(),[]);
+  const [romano]=useRomanos();
   const [nuevoAl,setNuevoAl]=useState("");
   const [abierta,setAbierta]=useState(null);
   const [ej,setEj]=useState(EJ_NUEVO);
@@ -4136,16 +4134,31 @@ function OrganizadorTab({onProbar}){
   const delClase=(id)=>{ if(conf!=="c"+id){ setConf("c"+id); return; } setConf(null);
     const asign={}; Object.entries(org.asign).forEach(([u,l])=>{ asign[u]=l.filter(x=>x!==id); });
     guardar({...org,clases:org.clases.filter(c=>c.id!==id),asign}); };
-  const addEj=(cid)=>{ const nuevo={...ej,id:idn()}; if(nuevo.tipo==="texto"&&!nuevo.texto.trim()) return aviso("Escribí la consigna de la tarea.");
-    updClase(cid,{ejercicios:[...org.clases.find(c=>c.id===cid).ejercicios,nuevo]}); setEj(EJ_NUEVO); };
+
+  // ejercicio: formulario, guardado (nuevo o editado) y borrado
+  const setP=(patch,reiniciaDedos=true)=>setEj(e=>({...e,...patch,...(reiniciaDedos?{dedos:[]}:{})}));
+  const rutaForm = ej.tipo==="escala" ? rutaDeEjercicio(ej,btns) : null;
+  const guardarEj=(cid)=>{
+    let nuevo={...ej,id:ej.id||idn()};
+    if(nuevo.tipo==="texto"&&!nuevo.texto.trim()) return aviso("Escribí la consigna de la tarea.");
+    if(nuevo.tipo==="escala"){
+      if(!rutaForm||!rutaForm.pasos.length) return aviso("Con este fuelle y esta mano no hay camino para esa escala. Probá otro fuelle, otra mano u otra nota de inicio.");
+      nuevo.ruta=rutaForm.pasos.map((p,i)=>({...p,d:(ej.dedos&&ej.dedos[i])||""}));
+    }
+    const c=org.clases.find(x=>x.id===cid), ya=c.ejercicios.some(x=>x.id===nuevo.id);
+    updClase(cid,{ejercicios:ya?c.ejercicios.map(x=>x.id===nuevo.id?nuevo:x):[...c.ejercicios,nuevo]});
+    setAbierta(null); setEj(EJ_NUEVO); aviso(ya?"Ejercicio actualizado.":"Ejercicio agregado a la clase."); };
+  const editarEj=(cid,e)=>{ setAbierta(cid); setEj({...EJ_NUEVO,...e,dedos:e.ruta?e.ruta.map(p=>p.d||""):[]}); };
   const delEj=(cid,eid)=>updClase(cid,{ejercicios:org.clases.find(c=>c.id===cid).ejercicios.filter(e=>e.id!==eid)});
 
+  // asignación
   const tiene=(u,cid)=>(org.asign[u]||[]).includes(cid);
+  const todosAsig=(cid)=>org.alumnos.length>0&&org.alumnos.every(u=>tiene(u,cid));
   const toggle=(u,cid)=>{ const l=org.asign[u]||[]; guardar({...org,asign:{...org.asign,[u]:l.includes(cid)?l.filter(x=>x!==cid):[...l,cid]}}); };
-  const toggleTodos=(cid)=>{ const todos=org.alumnos.every(u=>tiene(u,cid)); const asign={...org.asign};
+  const toggleTodos=(cid)=>{ const todos=todosAsig(cid); const asign={...org.asign};
     org.alumnos.forEach(u=>{ const l=(asign[u]||[]).filter(x=>x!==cid); asign[u]=todos?l:[...l,cid]; }); guardar({...org,asign}); };
 
-  const descargar=()=>{ const data={version:1,clases:org.clases,asignaciones:org.asign};
+  const descargar=()=>{ const data={version:2,clases:org.clases,asignaciones:org.asign};
     const b=new Blob([JSON.stringify(data,null,1)],{type:"application/json"}), a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="clases.json"; document.body.appendChild(a); a.click(); a.remove(); };
   const cargar=async(file)=>{ if(!file) return; try{ const j=JSON.parse(await file.text()); if(!Array.isArray(j.clases)) throw 0;
       const asign=j.asignaciones||{}; const alumnos=[...new Set([...org.alumnos,...Object.keys(asign)])]; guardar({alumnos,clases:j.clases,asign}); aviso("Clases cargadas."); }catch(e){ aviso("Ese archivo no es un clases.json válido."); } };
@@ -4156,13 +4169,13 @@ function OrganizadorTab({onProbar}){
     <div>
       <div className="mb-4">
         <h2 className="text-xl font-bold mb-1" style={{fontFamily:"'Libre Baskerville',serif"}}>Organizador de clases</h2>
-        <p className="text-xs text-gray-500">Solo vos ves esta pestaña. Armá las clases con sus ejercicios y asignalas a cada alumno; ellos las ven en "Mis tareas".</p>
+        <p className="text-xs text-gray-500">Solo vos ves esta pestaña. Cada ejercicio de escala sale completo para el alumno: notas con su octava, frecuencia y dedos sugeridos.</p>
       </div>
 
       <div style={{...card,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
         <button style={uiPill(true)} onClick={descargar}>⬇ Descargar clases.json</button>
         <label style={{...uiPill(false),display:"inline-block"}}>⬆ Cargar clases.json<input type="file" accept=".json,application/json" style={{display:"none"}} onChange={e=>{cargar(e.target.files[0]);e.target.value="";}}/></label>
-        <span style={{fontSize:11,color:"#8a8a8a",flex:"1 1 260px"}}>Cada vez que cambies algo, descargá el archivo y copialo junto a <b>index.html</b> (Netlify: carpeta para-subir · Vercel: carpeta public). Tus cambios se guardan en este navegador.</span>
+        <span style={{fontSize:11,color:"#8a8a8a",flex:"1 1 260px"}}>Cuando termines, descargá el archivo y copialo junto a <b>index.html</b> (Netlify: carpeta para-subir · Vercel: carpeta public). Todo se guarda también en este navegador.</span>
         {msg && <span style={{fontSize:12,color:"#c9a25a",width:"100%"}}>{msg}</span>}
       </div>
 
@@ -4184,7 +4197,7 @@ function OrganizadorTab({onProbar}){
 
       {/* 2 · clases */}
       <div style={card}>
-        <div className="flex items-center justify-between mb-2"><p style={uiLabel}>2 · Clases y ejercicios</p><button style={uiPill(true,{padding:"5px 12px"})} onClick={addClase}>＋ Nueva clase</button></div>
+        <div className="flex items-center justify-between mb-2"><p style={uiLabel}>2 · Clases, ejercicios y a quién se asignan</p><button style={uiPill(true,{padding:"5px 12px"})} onClick={addClase}>＋ Nueva clase</button></div>
         {org.clases.length===0 && <p style={{fontSize:12,color:"#8a8a8a",margin:"6px 0 0"}}>Creá la primera clase, por ejemplo "Clase 1 · Escala de Do mayor".</p>}
         {org.clases.map((c,ci)=>(
           <div key={c.id} style={{border:"1px solid #2a2a2a",borderRadius:10,padding:"10px 12px",marginTop:10,background:"#0e0e10"}}>
@@ -4195,41 +4208,90 @@ function OrganizadorTab({onProbar}){
               <button style={peq} disabled={ci===org.clases.length-1} onClick={()=>moverClase(c.id,1)}>↓</button>
               <button style={{...peq,color:conf==="c"+c.id?"#c0615a":"#a0a0a6"}} onClick={()=>delClase(c.id)}>{conf==="c"+c.id?"¿Seguro?":"Eliminar"}</button>
             </div>
+            {/* a quién */}
+            <div className="flex flex-wrap gap-1.5 items-center mb-2">
+              <span style={{...uiLabel,marginRight:4}}>Asignada a</span>
+              <button style={uiPill(todosAsig(c.id),{padding:"4px 10px",fontSize:11})} onClick={()=>toggleTodos(c.id)}>Todos</button>
+              {org.alumnos.map(u=>(<button key={u} style={uiPill(tiene(u,c.id),{padding:"4px 10px",fontSize:11})} onClick={()=>toggle(u,c.id)}>{u}</button>))}
+              {org.alumnos.length===0 && <span style={{fontSize:11,color:"#8a8a8a"}}>cargá alumnos arriba para poder asignarla</span>}
+            </div>
             {c.ejercicios.length===0 && <p style={{fontSize:12,color:"#8a8a8a",margin:"4px 0 8px"}}>Sin ejercicios todavía.</p>}
             {c.ejercicios.map((e,k)=>(
-              <div key={e.id} className="flex flex-wrap gap-2 items-center" style={{padding:"6px 0",borderTop:k?"1px solid #1c1c1f":"none"}}>
-                <span style={{fontSize:12.5,flex:"1 1 260px"}}><b style={{color:"#8a8a8a",marginRight:6}}>{k+1}.</b>{descEj(e)}</span>
-                {e.tipo!=="texto" && <button style={peq} onClick={()=>onProbar(e)}>▶ Probar</button>}
-                <button style={peq} onClick={()=>delEj(c.id,e.id)}>✕</button>
+              <div key={e.id} style={{padding:"6px 0",borderTop:k?"1px solid #1c1c1f":"none"}}>
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span style={{fontSize:12.5,flex:"1 1 260px"}}><b style={{color:"#8a8a8a",marginRight:6}}>{k+1}.</b>{descEj(e)}</span>
+                  {e.tipo!=="texto" && <button style={peq} onClick={()=>onProbar(e)}>▶ Probar</button>}
+                  <button style={peq} onClick={()=>editarEj(c.id,e)}>✎ Editar</button>
+                  <button style={peq} onClick={()=>delEj(c.id,e.id)}>✕</button>
+                </div>
+                {e.ruta && <div style={{fontSize:11,color:"#8a8a8a",margin:"4px 0 0 20px",fontFamily:"monospace"}}>{e.ruta.map(p=>`${romano?aRomano(p.g):p.g} ${p.n}${p.d?" ☝"+p.d:""}`).join(" · ")}</div>}
               </div>
             ))}
             {abierta===c.id ? (
               <div style={{marginTop:10,padding:10,border:"1px dashed #333",borderRadius:10}}>
+                <p style={{...uiLabel,marginBottom:8}}>{ej.id?"Editar ejercicio":"Nuevo ejercicio"}</p>
                 <div className="flex flex-wrap gap-2 mb-2">
-                  <Sel v={ej.tipo} set={v=>setEj({...ej,tipo:v})} opts={[["escala","Escala"],["acorde","Acorde"],["texto","Tarea libre (texto)"]]}/>
+                  <Sel v={ej.tipo} set={v=>setP({tipo:v})} opts={[["escala","Escala"],["acorde","Acorde"],["texto","Tarea libre (texto)"]]}/>
                   {ej.tipo==="escala" && <>
-                    <Sel v={ej.root} set={v=>setEj({...ej,root:v})} opts={ACORDE_RAICES.map(x=>[x,nombreLat(x)])}/>
-                    <Sel v={ej.escala} set={v=>setEj({...ej,escala:v})} opts={ESC_ENT.map(x=>[x.id,x.nombre])}/>
-                    <Sel v={ej.mano} set={v=>setEj({...ej,mano:v})} opts={OPT_MANO}/>
-                    <Sel v={ej.dir} set={v=>setEj({...ej,dir:v})} opts={OPT_DIR}/>
-                    <Sel v={ej.fuelle} set={v=>setEj({...ej,fuelle:v})} opts={OPT_FUELLE}/>
-                    <Sel v={ej.modoEj} set={v=>setEj({...ej,modoEj:v})} opts={OPT_MODO}/>
+                    <Sel v={ej.root} set={v=>setP({root:v,inicio:-1})} opts={ACORDE_RAICES.map(x=>[x,nombreLat(x)])}/>
+                    <Sel v={ej.escala} set={v=>setP({escala:v,inicio:-1})} opts={ESC_ENT.map(x=>[x.id,x.nombre])}/>
+                    <Sel v={ej.mano} set={v=>setP({mano:v,inicio:-1})} opts={OPT_MANO}/>
+                    <Sel v={ej.dir} set={v=>setP({dir:v,inicio:-1})} opts={OPT_DIR}/>
+                    <Sel v={ej.fuelle} set={v=>setP({fuelle:v,inicio:-1})} opts={OPT_FUELLE}/>
+                    <Sel v={ej.modoEj} set={v=>setP({modoEj:v},false)} opts={OPT_MODO}/>
                   </>}
                   {ej.tipo==="acorde" && <>
-                    <Sel v={ej.ac.root} set={v=>setEj({...ej,ac:{...ej.ac,root:v}})} opts={ACORDE_RAICES.map(x=>[x,nombreLat(x)])}/>
-                    <Sel v={ej.ac.base} set={v=>setEj({...ej,ac:{...ej.ac,base:v}})} opts={ACORDE_BASES.map(x=>[x.id,x.label])}/>
-                    <Sel v={ej.ac.sept} set={v=>setEj({...ej,ac:{...ej.ac,sept:v}})} opts={ACORDE_SEPT.map(x=>[x.id,x.label])}/>
-                    <Sel v={ej.ac.nov} set={v=>setEj({...ej,ac:{...ej.ac,nov:v}})} opts={ACORDE_NOV.map(x=>[x.id,"Novena "+x.label])}/>
-                    <Sel v={ej.ac.und} set={v=>setEj({...ej,ac:{...ej.ac,und:v}})} opts={ACORDE_UND.map(x=>[x.id,"Oncena "+x.label])}/>
-                    <Sel v={ej.ac.tre} set={v=>setEj({...ej,ac:{...ej.ac,tre:v}})} opts={ACORDE_TRE.map(x=>[x.id,"Trecena "+x.label])}/>
-                    <button style={uiPill(ej.ac.seis,{padding:"6px 10px"})} onClick={()=>setEj({...ej,ac:{...ej.ac,seis:!ej.ac.seis}})}>Sexta</button>
-                    <button style={uiPill(ej.ac.sin5,{padding:"6px 10px"})} onClick={()=>setEj({...ej,ac:{...ej.ac,sin5:!ej.ac.sin5}})}>Sin quinta</button>
-                    <Sel v={ej.fuelle} set={v=>setEj({...ej,fuelle:v})} opts={OPT_FUELLE}/>
+                    <Sel v={ej.ac.root} set={v=>setP({ac:{...ej.ac,root:v}},false)} opts={ACORDE_RAICES.map(x=>[x,nombreLat(x)])}/>
+                    <Sel v={ej.ac.base} set={v=>setP({ac:{...ej.ac,base:v}},false)} opts={ACORDE_BASES.map(x=>[x.id,x.label])}/>
+                    <Sel v={ej.ac.sept} set={v=>setP({ac:{...ej.ac,sept:v}},false)} opts={ACORDE_SEPT.map(x=>[x.id,x.label])}/>
+                    <Sel v={ej.ac.nov} set={v=>setP({ac:{...ej.ac,nov:v}},false)} opts={ACORDE_NOV.map(x=>[x.id,"Novena "+x.label])}/>
+                    <Sel v={ej.ac.und} set={v=>setP({ac:{...ej.ac,und:v}},false)} opts={ACORDE_UND.map(x=>[x.id,"Oncena "+x.label])}/>
+                    <Sel v={ej.ac.tre} set={v=>setP({ac:{...ej.ac,tre:v}},false)} opts={ACORDE_TRE.map(x=>[x.id,"Trecena "+x.label])}/>
+                    <button style={uiPill(ej.ac.seis,{padding:"6px 10px"})} onClick={()=>setP({ac:{...ej.ac,seis:!ej.ac.seis}},false)}>Sexta</button>
+                    <button style={uiPill(ej.ac.sin5,{padding:"6px 10px"})} onClick={()=>setP({ac:{...ej.ac,sin5:!ej.ac.sin5}},false)}>Sin quinta</button>
+                    <Sel v={ej.fuelle} set={v=>setP({fuelle:v},false)} opts={OPT_FUELLE}/>
                   </>}
-                  {ej.tipo==="texto" && <textarea style={{...inpS,width:"100%"}} rows={2} placeholder="Consigna (ej: tocar la escala con metrónomo a 60, dos veces sin errores)" value={ej.texto} onChange={e=>setEj({...ej,texto:e.target.value})}/>}
+                  {ej.tipo==="texto" && <textarea style={{...inpS,width:"100%"}} rows={2} placeholder="Consigna (ej: tocar la escala con metrónomo a 60, dos veces sin errores)" value={ej.texto} onChange={e=>setP({texto:e.target.value},false)}/>}
                 </div>
-                <p style={{fontSize:12,color:"#a0a0a6",margin:"0 0 8px"}}>Vista previa: {descEj(ej)}</p>
-                <div className="flex gap-2"><button style={uiPill(true)} onClick={()=>addEj(c.id)}>Agregar ejercicio</button><button style={uiPill(false)} onClick={()=>setAbierta(null)}>Cancelar</button></div>
+
+                {/* camino + digitación */}
+                {ej.tipo==="escala" && rutaForm && (
+                  <div style={{marginBottom:10}}>
+                    {rutaForm.inicios.length>1 && (
+                      <div className="flex flex-wrap gap-1.5 items-center mb-2">
+                        <span style={{...uiLabel,marginRight:4}}>Empezar en</span>
+                        {rutaForm.inicios.map((n,i)=>(<button key={n+i} style={uiPill(rutaForm.usado===i,{padding:"4px 10px",fontSize:11})} onClick={()=>setP({inicio:i})}>{n}</button>))}
+                      </div>
+                    )}
+                    {rutaForm.pasos.length===0 ? (
+                      <p style={{fontSize:12,color:"#c9a25a",margin:0}}>Con este fuelle y esta mano esa escala no tiene camino. Probá otro fuelle, otra mano u otra escala.</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table style={{borderCollapse:"collapse",width:"100%",fontSize:12.5}}>
+                          <thead><tr style={{color:"#8a8a8a",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase"}}>
+                            {["Función","Nota","Frecuencia","Tecla","Dedo",""].map(h=>(<th key={h} style={{textAlign:"left",padding:"4px 8px",fontWeight:600}}>{h}</th>))}
+                          </tr></thead>
+                          <tbody>
+                            {rutaForm.pasos.map((p,i)=>(
+                              <tr key={i} style={{borderTop:"1px solid #1c1c1f"}}>
+                                <td style={{padding:"4px 8px",fontWeight:700}}>{romano?aRomano(p.g):p.g}</td>
+                                <td style={{padding:"4px 8px"}}><span style={{display:"inline-block",width:10,height:10,borderRadius:3,background:nc(CHROMATIC[p.pc]),marginRight:7}}/>{p.n}</td>
+                                <td style={{padding:"4px 8px",fontFamily:"monospace",color:"#a0a0a6"}}>{fmtHz(p.hz)} Hz</td>
+                                <td style={{padding:"4px 8px",fontFamily:"monospace",color:"#a0a0a6"}}>{p.b}</td>
+                                <td style={{padding:"3px 8px"}}><Sel v={(ej.dedos&&ej.dedos[i])||""} set={v=>{ const d=rutaForm.pasos.map((_,k)=>(ej.dedos&&ej.dedos[k])||""); d[i]=v; setEj({...ej,dedos:d}); }} opts={DEDO_OPC} w={86}/></td>
+                                <td style={{padding:"3px 8px"}}><button style={peq} onClick={()=>playBand(CHROMATIC[p.pc],parseInt(p.n.slice(-1),10))}>▶</button></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        <p style={{fontSize:11,color:"#8a8a8a",margin:"6px 0 0"}}>Dedo: 1 índice · 2 medio · 3 anular · 4 meñique. Con "1 o 2" sugerís dos opciones para esa nota.</p>
+                      </div>
+                    )}
+                    {rutaForm.faltan.length>0 && <p style={{fontSize:11.5,color:"#c9a25a",margin:"6px 0 0"}}>⚠ Falta en este camino: {rutaForm.faltan.join(", ")}.</p>}
+                  </div>
+                )}
+                <textarea style={{...inpS,width:"100%",marginBottom:8}} rows={2} placeholder="Indicaciones para el alumno (opcional): tempo, articulación, cuántas repeticiones…" value={ej.indic||""} onChange={e=>setP({indic:e.target.value},false)}/>
+                <div className="flex gap-2"><button style={uiPill(true)} onClick={()=>guardarEj(c.id)}>{ej.id?"Guardar cambios":"Agregar a la clase"}</button><button style={uiPill(false)} onClick={()=>{ setAbierta(null); setEj(EJ_NUEVO); }}>Cancelar</button></div>
               </div>
             ) : (
               <button style={{...peq,marginTop:8}} onClick={()=>{ setAbierta(c.id); setEj(EJ_NUEVO); }}>＋ Agregar ejercicio</button>
@@ -4238,18 +4300,17 @@ function OrganizadorTab({onProbar}){
         ))}
       </div>
 
-      {/* 3 · planilla de asignación */}
-      <div style={card}>
-        <p style={uiLabel}>3 · Planilla de asignación</p>
+      {/* 3 · resumen */}
+      <details style={card}>
+        <summary style={{cursor:"pointer",...uiLabel}}>3 · Resumen de asignaciones</summary>
         {(org.alumnos.length===0||org.clases.length===0) ? (
-          <p style={{fontSize:12,color:"#8a8a8a",margin:"8px 0 0"}}>Cargá al menos un alumno y una clase para asignar tareas.</p>
+          <p style={{fontSize:12,color:"#8a8a8a",margin:"8px 0 0"}}>Cargá al menos un alumno y una clase.</p>
         ) : (
           <div className="overflow-x-auto mt-2">
             <table style={{borderCollapse:"collapse",fontSize:12.5,width:"100%"}}>
               <thead><tr>
                 <th style={{textAlign:"left",padding:"6px 8px",color:"#8a8a8a",fontWeight:600}}>Alumno</th>
-                {org.clases.map(c=>(<th key={c.id} title={c.titulo} style={{padding:"6px 8px",fontWeight:700,whiteSpace:"nowrap"}}>
-                  <button onClick={()=>toggleTodos(c.id)} title="Asignar/quitar a todos" style={{background:"none",border:"none",color:"#ececec",cursor:"pointer",fontWeight:700,fontSize:12.5}}>{c.nombre}</button></th>))}
+                {org.clases.map(c=>(<th key={c.id} title={c.titulo} style={{padding:"6px 8px",fontWeight:700,whiteSpace:"nowrap"}}>{c.nombre}</th>))}
               </tr></thead>
               <tbody>
                 {org.alumnos.map(u=>(<tr key={u} style={{borderTop:"1px solid #1c1c1f"}}>
@@ -4259,10 +4320,9 @@ function OrganizadorTab({onProbar}){
                 </tr>))}
               </tbody>
             </table>
-            <p style={{fontSize:11,color:"#8a8a8a",margin:"8px 0 0"}}>Tocá el nombre de una clase para asignarla o quitarla a todos a la vez.</p>
           </div>
         )}
-      </div>
+      </details>
       <p style={{fontSize:11,color:"#6a6a6a",lineHeight:1.5}}>Aviso: clases.json es un archivo público de tu sitio: quien tenga el enlace podría leerlo. No incluyas datos personales. Tampoco podés ver desde acá si el alumno hizo la tarea.</p>
     </div>
   );
@@ -4270,6 +4330,7 @@ function OrganizadorTab({onProbar}){
 
 function MisTareasTab({onPracticar}){
   const u = window.__USUARIO || "";
+  const [romano]=useRomanos();
   const [datos,setDatos]=useState(null), [err,setErr]=useState(false);
   const [hechas,setHechas]=useState(()=>{ try{ return JSON.parse(localStorage.getItem("harmonia_hechas_"+u)||"{}"); }catch(e){ return {}; } });
   useEffect(()=>{ let vivo=true;
@@ -4283,7 +4344,7 @@ function MisTareasTab({onPracticar}){
     <div>
       <div className="mb-4">
         <h2 className="text-xl font-bold mb-1" style={{fontFamily:"'Libre Baskerville',serif"}}>Mis tareas</h2>
-        <p className="text-xs text-gray-500">{u ? `Tareas de ${u}. ` : ""}Tocá "Practicar" para abrir el ejercicio ya preparado en el Entrenador.</p>
+        <p className="text-xs text-gray-500">{u ? `Tareas de ${u}. ` : ""}Tocá "Practicar" para abrir el ejercicio ya preparado en el Entrenador, con sus notas, octavas y dedos.</p>
       </div>
       {!datos && !err && <p style={{fontSize:13,color:"#8a8a8a"}}>Cargando…</p>}
       {err && <div style={card}><p style={{fontSize:13,margin:0,color:"#a0a0a6"}}>Todavía no hay tareas publicadas.</p></div>}
@@ -4293,10 +4354,24 @@ function MisTareasTab({onPracticar}){
           <div style={{fontFamily:"'Libre Baskerville',serif",fontWeight:700,fontSize:16}}>{c.nombre}</div>
           {c.titulo && <div style={{fontSize:13,color:"#a0a0a6",margin:"2px 0 8px"}}>{c.titulo}</div>}
           {c.ejercicios.map((e,k)=>(
-            <div key={e.id} className="flex flex-wrap gap-2 items-center" style={{padding:"8px 0",borderTop:"1px solid #1c1c1f"}}>
-              <span style={{flex:"1 1 240px",fontSize:13,opacity:hechas[e.id]?0.5:1,textDecoration:hechas[e.id]?"line-through":"none"}}><b style={{color:"#8a8a8a",marginRight:6}}>{k+1}.</b>{descEj(e)}</span>
-              {e.tipo!=="texto" && <button style={uiPill(true,{padding:"6px 14px"})} onClick={()=>onPracticar(e)}>▶ Practicar</button>}
-              <button style={uiPill(!!hechas[e.id],{padding:"6px 12px"})} onClick={()=>marcar(e.id)}>{hechas[e.id]?"✓ Hecha":"Marcar hecha"}</button>
+            <div key={e.id} style={{padding:"8px 0",borderTop:"1px solid #1c1c1f"}}>
+              <div className="flex flex-wrap gap-2 items-center">
+                <span style={{flex:"1 1 240px",fontSize:13,opacity:hechas[e.id]?0.5:1,textDecoration:hechas[e.id]?"line-through":"none"}}><b style={{color:"#8a8a8a",marginRight:6}}>{k+1}.</b>{descEj(e)}</span>
+                {e.tipo!=="texto" && <button style={uiPill(true,{padding:"6px 14px"})} onClick={()=>onPracticar(e)}>▶ Practicar</button>}
+                <button style={uiPill(!!hechas[e.id],{padding:"6px 12px"})} onClick={()=>marcar(e.id)}>{hechas[e.id]?"✓ Hecha":"Marcar hecha"}</button>
+              </div>
+              {e.ruta && (
+                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8}}>
+                  {e.ruta.map((p,i)=>{ const col=nc(CHROMATIC[p.pc]); return(
+                    <div key={i} title={`${fmtHz(p.hz)} Hz · tecla ${p.b}`} style={{background:col,color:txtSobre(col),borderRadius:9,padding:"5px 9px",textAlign:"center",minWidth:58,border:"1.5px solid rgba(255,255,255,.3)"}}>
+                      <div style={{fontSize:9.5,fontWeight:800,fontFamily:"monospace",opacity:.85}}>{romano?aRomano(p.g):p.g}</div>
+                      <div style={{fontSize:13,fontWeight:900,fontFamily:"serif"}}>{p.n}</div>
+                      <div style={{fontSize:9,fontFamily:"monospace",opacity:.85}}>{fmtHz(p.hz)} Hz</div>
+                      <div style={{fontSize:11,fontWeight:900,fontFamily:"monospace",minHeight:15}}>{p.d?("☝"+p.d):""}</div>
+                    </div>); })}
+                </div>
+              )}
+              {e.indic && <div style={{fontSize:12.5,color:"#cfcfcf",marginTop:8,whiteSpace:"pre-wrap"}}>📝 {e.indic}</div>}
             </div>
           ))}
         </div>

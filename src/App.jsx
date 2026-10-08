@@ -4067,7 +4067,7 @@ function CirculoQuintas(){
 // ═══════════════════════════════════════════════════════════════════════════
 const ORG_KEY = "harmonia_org";
 const idn = ()=>Math.random().toString(36).slice(2,8);
-const cargarOrg = ()=>{ try{ const j=JSON.parse(localStorage.getItem(ORG_KEY)||"null"); if(j&&Array.isArray(j.clases)) return {alumnos:j.alumnos||[],clases:j.clases,asign:j.asign||{}}; }catch(e){} return {alumnos:[],clases:[],asign:{}}; };
+const cargarOrg = ()=>{ try{ const j=JSON.parse(localStorage.getItem(ORG_KEY)||"null"); if(j&&Array.isArray(j.clases)) return {alumnos:j.alumnos||[],clases:j.clases,asign:j.asign||{},usuarios:j.usuarios||[]}; }catch(e){} return {alumnos:[],clases:[],asign:{},usuarios:[]}; };
 const EJ_NUEVO = {tipo:"escala",root:"C",escala:"mayor",mano:"der",dir:"sube",fuelle:"abre",modoEj:"ver",inicio:-1,dedos:[],ac:ACORDE_INI,texto:"",indic:""};
 const inpS = {background:"#0e0e10",border:"1px solid #2a2a2e",borderRadius:9,padding:"7px 10px",color:"#ececec",fontSize:13,fontFamily:UI_FONT,minWidth:0};
 const Sel = ({v,set,opts,w})=>(<select style={{...inpS,width:w}} value={v} onChange={e=>set(e.target.value)}>{opts.map(o=>(<option key={String(o[0])} value={o[0]}>{o[1]}</option>))}</select>);
@@ -4125,8 +4125,14 @@ function OrganizadorTab({onProbar}){
   const delAlumno=(n)=>{ if(conf!=="a"+n){ setConf("a"+n); return; } setConf(null);
     const asign={...org.asign}; delete asign[n]; guardar({...org,alumnos:org.alumnos.filter(a=>a!==n),asign}); };
   const importarUsuarios=async(file)=>{ if(!file) return; try{ const j=JSON.parse(await file.text()); const us=(j.users||[]).map(u=>u.u).filter(Boolean);
-      const nuevos=us.filter(u=>!org.alumnos.some(a=>a.toLowerCase()===u.toLowerCase())); guardar({...org,alumnos:[...org.alumnos,...nuevos]}); aviso(`${nuevos.length} alumno(s) agregados.`);
+      // los nombres se llevan a la escritura exacta del usuario real (las mayúsculas importan para asignar bien)
+      const canon=(n)=>us.find(x=>x.toLowerCase()===n.toLowerCase())||n;
+      const alumnos=[...new Set([...org.alumnos.map(canon),...us])];
+      const asign={}; Object.entries(org.asign).forEach(([k,l])=>{ const c=canon(k); asign[c]=[...new Set([...(asign[c]||[]),...l])]; });
+      guardar({...org,alumnos,asign,usuarios:us}); aviso(`Lista actualizada: ${us.length} usuario(s) de usuarios.json.`);
     }catch(e){ aviso("Ese archivo no es un usuarios.json válido."); } };
+  const sinMatch=(n)=>org.usuarios&&org.usuarios.length>0&&!org.usuarios.includes(n);
+  const cuenta=(n)=>(org.asign[n]||[]).filter(id=>org.clases.some(c=>c.id===id)).length;
 
   const addClase=()=>{ const n=org.clases.length+1; guardar({...org,clases:[...org.clases,{id:idn(),nombre:`Clase ${n}`,titulo:"",ejercicios:[]}]}); };
   const updClase=(id,patch)=>guardar({...org,clases:org.clases.map(c=>c.id===id?{...c,...patch}:c)});
@@ -4184,7 +4190,7 @@ function OrganizadorTab({onProbar}){
         <p style={uiLabel}>1 · Alumnos</p>
         <div className="flex flex-wrap gap-1.5 mt-2 mb-3">
           {org.alumnos.length===0 && <span style={{fontSize:12,color:"#8a8a8a"}}>Todavía no cargaste alumnos.</span>}
-          {org.alumnos.map(n=>(<span key={n} style={{...uiPill(false),display:"inline-flex",gap:8,alignItems:"center",cursor:"default"}}>{n}
+          {org.alumnos.map(n=>(<span key={n} title={sinMatch(n)?"Este nombre no coincide con ningún usuario de usuarios.json: el alumno no verá sus tareas":""} style={{...uiPill(false),display:"inline-flex",gap:8,alignItems:"center",cursor:"default",borderColor:sinMatch(n)?"#c0615a":undefined}}>{sinMatch(n)?"⚠ ":""}{n}<span style={{fontSize:10,color:"#8a8a8a"}}>{cuenta(n)} clase{cuenta(n)===1?"":"s"}</span>
             <button onClick={()=>delAlumno(n)} style={{background:"none",border:"none",color:conf==="a"+n?"#c0615a":"#8a8a8a",cursor:"pointer",fontSize:11,padding:0}}>{conf==="a"+n?"¿Seguro?":"✕"}</button></span>))}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -4192,7 +4198,7 @@ function OrganizadorTab({onProbar}){
           <button style={uiPill(true)} onClick={addAlumno}>Agregar</button>
           <label style={{...uiPill(false),display:"inline-block"}}>Importar de usuarios.json<input type="file" accept=".json,application/json" style={{display:"none"}} onChange={e=>{importarUsuarios(e.target.files[0]);e.target.value="";}}/></label>
         </div>
-        <p style={{fontSize:11,color:"#8a8a8a",margin:"8px 0 0"}}>El nombre tiene que ser exactamente el usuario con el que el alumno entra a la página.</p>
+        <p style={{fontSize:11,color:"#8a8a8a",margin:"8px 0 0"}}>El nombre tiene que ser exactamente el usuario con el que el alumno entra. Usá "Importar de usuarios.json" para evitar errores: marca con ⚠ los nombres que no coinciden. Al lado de cada nombre ves cuántas clases tiene asignadas.</p>
       </div>
 
       {/* 2 · clases */}
@@ -4337,7 +4343,9 @@ function MisTareasTab({onPracticar}){
     fetch("clases.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(j=>{ if(!vivo) return; if(j&&Array.isArray(j.clases)) setDatos(j); else setErr(true); }).catch(()=>{ if(vivo) setErr(true); });
     return ()=>{vivo=false;}; },[]);
   const marcar=(id)=>{ const n={...hechas,[id]:!hechas[id]}; setHechas(n); try{ localStorage.setItem("harmonia_hechas_"+u,JSON.stringify(n)); }catch(e){} };
-  const ids = (datos&&datos.asignaciones&&datos.asignaciones[u]) || [];
+  const ids = (()=>{ if(!datos||!datos.asignaciones) return []; const out=[];
+    Object.entries(datos.asignaciones).forEach(([k,l])=>{ if(k.trim().toLowerCase()===u.trim().toLowerCase()) (l||[]).forEach(id=>{ if(!out.includes(id)) out.push(id); }); });
+    return out; })();
   const clases = datos ? ids.map(id=>datos.clases.find(c=>c.id===id)).filter(Boolean) : [];
   const card={background:"#121212",border:"1px solid #2a2a2a",borderRadius:12,padding:"12px 14px",marginBottom:12};
   return(
@@ -4348,7 +4356,7 @@ function MisTareasTab({onPracticar}){
       </div>
       {!datos && !err && <p style={{fontSize:13,color:"#8a8a8a"}}>Cargando…</p>}
       {err && <div style={card}><p style={{fontSize:13,margin:0,color:"#a0a0a6"}}>Todavía no hay tareas publicadas.</p></div>}
-      {datos && clases.length===0 && <div style={card}><p style={{fontSize:13,margin:0,color:"#a0a0a6"}}>Todavía no tenés tareas asignadas.</p></div>}
+      {datos && clases.length===0 && <div style={card}><p style={{fontSize:13,margin:0,color:"#a0a0a6"}}>Todavía no tenés tareas asignadas.</p>{u && <p style={{fontSize:11.5,margin:"8px 0 0",color:"#6a6a6a"}}>Entraste como <b>{u}</b>. Si esperabas tareas, pasale este nombre a tu profesor.</p>}</div>}
       {clases.map(c=>(
         <div key={c.id} style={card}>
           <div style={{fontFamily:"'Libre Baskerville',serif",fontWeight:700,fontSize:16}}>{c.nombre}</div>

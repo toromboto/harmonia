@@ -2689,7 +2689,7 @@ const PIEDRAS = [
   {n:"B",  piedra:"Amatista",           energia:"Calma profunda, claridad, intuición, protección espiritual", chakra:"Tercer ojo (violeta)"},
 ];
 
-// ─── PRESENTACIÓN: CRISTALES SONOROS ─────────────────────────────────────────
+// ─── PRESENTACIÓN: escalas para la paleta ─────────────────────────────────────────
 // Los doce colores como cristales. Tocar uno hace sonar la nota con timbre de
 // fuelle (el mismo del bandoneón de la app). Abajo se elige la escala y solo
 // sus colores quedan encendidos. Interfaz neutra para que lo único con color
@@ -2708,116 +2708,180 @@ const GRADO_LABEL = {0:"1",1:"b2",2:"2",3:"b3",4:"3",5:"4",6:"b5",7:"5",8:"b6",9
 const txtSobre = hex => { const [r,g,b]=hexToRgb(hex); return (0.299*r+0.587*g+0.114*b)>150 ? "#14110a" : "#ffffff"; };
 const pasoLabel = d => d===1?"S":d===2?"T":d===3?"T½":String(d);
 
-function Cristal({color, size=64}){
+// ─── PALETA: la rueda de los doce colores (primera muestra del código) ───────
+const NOMBRES_PC = ["Do","Do♯ / Re♭","Re","Re♯ / Mi♭","Mi","Fa","Fa♯ / Sol♭","Sol","Sol♯ / La♭","La","La♯ / Si♭","Si"];
+const RAICES_HERO = ["C","Db","D","Eb","E","F","F#","G","Ab","A","Bb","B"];
+
+function PaletaRueda({compacta=false}){
+  const [root,setRoot]=useState("C");
+  const [escId,setEscId]=useState("mayor");
+  const [playing,setPlaying]=useState(null);
+  const [sel,setSel]=useState(null);
+  const [romano]=useRomanos();
+  const timers=useRef([]);
+  useEffect(()=>()=>timers.current.forEach(clearTimeout),[]);
+
+  const esc=ESCALAS_HERO.find(e=>e.id===escId);
+  const escritas=buildScale(root,esc.ivs);
+  const pcs=escritas.map(noteIdx);
+  const nombreDe={}; escritas.forEach(n=>{ nombreDe[noteIdx(n)]=nombreLat(n); });
+  const gradoDe={}; esc.ivs.forEach((iv,i)=>{ gradoDe[pcs[i]]=GRADO_LABEL[iv]; });
+  const pasos=esc.ivs.map((iv,i)=>(i===esc.ivs.length-1?12:esc.ivs[i+1])-iv);
+  const fmtG=(g)=>romano?aRomano(g):g;
+
+  const stop=()=>{ timers.current.forEach(clearTimeout); timers.current=[]; setPlaying(null); };
+  const tocar=(pc)=>{ setSel(pc); playBand(CHROMATIC[pc],4); };
+  const tocarEscala=()=>{
+    stop(); const seq=[...esc.ivs,12], r=noteIdx(root);
+    seq.forEach((iv,i)=>timers.current.push(setTimeout(()=>{ const a=r+iv; playBand(CHROMATIC[a%12],4+Math.floor(a/12)); setPlaying(a%12); setSel(a%12); },i*450)));
+    timers.current.push(setTimeout(()=>setPlaying(null),seq.length*450+300));
+  };
+
+  const C=220, R0=118, R1=204;
+  const UI={line:"#26262a",text:"#ececec",mute:"#8a8a90"};
+  const centroPc = sel!==null ? sel : noteIdx(root);
+  const centroNombre = sel!==null ? (nombreDe[sel]||NOMBRES_PC[sel]) : nombreLat(root);
+  const centroSub = sel!==null ? (pcs.includes(sel)?`función ${fmtG(gradoDe[sel])}`:"fuera de la escala") : esc.nombre;
   return(
-    <svg viewBox="0 0 64 76" width="100%" style={{display:"block",maxWidth:size,overflow:"visible"}}>
-      <polygon points="14,6 50,6 62,26 32,72 2,26" fill={color}/>
-      <polygon points="14,6 50,6 44,26 20,26" fill="#fff" fillOpacity=".30"/>
-      <polygon points="14,6 20,26 2,26" fill="#fff" fillOpacity=".12"/>
-      <polygon points="50,6 62,26 44,26" fill="#000" fillOpacity=".10"/>
-      <polygon points="2,26 20,26 32,72" fill="#000" fillOpacity=".16"/>
-      <polygon points="20,26 44,26 32,72" fill="#fff" fillOpacity=".07"/>
-      <polygon points="62,26 44,26 32,72" fill="#000" fillOpacity=".32"/>
-      <polygon points="18,9 30,9 26,20" fill="#fff" fillOpacity=".45"/>
-      <polygon points="14,6 50,6 62,26 32,72 2,26" fill="none" stroke="#fff" strokeOpacity=".35" strokeWidth="1.2" strokeLinejoin="round"/>
-    </svg>
+    <div className="rounded-2xl mb-5" style={{background:"radial-gradient(120% 90% at 50% 0%,#17171a 0%,#0e0e10 60%)",border:`1px solid ${UI.line}`,padding:compacta?"14px 10px":"20px 14px"}}>
+      <div style={{textAlign:"center",marginBottom:4}}>
+        <p style={{fontFamily:"'Libre Baskerville',serif",fontSize:compacta?15:19,fontWeight:700,letterSpacing:"0.04em",color:UI.text,margin:0}}>La paleta de los doce colores</p>
+        <p style={{fontFamily:UI_FONT,fontSize:11.5,color:UI.mute,margin:"4px 0 0"}}>Cada nota tiene su color. Tocá un color para escucharlo con timbre de fuelle.</p>
+      </div>
+
+      <div style={{maxWidth:compacta?340:460,margin:"0 auto"}}>
+        <svg viewBox="0 0 440 440" width="100%" style={{display:"block",overflow:"visible",userSelect:"none",WebkitUserSelect:"none"}}>
+          <circle cx={C} cy={C} r={R1+14} fill="none" stroke={UI.line} strokeWidth="1"/>
+          {[...Array(12)].map((_,pc)=>{
+            const a=pc*30, on=pcs.includes(pc), col=nc(CHROMATIC[pc]), son=playing===pc, selx=sel===pc;
+            const [tx,ty]=cqPol(C,C,(R0+R1)/2+2,a), gx=tx, gy=ty+(compacta?13:15);
+            return(
+              <g key={pc} onClick={()=>tocar(pc)} style={{cursor:"pointer",transformOrigin:`${C}px ${C}px`,transform:son?"scale(1.07)":on?"scale(1.025)":"scale(1)",transition:"transform .16s ease, opacity .25s ease",opacity:on?1:0.2,filter:son?`drop-shadow(0 0 14px ${col})`:"none"}}>
+                <path d={cqSector(C,C,R0,R1,a-14.4,a+14.4)} fill={col} stroke={on?"rgba(255,255,255,.55)":"rgba(255,255,255,.12)"} strokeWidth={selx?2.6:1.2}/>
+                <text x={tx} y={on?ty-7:ty+1} textAnchor="middle" dominantBaseline="middle" style={{fontFamily:"'Libre Baskerville',serif",fontWeight:700,fontSize:compacta?17:19,fill:txtSobre(col),pointerEvents:"none"}}>{(nombreDe[pc]||CROM_SIMPLE[CHROMATIC[pc]]).split(" ")[0]}</text>
+                {on && <text x={gx} y={gy} textAnchor="middle" dominantBaseline="middle" style={{fontFamily:UI_FONT,fontWeight:800,fontSize:11.5,fill:txtSobre(col),opacity:.85,pointerEvents:"none"}}>{fmtG(gradoDe[pc])}</text>}
+              </g>
+            );
+          })}
+          <circle cx={C} cy={C} r={R0-8} fill="#0b0b0c" stroke={UI.line} strokeWidth="1.5"/>
+          <circle cx={C} cy={C} r={R0-22} fill="none" stroke={nc(CHROMATIC[centroPc])} strokeWidth="3" style={{transition:"stroke .25s"}}/>
+          <text x={C} y={C-12} textAnchor="middle" dominantBaseline="middle" style={{fontFamily:"'Libre Baskerville',serif",fontWeight:700,fontSize:centroNombre.length>4?32:42,fill:UI.text}}>{centroNombre}</text>
+          <text x={C} y={C+26} textAnchor="middle" dominantBaseline="middle" style={{fontFamily:UI_FONT,fontWeight:600,fontSize:13,fill:"#b4b4ba"}}>{centroSub}</text>
+          <text x={C} y={C+48} textAnchor="middle" dominantBaseline="middle" style={{fontFamily:"monospace",fontSize:11,letterSpacing:"0.14em",fill:"#6a6a70"}}>{sel===null?pasos.map(pasoLabel).join(" "):""}</text>
+        </svg>
+      </div>
+
+      <div style={{borderTop:`1px solid ${UI.line}`,paddingTop:12,marginTop:8}}>
+        <p style={{...uiLabel,marginBottom:8}}>Tonalidad</p>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {RAICES_HERO.map(x=>(<button key={x} style={uiPill(x===root,{padding:"5px 11px"})} onClick={()=>{stop();setRoot(x);setSel(null);}}>{nombreLat(x)}</button>))}
+        </div>
+        <p style={{...uiLabel,marginBottom:8}}>Escala</p>
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {ESCALAS_HERO.map(e=>(<button key={e.id} style={uiPill(e.id===escId,{padding:"5px 11px"})} onClick={()=>{stop();setEscId(e.id);setSel(null);}}>{e.corto}</button>))}
+        </div>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <p style={{fontSize:12,fontFamily:"monospace",color:UI.mute,margin:0,flex:"1 1 220px"}}>
+            <b style={{color:UI.text,fontFamily:"'Libre Baskerville',serif",fontSize:14}}>{nombreLat(root)} {esc.nombre}</b><br/>{escritas.map(nombreLat).join(" · ")}
+          </p>
+          <button onClick={playing!==null?stop:tocarEscala} style={uiPill(false,{padding:"8px 16px",borderColor:"#ececec",color:"#ececec"})}>{playing!==null?"■ Parar":"▶ Tocar escala"}</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function CristalesColor(){
-  const [root,setRoot]   = useState("C");
-  const [escId,setEscId] = useState("mayor");
-  const [playing,setPlaying] = useState(null);   // nota que está sonando (escala)
-  const timers = useRef([]);
-  useEffect(()=>()=>timers.current.forEach(clearTimeout),[]);
+// ─── ENTRENADOR DE COLORES (antes de llegar al bandoneón) ────────────────────
+function EntrenaColores(){
+  const [modo,setModo]=useState("nota");              // nota → color | color → nota | orden
+  const [Q,setQ]=useState(null);                       // ronda de preguntas
+  const [ord,setOrd]=useState(null);                   // modo orden
+  const mezcla=(a)=>{ const r=[...a]; for(let i=r.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [r[i],r[j]]=[r[j],r[i]]; } return r; };
+  const nueva=()=>setQ({i:0,ok:0,lista:[...Array(10)].map(()=>Math.random()*12|0),resp:null});
+  const nuevaOrden=()=>setOrd({mezcla:mezcla([...Array(12).keys()]),sig:0,err:0,pista:false,mal:null});
+  const cambiar=(m)=>{ setModo(m); setQ(null); setOrd(null); };
 
-  const esc   = ESCALAS_HERO.find(e=>e.id===escId);
-  const r     = noteIdx(root);
-  const escritas = buildScale(root, esc.ivs);                      // nombres con la enarmonía correcta
-  const notes = escritas.map(n=>CHROMATIC[noteIdx(n)]);            // alturas (para los colores)
-  const nombreDe = {}; escritas.forEach(n=>{ nombreDe[CHROMATIC[noteIdx(n)]] = nombreLat(n); });
-  const gradoDe = {}; esc.ivs.forEach((iv,i)=>{ gradoDe[notes[i]] = GRADO_LABEL[iv]; });
-  const pasos = esc.ivs.map((iv,i)=>(i===esc.ivs.length-1?12:esc.ivs[i+1])-iv);
+  const responder=(pc)=>{ if(Q.resp!==null) return; const bien=pc===Q.lista[Q.i]; playBand(CHROMATIC[Q.lista[Q.i]],4);
+    setQ(q=>q?{...q,resp:pc,ok:q.ok+(bien?1:0)}:q); setTimeout(()=>setQ(q=>q?{...q,i:q.i+1,resp:null}:q),bien?750:1500); };
+  const tocarOrden=(pc)=>{ if(ord.sig>=12) return;
+    if(pc===ord.sig){ playBand(CHROMATIC[pc],4); setOrd(o=>({...o,sig:o.sig+1,pista:false,mal:null})); }
+    else { setOrd(o=>({...o,err:o.err+1,mal:pc})); setTimeout(()=>setOrd(o=>o?({...o,mal:null}):o),600); } };
 
-  const stop = ()=>{ timers.current.forEach(clearTimeout); timers.current=[]; setPlaying(null); };
-  const tocarNota = (x)=>{ playBand(x,4); };
-  const tocarEscala = ()=>{
-    stop();
-    const seq=[...esc.ivs,12];
-    seq.forEach((iv,i)=>{
-      timers.current.push(setTimeout(()=>{
-        const a=r+iv; const x=CHROMATIC[a%12];
-        playBand(x, 4+Math.floor(a/12)); setPlaying(x);
-      }, i*480));
-    });
-    timers.current.push(setTimeout(()=>setPlaying(null), seq.length*480+300));
-  };
-
-  const UI = {bg:"#101010", line:"#262626", text:"#e6e6e6", mute:"#8a8a8a", pillOn:"#e6e6e6"};
-  const pill=(on)=>uiPill(on);
+  const card={background:"#121214",border:"1px solid #26262a",borderRadius:14,padding:"16px 14px"};
+  const colorBtn=(pc,extra)=>{ const col=nc(CHROMATIC[pc]); return {aspectRatio:"1",borderRadius:12,border:"2px solid rgba(255,255,255,.22)",background:col,cursor:"pointer",...extra}; };
 
   return(
-    <div className="rounded-2xl mb-5" style={{background:UI.bg,border:`1px solid ${UI.line}`,padding:"16px 14px"}}>
-      <div className="flex items-baseline justify-between flex-wrap gap-2 mb-3">
-        <p style={{fontSize:11,letterSpacing:"0.14em",color:UI.mute,textTransform:"uppercase"}}>Los doce colores</p>
-        <p style={{fontSize:11,color:UI.mute}}>Tocá un cristal para escucharlo</p>
+    <div>
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {[["nota","Nota → color"],["color","Color → nota"],["orden","Ordená la paleta"]].map(([v,l])=>(<button key={v} style={uiPill(modo===v,{padding:"7px 14px"})} onClick={()=>cambiar(v)}>{l}</button>))}
       </div>
 
-      {/* Cristales */}
-      <div className="grid grid-cols-6 sm:grid-cols-12 gap-x-2 gap-y-4 mb-5">
-        {CHROMATIC.map(x=>{
-          const on = notes.includes(x);
-          const sonando = playing===x;
-          return(
-            <button key={x} onClick={()=>tocarNota(x)}
-              style={{background:"none",border:"none",padding:0,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,
-                opacity:on?1:0.16, filter:on?"none":"saturate(.3)",
-                transform: sonando ? "translateY(-8px) scale(1.12)" : on ? "translateY(-3px)" : "none",
-                transition:"transform .14s ease, opacity .25s ease, filter .25s ease"}}>
-              <div style={{width:"100%",display:"flex",justifyContent:"center",
-                filter: sonando ? `drop-shadow(0 6px 14px ${nc(x)}cc)` : on ? `drop-shadow(0 4px 8px ${nc(x)}55)` : "none"}}>
-                <Cristal color={nc(x)}/>
-              </div>
-              <span style={{fontSize:11,fontFamily:"serif",fontWeight:700,color:on?UI.text:UI.mute}}>{on?nombreDe[x]:CROM_SIMPLE[x]}</span>
-              <span style={{fontSize:9,fontFamily:"monospace",color:UI.mute,height:11}}>{on?gradoDe[x]:""}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Selector de escala */}
-      <div style={{borderTop:`1px solid ${UI.line}`,paddingTop:12}}>
-        <p style={{fontSize:10,letterSpacing:"0.14em",color:UI.mute,textTransform:"uppercase",marginBottom:8}}>Tonalidad</p>
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {["C","Db","D","Eb","E","F","F#","G","Ab","A","Bb","B"].map(x=>(
-            <button key={x} style={pill(x===root)} onClick={()=>{stop();setRoot(x);}}>{nombreLat(x)}</button>
-          ))}
+      {modo!=="orden" && !Q && (
+        <div style={{...card,textAlign:"center"}}>
+          <p style={{fontFamily:"'Libre Baskerville',serif",fontSize:17,fontWeight:700,margin:"0 0 6px"}}>{modo==="nota"?"¿De qué color es esta nota?":"¿Qué nota es este color?"}</p>
+          <p style={{fontSize:12.5,color:"#8a8a90",margin:"0 0 14px"}}>10 preguntas. Se corrige sola y suena cada nota.</p>
+          <button style={uiPill(true,{padding:"9px 22px"})} onClick={nueva}>Empezar</button>
         </div>
-        <p style={{fontSize:10,letterSpacing:"0.14em",color:UI.mute,textTransform:"uppercase",marginBottom:8}}>Escala</p>
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {ESCALAS_HERO.map(e=>(
-            <button key={e.id} style={pill(e.id===escId)} onClick={()=>{stop();setEscId(e.id);}}>{e.corto}</button>
-          ))}
+      )}
+      {modo!=="orden" && Q && Q.i>=Q.lista.length && (
+        <div style={{...card,textAlign:"center"}}>
+          <p style={uiLabel}>Resultado</p>
+          <div style={{fontFamily:"'Libre Baskerville',serif",fontSize:54,fontWeight:700,margin:"4px 0"}}>{Q.ok}<span style={{fontSize:26,color:"#6a6a70"}}>/{Q.lista.length}</span></div>
+          <p style={{fontSize:13,color:"#a0a0a6",margin:"0 0 14px"}}>{Q.ok===Q.lista.length?"Perfecto: ya sabés la paleta.":Q.ok>=8?"Muy bien, casi.":"Seguí con la rueda de arriba y volvé a intentar."}</p>
+          <button style={uiPill(true,{padding:"9px 22px"})} onClick={nueva}>Repetir</button>
         </div>
-
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <p style={{fontSize:15,fontFamily:"'Libre Baskerville',serif",color:UI.text,fontWeight:700}}>
-              {nombreLat(root)} {esc.nombre}
-            </p>
-            <p style={{fontSize:11,fontFamily:"monospace",color:UI.mute,marginTop:3}}>
-              {escritas.map(nombreLat).join(" · ")}
-            </p>
-            <p style={{fontSize:11,fontFamily:"monospace",color:UI.mute,marginTop:2,letterSpacing:"0.12em"}}>
-              {pasos.map(pasoLabel).join(" ")} <span style={{opacity:.6,letterSpacing:0}}>(T tono · S semitono)</span>
-            </p>
+      )}
+      {modo!=="orden" && Q && Q.i<Q.lista.length && (()=>{ const pc=Q.lista[Q.i]; return(
+        <div style={card}>
+          <p style={{...uiLabel,textAlign:"center",marginBottom:10}}>Pregunta {Q.i+1} de {Q.lista.length} · aciertos {Q.ok}</p>
+          {modo==="nota" ? (
+            <div style={{fontFamily:"'Libre Baskerville',serif",fontSize:46,fontWeight:700,textAlign:"center",marginBottom:14}}>{NOMBRES_PC[pc]}</div>
+          ) : (
+            <div style={{width:96,height:96,borderRadius:"50%",background:nc(CHROMATIC[pc]),border:"3px solid rgba(255,255,255,.4)",margin:"0 auto 16px",boxShadow:`0 0 28px ${nc(CHROMATIC[pc])}88`}}/>
+          )}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8}}>
+            {[...Array(12).keys()].map(k=>{
+              const esC=Q.resp!==null&&k===pc, esM=Q.resp===k&&k!==pc;
+              const out=esC?"4px solid #6b9c7c":esM?"4px solid #c0615a":"none";
+              return modo==="nota" ? (
+                <button key={k} onClick={()=>responder(k)} style={colorBtn(k,{outline:out,outlineOffset:2})}/>
+              ) : (
+                <button key={k} onClick={()=>responder(k)} style={{...uiPill(false,{padding:"10px 2px",fontSize:12,textAlign:"center"}),outline:out,outlineOffset:2,borderColor:"#3a3a3e"}}>{NOMBRES_PC[k].replace(" / ","/")}</button>
+              );
+            })}
           </div>
-          <button onClick={playing?stop:tocarEscala}
-            style={{padding:"8px 16px",borderRadius:10,border:`1px solid ${UI.pillOn}`,background:"transparent",color:UI.text,fontWeight:700,fontSize:12,cursor:"pointer",fontFamily:"monospace"}}>
-            {playing?"■ Parar":"▶ Tocar escala"}
-          </button>
+          <p style={{fontSize:12,textAlign:"center",color:"#8a8a90",minHeight:20,margin:"12px 0 0"}}>{Q.resp===null?"":(Q.resp===pc?"¡Correcto!":`No: era ${NOMBRES_PC[pc]}`)}</p>
+        </div>); })()}
+
+      {modo==="orden" && !ord && (
+        <div style={{...card,textAlign:"center"}}>
+          <p style={{fontFamily:"'Libre Baskerville',serif",fontSize:17,fontWeight:700,margin:"0 0 6px"}}>Ordená los doce colores</p>
+          <p style={{fontSize:12.5,color:"#8a8a90",margin:"0 0 14px"}}>Tocalos en orden cromático, empezando por Do y subiendo de a semitono hasta Si. Si te trabás, pedí una pista.</p>
+          <button style={uiPill(true,{padding:"9px 22px"})} onClick={nuevaOrden}>Empezar</button>
         </div>
-      </div>
+      )}
+      {modo==="orden" && ord && (
+        <div style={card}>
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+            <p style={{...uiLabel,margin:0}}>{ord.sig>=12?"¡Completo!":`Buscá el color n.º ${ord.sig+1}`} · errores {ord.err}</p>
+            <div className="flex gap-2">
+              {ord.sig<12 && <button style={uiPill(ord.pista,{padding:"5px 12px"})} onClick={()=>setOrd(o=>({...o,pista:!o.pista}))}>💡 Pista</button>}
+              <button style={uiPill(false,{padding:"5px 12px"})} onClick={nuevaOrden}>Mezclar de nuevo</button>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8}}>
+            {ord.mezcla.map(pc=>{
+              const puesto=pc<ord.sig, esProx=ord.pista&&pc===ord.sig, mal=ord.mal===pc;
+              return(
+                <button key={pc} onClick={()=>tocarOrden(pc)} style={colorBtn(pc,{opacity:puesto?1:0.95,outline:mal?"4px solid #c0615a":esProx?"4px dashed #fff":puesto?"3px solid #6b9c7c":"none",outlineOffset:2,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:txtSobre(nc(CHROMATIC[pc])),fontFamily:"serif",fontWeight:900,lineHeight:1.1})}>
+                  {puesto && <><span style={{fontSize:16}}>{NOMBRES_PC[pc].split(" ")[0]}</span><span style={{fontSize:10,fontFamily:"monospace",opacity:.8}}>{pc+1}</span></>}
+                </button>
+              );
+            })}
+          </div>
+          {ord.sig>=12 && <p style={{fontSize:13,color:"#6b9c7c",margin:"12px 0 0",textAlign:"center"}}>Orden completo con {ord.err} error{ord.err===1?"":"es"}. Repetilo hasta que salga sin errores.</p>}
+        </div>
+      )}
     </div>
   );
 }
@@ -3064,7 +3128,8 @@ const CAPITULOS = [
 ];
 
 // ─── Componente de la pestaña "El Código" ────────────────────────────────────
-function ElCodigoTab(){
+function ElCodigoTab({irA}={}){
+  const [vista, setVista] = useState("metodo");   // metodo | entrenar
   const [capIdx, setCapIdx] = useState(0);
   const cap = CAPITULOS[capIdx];
   const partes = [...new Set(CAPITULOS.map(c=>c.parte))];
@@ -3078,7 +3143,21 @@ function ElCodigoTab(){
         <p className="text-xs text-gray-500">Temperamento cromático: un sistema de doce colores para leer música más rápido de lo que se la puede calcular.</p>
       </div>
 
-      {capIdx===0 && <CristalesColor/>}
+      <div className="flex flex-wrap gap-1.5 mb-4" style={{background:"#101012",border:"1px solid #26262a",borderRadius:12,padding:4,width:"fit-content"}}>
+        {[["metodo","📖 El método"],["entrenar","🎯 Entrenar los colores"]].map(([v,l])=>(<button key={v} style={uiPill(vista===v,{padding:"7px 16px"})} onClick={()=>setVista(v)}>{l}</button>))}
+      </div>
+
+      {vista==="entrenar" && (
+        <div>
+          <EntrenaColores/>
+          <details style={{marginTop:14}}>
+            <summary style={{cursor:"pointer",...uiLabel,padding:"6px 2px"}}>Ver la paleta para repasar</summary>
+            <div style={{marginTop:10}}><PaletaRueda compacta/></div>
+          </details>
+        </div>
+      )}
+      {vista==="metodo" && <>
+      {capIdx===0 && <PaletaRueda/>}
 
       {/* Selector de capítulo, agrupado por parte */}
       <select value={capIdx} onChange={e=>setCapIdx(parseInt(e.target.value))}
@@ -3111,6 +3190,21 @@ function ElCodigoTab(){
           Siguiente →
         </button>
       </div>
+      </>}
+
+      {irA && (
+        <div style={{marginTop:22,background:"#121214",border:"1px solid #26262a",borderRadius:14,padding:"16px 14px"}}>
+          <p style={{...uiLabel,marginBottom:10}}>Siguiente paso · a tocar</p>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:10}}>
+            {[["bandoneon","♬","Bandoneón","El teclado coloreado, con su octava y tus acordes."],["entrenador","◎","Entrenador","Pintá teclas, armá acordes y practicá escalas."],[window.__ALUMNO?"tareas":"organizador",window.__ALUMNO?"✎":"▦",window.__ALUMNO?"Mis tareas":"Organizador",window.__ALUMNO?"Los ejercicios que te dejó tu profesor.":"Armá clases y asignalas a tus alumnos."]].map(([id,ic,t,d])=>(
+              <button key={id} onClick={()=>irA(id)} style={{textAlign:"left",padding:"12px 14px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,.02)",border:"1px solid #2e2e32",color:"#ececec"}}>
+                <div style={{fontFamily:"'Libre Baskerville',serif",fontWeight:700,fontSize:15}}>{ic} {t} →</div>
+                <div style={{fontFamily:UI_FONT,fontSize:12,color:"#8a8a90",marginTop:3}}>{d}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -4422,18 +4516,21 @@ export default function HarmoniaApp(){
   const toggleFn=useCallback(i=>setOpenFns(p=>p.includes(i)?p.filter(x=>x!==i):[...p,i]),[]);
 
   const [preset,setPreset]=useState(null);
-  const TABS=[
-    {id:"codigo",    label:"El Código",  icon:"◐"},
-    {id:"chord",     label:"Acorde",     icon:"♪"},
-    {id:"prog",      label:"Progresión", icon:"→"},
-    {id:"biblioteca",label:"Biblioteca", icon:"▤"},
-    {id:"bandoneon", label:"Bandoneón",  icon:"♬"},
-    {id:"entrenador",label:"Entrenador", icon:"◎"},
-    {id:"circle",    label:"Quintas",    icon:"○"},
-    {id:"colors",    label:"Colores",    icon:"●"},
-    {id:"modos",     label:"Modos",      icon:"≋"},
+  const ESTUDIO=[
+    {id:"codigo",label:"El Código",icon:"◐"},
+    {id:"bandoneon",label:"Bandoneón",icon:"♬"},
+    {id:"entrenador",label:"Entrenador",icon:"◎"},
+    window.__ALUMNO ? {id:"tareas",label:"Mis tareas",icon:"✎"} : {id:"organizador",label:"Organizador",icon:"▦"},
   ];
-  if(window.__ALUMNO) TABS.splice(1,0,{id:"tareas",label:"Mis tareas",icon:"✎"}); else TABS.push({id:"organizador",label:"Organizador",icon:"▦"});
+  const HERRAMIENTAS=[
+    {id:"chord",label:"Acorde",icon:"♪"},
+    {id:"prog",label:"Progresión",icon:"→"},
+    {id:"biblioteca",label:"Biblioteca",icon:"▤"},
+    {id:"circle",label:"Quintas",icon:"○"},
+    {id:"colors",label:"Colores",icon:"●"},
+    {id:"modos",label:"Modos",icon:"≋"},
+  ];
+  const TABS=[...ESTUDIO.map(t=>({...t,grupo:"estudio"})),...HERRAMIENTAS.map(t=>({...t,grupo:"herr"}))];
   const practicar=(e)=>{ setPreset({...e,nonce:Date.now()}); setTab("entrenador"); };
 
   return(
@@ -4485,26 +4582,35 @@ export default function HarmoniaApp(){
         {/* ── SIDEBAR VERTICAL ── */}
         <div className={`flex-shrink-0 transition-all duration-200 ${navOpen?"w-52":((tab==="bandoneon"||tab==="entrenador")?"w-0 overflow-hidden":"w-0 overflow-hidden md:w-52")}`}
           style={{background:"#0b0b0c",borderRight:"1px solid #1f1f22"}}>
-          <nav className="py-4 px-3 space-y-0.5 w-52">
-            <p style={{...uiLabel,padding:"0 10px 8px",fontSize:9}}>Secciones</p>
-            {TABS.map(t=>{
-              const act=tab===t.id;
-              return(
-                <button key={t.id}
-                  onClick={()=>{setTab(t.id);setNavOpen(false);}}
-                  className="nav-item w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3"
-                  style={{
-                    fontFamily:UI_FONT,fontSize:13,letterSpacing:"0.01em",
-                    background:act?"#17171a":"transparent",
-                    color:act?"#f0f0f2":"#7d7d84",
-                    fontWeight:act?600:500,
-                    boxShadow:act?"inset 2px 0 0 #ececec":"none",
-                  }}>
-                  <span style={{width:16,textAlign:"center",fontSize:14,opacity:act?1:.55}}>{t.icon}</span>
-                  <span>{t.label}</span>
-                </button>
-              );
-            })}
+          <nav className="py-4 px-3 w-52">
+            {[["estudio","Estudio","empezá por acá"],["herr","Herramientas","consulta y práctica libre"]].map(([g,tit,sub],gi)=>(
+              <div key={g} style={{marginTop:gi?18:0,paddingTop:gi?14:0,borderTop:gi?"1px solid #1f1f22":"none"}}>
+                <p style={{...uiLabel,padding:"0 10px",fontSize:9.5,color:g==="estudio"?"#cfcfd4":"#6a6a70"}}>{tit}</p>
+                <p style={{fontFamily:UI_FONT,fontSize:10,color:"#5a5a60",padding:"0 10px 8px",margin:0}}>{sub}</p>
+                <div className="space-y-0.5">
+                  {TABS.filter(t=>t.grupo===g).map((t,k)=>{
+                    const act=tab===t.id;
+                    return(
+                      <button key={t.id}
+                        onClick={()=>{setTab(t.id);setNavOpen(false);}}
+                        className="nav-item w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3"
+                        style={{
+                          fontFamily:UI_FONT,fontSize:g==="estudio"?14:13,letterSpacing:"0.01em",
+                          background:act?"#17171a":"transparent",
+                          color:act?"#f0f0f2":(g==="estudio"?"#a8a8ae":"#7d7d84"),
+                          fontWeight:act||g==="estudio"?600:500,
+                          boxShadow:act?"inset 2px 0 0 #ececec":"none",
+                        }}>
+                        {g==="estudio"
+                          ? <span style={{width:20,height:20,borderRadius:"50%",border:`1.5px solid ${act?"#ececec":"#4a4a50"}`,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:10.5,fontWeight:800,flexShrink:0}}>{k+1}</span>
+                          : <span style={{width:20,textAlign:"center",fontSize:14,opacity:act?1:.55,flexShrink:0}}>{t.icon}</span>}
+                        <span>{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
         </div>
 
@@ -4513,7 +4619,7 @@ export default function HarmoniaApp(){
           <div className={`${(tab==="bandoneon"||tab==="entrenador")?"max-w-[1700px]":tab==="codigo"?"max-w-3xl":(tab==="organizador"||tab==="tareas")?"max-w-4xl":"max-w-2xl"} mx-auto ${(tab==="bandoneon"||tab==="entrenador")?"px-2 py-4 md:px-5 md:py-6":"px-3 py-4 md:px-8 md:py-8"}`}>
 
             {/* ══ EL CÓDIGO ══ */}
-            {tab==="codigo"&&<ElCodigoTab/>}
+            {tab==="codigo"&&<ElCodigoTab irA={setTab}/>}
 
             {/* ══ ACORDE ══ */}
             {tab==="chord"&&(

@@ -198,7 +198,7 @@ const MODE_BY_DEGREE=[
 const HF={
   "7":[
     {fn:"V7 → I (dominante)",degree:"V",key:"Resuelve a tónica mayor",mode:"Mixolidio",modeIvs:MODES["Mixolidio"],tensions:["9","13"],avoid:["11"],resolutions:["I△7","I"],why:"El tritono (3ª–7ª) se resuelve por semitono. Tensión máxima del sistema tonal."},
-    {fn:"V7/iv (hacia menor)",degree:"V",key:"Resuelve a acorde menor",mode:"Alterada",modeIvs:MODES["Alterada"],tensions:["b9","#9","b13"],avoid:["9","13"],resolutions:["im7","im"],why:"Tensiones alteradas crean color oscuro. Idiomático del tango en cadencias menores."},
+    {fn:"V7/IV (hacia menor)",degree:"V",key:"Resuelve a acorde menor",mode:"Alterada",modeIvs:MODES["Alterada"],tensions:["b9","#9","b13"],avoid:["9","13"],resolutions:["I m7","I m"],why:"Tensiones alteradas crean color oscuro. Idiomático del tango en cadencias menores."},
     {fn:"SubV7 (tritonal)",degree:"bII",key:"Reemplaza V7 — bajo por semitono",mode:"Lidio b7",modeIvs:MODES["Lidio b7"],tensions:["9","#11","13"],avoid:[],resolutions:["I△7","I"],why:"Comparte el tritono con V7. El bajo baja un semitono en vez del salto de 5ª."},
     {fn:"Dominante de paso",degree:"?",key:"Conecta cromáticamente",mode:"Mixolidio",modeIvs:MODES["Mixolidio"],tensions:["9","13"],avoid:[],resolutions:["siguiente"],why:"No establece tonalidad. Genera movimiento cromático sin perturbar el centro."},
     {fn:"I7 Blues / tango",degree:"I",key:"Tónica con color blue-tango",mode:"Blues",modeIvs:MODES["Blues"],tensions:["b9","#9"],avoid:[],resolutions:["IV7","V7"],why:"La 7ª menor es constitutiva del sonido, no tensión a resolver."},
@@ -209,13 +209,13 @@ const HF={
     {fn:"△7 Modal",degree:"I",key:"Tónica de modo sin función tonal",mode:"Jónico",modeIvs:MODES["Jónico"],tensions:["9","6","13"],avoid:[],resolutions:["estático"],why:"En música modal el △7 es punto de reposo absoluto. Frecuente en tango moderno."},
   ],
   "min7":[
-    {fn:"ii m7 — Pre-dominante",degree:"ii",key:"Pre-dominante en ii–V–I",mode:"Dórico",modeIvs:MODES["Dórico"],tensions:["9","11"],avoid:["b9"],resolutions:["V7","V7sus4"],why:"Dórico (6ª mayor) da brillo típico del jazz. Evitar b9 — suena Frigio."},
-    {fn:"iii m7 — Mediante",degree:"iii",key:"Sustituto de tónica, más oscuro",mode:"Frigio",modeIvs:MODES["Frigio"],tensions:["11"],avoid:["9","13"],resolutions:["IV△7","ii m7"],why:"Tiene b9 (Frigio). Crea tensión suave que impulsa hacia el IV."},
-    {fn:"vi m7 — Relativa menor",degree:"vi",key:"Tónica relativa estable",mode:"Eólico",modeIvs:MODES["Eólico"],tensions:["9","11"],avoid:[],resolutions:["estático"],why:"Comparte 3 notas con I△7. Reemplaza la tónica mayor con color oscuro."},
-    {fn:"iv m7 — Subdominante menor",degree:"iv",key:"Borrowed del modo menor",mode:"Eólico",modeIvs:MODES["Eólico"],tensions:["9","11","b6"],avoid:[],resolutions:["I△7","V7","bVII△7"],why:"La b6 delata que viene del modo menor. Oscuridad expresiva. Muy usado en tango."},
+    {fn:"II m7 — Pre-dominante",degree:"II",key:"Pre-dominante en II–V–I",mode:"Dórico",modeIvs:MODES["Dórico"],tensions:["9","11"],avoid:["b9"],resolutions:["V7","V7sus4"],why:"Dórico (6ª mayor) da brillo típico del jazz. Evitar b9 — suena Frigio."},
+    {fn:"III m7 — Mediante",degree:"III",key:"Sustituto de tónica, más oscuro",mode:"Frigio",modeIvs:MODES["Frigio"],tensions:["11"],avoid:["9","13"],resolutions:["IV△7","II m7"],why:"Tiene b9 (Frigio). Crea tensión suave que impulsa hacia el IV."},
+    {fn:"VI m7 — Relativa menor",degree:"VI",key:"Tónica relativa estable",mode:"Eólico",modeIvs:MODES["Eólico"],tensions:["9","11"],avoid:[],resolutions:["estático"],why:"Comparte 3 notas con I△7. Reemplaza la tónica mayor con color oscuro."},
+    {fn:"IV m7 — Subdominante menor",degree:"IV",key:"Borrowed del modo menor",mode:"Eólico",modeIvs:MODES["Eólico"],tensions:["9","11","b6"],avoid:[],resolutions:["I△7","V7","bVII△7"],why:"La b6 delata que viene del modo menor. Oscuridad expresiva. Muy usado en tango."},
   ],
   "m7b5":[
-    {fn:"iiø7 — Pre-dominante en menor",degree:"ii",key:"Supertónica en contexto menor",mode:"Locrio #2",modeIvs:MODES["Locrio #2"],tensions:["9","11","b13"],avoid:[],resolutions:["V7b9","V7alt"],why:"Locrio #2 da 9ª natural, más melódico que Locrio. Clave en ii-V-i del tango."},
+    {fn:"IIø7 — Pre-dominante en menor",degree:"II",key:"Supertónica en contexto menor",mode:"Locrio #2",modeIvs:MODES["Locrio #2"],tensions:["9","11","b13"],avoid:[],resolutions:["V7b9","V7alt"],why:"Locrio #2 da 9ª natural, más melódico que Locrio. Clave en ii-V-i del tango."},
     {fn:"ø7 de color modal",degree:"?",key:"Color sin función tonal fija",mode:"Locrio #2",modeIvs:MODES["Locrio #2"],tensions:["9","11"],avoid:[],resolutions:["variable"],why:"Puede flotar ambiguamente en tango moderno y jazz sin necesitar resolver."},
   ],
   "maj":[
@@ -224,11 +224,11 @@ const HF={
     {fn:"V Mayor — Dominante sin 7ª",degree:"V",key:"Menos tensión que V7",mode:"Mixolidio",modeIvs:MODES["Mixolidio"],tensions:["9","13"],avoid:["11"],resolutions:["I","I△7"],why:"Sin la 7ª la tensión es menor. Común en pasajes clásicos y folclóricos."},
   ],
   "min":[
-    {fn:"i menor — Tónica menor",degree:"i",key:"Centro tonal oscuro",mode:"Eólico",modeIvs:MODES["Eólico"],tensions:["9","11","b6"],avoid:[],resolutions:["estático"],why:"La b6 eólica refuerza el color oscuro esencial del tango."},
-    {fn:"iv menor — Subdominante menor",degree:"iv",key:"Peso expresivo en modo menor",mode:"Eólico",modeIvs:MODES["Eólico"],tensions:["9","11"],avoid:[],resolutions:["V7","i","bVII"],why:"Junto al V7 forma la cadencia perfecta menor. Muy frecuente en tango y milonga."},
+    {fn:"I menor — Tónica menor",degree:"I",key:"Centro tonal oscuro",mode:"Eólico",modeIvs:MODES["Eólico"],tensions:["9","11","b6"],avoid:[],resolutions:["estático"],why:"La b6 eólica refuerza el color oscuro esencial del tango."},
+    {fn:"IV menor — Subdominante menor",degree:"IV",key:"Peso expresivo en modo menor",mode:"Eólico",modeIvs:MODES["Eólico"],tensions:["9","11"],avoid:[],resolutions:["V7","I m","bVII"],why:"Junto al V7 forma la cadencia perfecta menor. Muy frecuente en tango y milonga."},
   ],
   "dim7":[
-    {fn:"vii°7 — Sensible disminuido",degree:"vii",key:"Cada nota a semitono de la tónica",mode:"Disminuida",modeIvs:MODES["Disminuida"],tensions:[],avoid:[],resolutions:["I△7","I","i"],why:"Simétrico: divide la octava en 4 partes. Fundamental en tango como paso cromático."},
+    {fn:"VII°7 — Sensible disminuido",degree:"VII",key:"Cada nota a semitono de la tónica",mode:"Disminuida",modeIvs:MODES["Disminuida"],tensions:[],avoid:[],resolutions:["I△7","I","I m"],why:"Simétrico: divide la octava en 4 partes. Fundamental en tango como paso cromático."},
     {fn:"°7 cromático de paso",degree:"?",key:"Conecta por movimiento de bajo",mode:"Disminuida",modeIvs:MODES["Disminuida"],tensions:[],avoid:[],resolutions:["acorde a semitono"],why:"Puede transponerse cada 3 semitonos. Ideal para modulaciones rápidas en tango."},
   ],
 };
@@ -337,48 +337,48 @@ const computeProg=(chords)=>{
 // ─── BIBLIOTECA DE PROGRESIONES ───────────────────────────────────────────────
 const BIBLIOTECA=[
   {genero:"Tango",color:"#e6e6e6",icon:"💃",items:[
-    {titulo:"ii–V–i tango oscuro",              prog:"Bm7b5 – E7b9 – Am",         nota:"La cadencia menor por excelencia del tango. La b9 crea tensión máxima."},
+    {titulo:"II–V–I tango oscuro",              prog:"Bm7b5 – E7b9 – Am",         nota:"La cadencia menor por excelencia del tango. La b9 crea tensión máxima."},
     {titulo:"Cadencia andaluza",                prog:"Am – G – F – E7",            nota:"Base del tango flamenco. El E7 con frigio dominante."},
     {titulo:"Turnaround Piazzolla",             prog:"Amaj7 – F#m7 – Bm7b5 – E7alt",nota:"Típico de Piazzolla: mayor 7ª → relativa → semidism. → dominante alterado."},
     {titulo:"Tango en La menor",                prog:"Am – Dm – E7 – Am – Fmaj7 – Bm7b5 – E7 – Am",nota:"Progresión completa de tango tradicional."},
     {titulo:"Cadena de dominantes",             prog:"E7 – A7 – D7 – G7 – Cmaj7", nota:"Cada acorde resuelve al siguiente por 5ª. Muy usado como puente."},
-    {titulo:"Resolución al menor (ii-V-i)",     prog:"Dm7b5 – G7b9 – Cm",          nota:"ii-V-i en do menor. El G7b9 con frigio dominante."},
+    {titulo:"Resolución al menor (II-V-I)",     prog:"Dm7b5 – G7b9 – Cm",          nota:"II-V-I en do menor. El G7b9 con frigio dominante."},
     {titulo:"La Cumparsita",                    prog:"Am – E7 – Am – Dm – E7 – Am",nota:"Cadencia menor del tango más famoso del mundo."},
     {titulo:"Milonga criolla",                  prog:"D – A7 – D – G – D – A7 – D",nota:"Base armónica de la milonga campera. Simple y efectiva."},
     {titulo:"Intercambio modal tanguero",       prog:"Am – Amaj7 – Am7 – D9 – Bm7b5 – E7 – Am",nota:"Línea cromática descendente en la 7ª. Muy expresiva."},
   ]},
   {genero:"Jazz",color:"#e6e6e6",icon:"🎷",items:[
-    {titulo:"ii–V–I en Do mayor",               prog:"Dm7 – G7 – Cmaj7",           nota:"La cadencia más importante del jazz. Base de toda improvisación."},
+    {titulo:"II–V–I en Do mayor",               prog:"Dm7 – G7 – Cmaj7",           nota:"La cadencia más importante del jazz. Base de toda improvisación."},
     {titulo:"Turnaround I–VI–II–V",             prog:"Cmaj7 – A7 – Dm7 – G7",      nota:"Turnaround clásico. El A7 es dominante secundario de Dm7."},
     {titulo:"Blues en Fa",                      prog:"F7 – Bb7 – F7 – C7 – Bb7 – F7",nota:"Blues de 12 compases simplificado. Todos los acordes son dominantes."},
     {titulo:"Sustitución tritonal",             prog:"Dm7 – Db7 – Cmaj7",           nota:"Db7 reemplaza a G7 (a tritono). El bajo baja cromáticamente."},
     {titulo:"Rhythm Changes (sección A)",       prog:"Bbmaj7 – G7 – Cm7 – F7 – Dm7 – G7 – Cm7 – F7",nota:"Base de 'I Got Rhythm'. Estándar de bebop."},
     {titulo:"Giant Steps (Coltrane)",           prog:"Bmaj7 – D7 – Gmaj7 – Bb7 – Ebmaj7",nota:"Ciclo de 3ras mayores. Modulación simétrica de Coltrane."},
     {titulo:"So What (modal)",                  prog:"Dm7 – Ebm7",                  nota:"Modal jazz. Un acorde por 16 compases, luego sube un semitono."},
-    {titulo:"Autumn Leaves",                    prog:"Cm7 – F7 – Bbmaj7 – Am7b5 – D7 – Gm",nota:"Clásico del jazz. Dos ii-V-I (mayor y menor) encadenados."},
+    {titulo:"Autumn Leaves",                    prog:"Cm7 – F7 – Bbmaj7 – Am7b5 – D7 – Gm",nota:"Clásico del jazz. Dos II-V-I (mayor y menor) encadenados."},
     {titulo:"All The Things You Are",           prog:"Fm7 – Bbm7 – Eb7 – Abmaj7 – Dbmaj7 – G7 – Cmaj7",nota:"Modulaciones por 3ras. Estándar armónicamente complejo."},
     {titulo:"Solar (Miles Davis)",              prog:"Cm – Gm7 – C7 – Fmaj7 – Fm7 – Bb7 – Ebmaj7 – Dm7b5 – G7",nota:"Forma de 12 compases con dos centros tonales."},
   ]},
   {genero:"Choro / MPB",color:"#e6e6e6",icon:"🎸",items:[
     {titulo:"Cadência do choro",                prog:"Am – E7 – Am – Dm – Am – E7 – Am",nota:"Cadência menor clásica do choro brasileiro."},
-    {titulo:"ii–V–I brasileiro (Jobim)",        prog:"Dm7 – G7 – Cmaj7 – A7 – Dm7 – G7 – Cmaj7",nota:"El ii-V-I de Jobim tiene un A7 intercalado que da movimiento."},
+    {titulo:"II–V–I brasileiro (Jobim)",        prog:"Dm7 – G7 – Cmaj7 – A7 – Dm7 – G7 – Cmaj7",nota:"El II-V-I de Jobim tiene un A7 intercalado que da movimiento."},
     {titulo:"Bossa Nova clásica",               prog:"Cmaj7 – Dm7 – G7 – Em7 – A7 – Dm7 – G7",nota:"Movimiento típico de la bossa: tónica → subdominante → dominante."},
     {titulo:"Garota de Ipanema",                prog:"Fmaj7 – G7 – Gm7 – Gb7 – Fmaj7",nota:"El Gb7 es sustituto tritonal del C7. Movimiento cromático descendente."},
     {titulo:"Wave (Tom Jobim)",                 prog:"Dmaj7 – Bm7 – Em7 – A7 – D9 – Db7 – Dmaj7",nota:"Db7 como SubV7 resolviendo a la tónica."},
     {titulo:"Progressão cromática",             prog:"Cmaj7 – B7 – Bbmaj7 – A7 – Abmaj7 – G7 – Cmaj7",nota:"Descenso cromático de dominantes secundarios."},
     {titulo:"IV menor (intercambio modal)",     prog:"Cmaj7 – Fm7 – Bb7 – Cmaj7 – Am7 – D7 – Dm7 – G7",nota:"El Fm7-Bb7 viene del modo paralelo menor. Color oscuro inesperado."},
-    {titulo:"Choro moderno",                    prog:"Am – D7 – Gmaj7 – Cmaj7 – Fmaj7 – Bm7b5 – E7 – Am",nota:"Ciclo de quintas descendente con ii-V-i al final."},
+    {titulo:"Choro moderno",                    prog:"Am – D7 – Gmaj7 – Cmaj7 – Fmaj7 – Bm7b5 – E7 – Am",nota:"Ciclo de quintas descendente con II-V-I al final."},
   ]},
   {genero:"Latinoamérica",color:"#e6e6e6",icon:"🌎",items:[
     {titulo:"Son montuno (Cuba)",               prog:"Cm – G7 – Cm – Fm – Cm – G7 – Cm",nota:"Base del son cubano. El G7 con frigio dominante sobre Cm."},
     {titulo:"Guajira (modo frigio-mayor)",      prog:"E – F – E – Am – E – Am",    nota:"El E mayor sobre contexto menor crea el sonido flamenco-cubano."},
     {titulo:"Bolero romántico",                 prog:"Cmaj7 – Am7 – Dm7 – G7 – Em7 – A7 – Dm7 – G7 – Cmaj7",nota:"El I-VI-II-V extendido del bolero latinoamericano."},
-    {titulo:"Salsa / Mambo",                   prog:"Dm7 – G7 – Cmaj7 – Fm7 – Bb7 – Ebmaj7",nota:"ii-V-I que modula a la subdominante menor. Muy usado en salsa."},
+    {titulo:"Salsa / Mambo",                   prog:"Dm7 – G7 – Cmaj7 – Fm7 – Bb7 – Ebmaj7",nota:"II-V-I que modula a la subdominante menor. Muy usado en salsa."},
     {titulo:"Vals peruano",                     prog:"Am – E7 – Am – Dm – Am – E7 – Am – C – G – Am",nota:"Cadencia menor con apertura a la relativa mayor."},
     {titulo:"Joropo venezolano",                prog:"D – A – D – G – D – A7 – D", nota:"Armonía mayor simple y bailable. Base del joropo llanero."},
     {titulo:"Candombe (Uruguay)",               prog:"Dm – A7 – Dm – Gm – Dm – A7 – Dm",nota:"Cadencia menor del candombe. Grave, oscura y rítmica."},
     {titulo:"Cueca chilena",                    prog:"D – G – A7 – D – Bm – G – A7 – D",nota:"Base armónica de la cueca. I-IV-V-I con paso por la relativa menor."},
-    {titulo:"Cumbia armónica",                  prog:"Am – Dm – Am – E7 – Am",     nota:"La cumbia en su forma más simple. i-iv-i-V7-i."},
+    {titulo:"Cumbia armónica",                  prog:"Am – Dm – Am – E7 – Am",     nota:"La cumbia en su forma más simple. I-IV-I-V7-I."},
     {titulo:"Samba moderna",                    prog:"Dm7 – G7 – Cmaj7 – Fm7 – Bb7 – Ebmaj7 – Am7 – D7",nota:"Samba con modulaciones por 3ras. Color brasileira avanzado."},
   ]},
 ];
@@ -426,19 +426,27 @@ const OCT_C={
 
 // ─── COMPONENTES ──────────────────────────────────────────────────────────────
 
-// Nota con punto de color — sin texto del color escrito
-const Nota=({note,size="md"})=>{
-  const color=nc(note);
-  const sz={sm:"px-2 py-0.5 text-xs",md:"px-3 py-1 text-sm",lg:"px-4 py-1.5 text-base"};
+// Nota = círculo con el color de la nota y su nombre en blanco (sin recuadros ni resplandor)
+const fmtNota=(t)=>String(t).replace(/[0-9]/g,"").replace(/^([A-G])(.*)$/,(m,l,r)=>l+r.replace(/##/g,"𝄪").replace(/#/g,"♯").replace(/bb/g,"♭♭").replace(/b/g,"♭"));
+const NotaDot=({note,size=24,onClick,title})=>{
+  const color=nc(note), t=fmtNota(note);
+  const fs=Math.round(size*(t.length>2?0.36:t.length>1?0.43:0.52));
   return(
-    <span className={`inline-flex items-center gap-1.5 rounded-full font-bold border-2 cursor-pointer ${sz[size]}`}
-      style={{backgroundColor:color+"18",borderColor:color,color}}
-      onClick={()=>playTone(note,4,0.7)}>
-      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{backgroundColor:color}}/>
-      {note}
-    </span>
+    <span title={title||t} onClick={onClick===undefined?()=>playTone(note,4,0.6):onClick}
+      style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:size,height:size,borderRadius:"50%",background:color,color:"#fff",
+        fontWeight:800,fontSize:fs,fontFamily:UI_FONT,lineHeight:1,letterSpacing:"-0.02em",flexShrink:0,cursor:"pointer",
+        textShadow:"0 1px 2px rgba(0,0,0,.9), 0 0 3px rgba(0,0,0,.55)",boxShadow:"inset 0 0 0 1.5px rgba(255,255,255,.3)"}}>{t}</span>
   );
 };
+const Nota=({note,size="md"})=><NotaDot note={note} size={{sm:22,md:28,lg:38}[size]||28}/>;
+// Tensión / nota a evitar: etiqueta + círculo de color (tipo "ok" verde, "no" rojo)
+const TensionChip=({label,note,tipo="ok"})=>(
+  <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"2px 7px 2px 8px",borderRadius:999,whiteSpace:"nowrap",
+    border:`1px solid ${tipo==="ok"?"#2d5c2d":"#5c2d2d"}`,background:"#0f0f10"}}>
+    <span style={{fontFamily:"monospace",fontWeight:800,fontSize:11,color:tipo==="ok"?"#7fcf7f":"#d98a8a"}}>{label}</span>
+    {note ? <NotaDot note={note} size={20}/> : null}
+  </span>
+);
 
 // Piano multi-octava — 3 octavas (C3-B5)
 // Colores: cada tecla activa usa su color tonal propio
@@ -587,12 +595,10 @@ const FnCard=({fn,root,isOpen,onToggle})=>{
             </div>
             <div className="flex flex-wrap gap-1.5 mb-1.5">
               {scale.map((n,i)=>(
-                <button key={i} onClick={()=>playTone(n,4,0.5)}
-                  className="flex flex-col items-center px-2 py-1.5 rounded-lg border text-sm font-bold"
-                  style={{backgroundColor:nc(n)+"22",borderColor:nc(n)+"66",color:nc(n),minWidth:"34px"}}>
-                  <span>{n}</span>
-                  <span style={{fontSize:"8px",opacity:0.5}}>{i+1}°</span>
-                </button>
+                <div key={i} className="flex flex-col items-center gap-1" style={{minWidth:34}}>
+                  <NotaDot note={n} size={32}/>
+                  <span style={{fontSize:9,color:"#6a6a70",fontFamily:"monospace"}}>{i+1}°</span>
+                </div>
               ))}
             </div>
             <p className="text-xs text-gray-600 font-mono">{scale.join(" — ")}</p>
@@ -609,9 +615,7 @@ const FnCard=({fn,root,isOpen,onToggle})=>{
                       <div key={i} className="flex items-center gap-2">
                         <span className="font-mono font-bold text-sm text-green-300 w-7">{label}</span>
                         <span className="text-gray-600 text-xs">→</span>
-                        {note?<button onClick={()=>playTone(note,4,0.5)}
-                          className="px-2 py-0.5 rounded-full text-sm font-bold border"
-                          style={{backgroundColor:color+"22",borderColor:color,color}}>{note}</button>
+                        {note?<NotaDot note={note} size={26}/>
                         :<span className="text-gray-600 text-xs italic">varía</span>}
                       </div>
                     );
@@ -629,8 +633,7 @@ const FnCard=({fn,root,isOpen,onToggle})=>{
                       <div key={i} className="flex items-center gap-2">
                         <span className="font-mono font-bold text-sm text-red-400 w-7">{label}</span>
                         <span className="text-gray-600 text-xs">→</span>
-                        {note&&<span className="px-2 py-0.5 rounded-full text-sm font-bold border"
-                          style={{backgroundColor:color+"22",borderColor:color,color}}>{note}</span>}
+                        {note&&<NotaDot note={note} size={26}/>}
                       </div>
                     );
                   })}
@@ -860,40 +863,33 @@ const Circulo=({highlighted=[],onSelect=null,selectedKey=null})=>{
                 <tbody>
                   {scaleData.map((sd,i)=>{
                     const color=nc(sd.note);
-                    const twn=sd.tensions.map(({label,note})=>note?`${label}→${note}`:label);
-                    const awn=(sd.mode.avoid||[]).map(t=>{const n=tNote(sd.note,t);return n?`${t}→${n}`:t;});
+                    const twn=sd.tensions.map(({label,note})=>({label,note}));
+                    const awn=(sd.mode.avoid||[]).map(t=>({label:t,note:tNote(sd.note,t)}));
                     return(
                       <tr key={i} style={{borderBottom:"1px solid #2a2a2a",background:i%2===0?"transparent":"#1a1a1a"}}>
                         <td className="px-3 py-2">
                           <span className="font-mono font-bold px-1.5 py-0.5 rounded text-xs"
-                            style={{background:color+"22",color}}>{sd.degree}</span>
+                            style={{background:"#1a1a1a",color:"#e6e6e6",border:"1px solid #2a2a2e"}}>{sd.degree}</span>
                         </td>
                         <td className="px-3 py-2">
-                          <button onClick={()=>playTone(sd.note,4,0.6)}
-                            className="font-bold text-sm" style={{color}}>{sd.note}</button>
+                          <NotaDot note={sd.note} size={26}/>
                         </td>
                         <td className="px-3 py-2">
                           <button onClick={()=>{const c=parseChord(`${sd.note}${sd.quality}`);if(c)playChord(c.notes);}}
-                            className="font-bold hover:opacity-75" style={{color,fontSize:"12px"}}>
-                            {sd.note}{sd.quality} ▶
+                            className="font-bold hover:opacity-75" style={{color:"#ececec",fontSize:"13px"}}>
+                            {fmtNota(sd.note)}{sd.quality} ▶
                           </button>
                         </td>
                         <td className="px-3 py-2 text-[#a3a3a3] whitespace-nowrap">{sd.mode.name}</td>
                         <td className="px-3 py-2">
                           <div className="flex flex-wrap gap-1">
-                            {twn.map((t,j)=>(
-                              <span key={j} className="px-1.5 py-0.5 rounded font-mono whitespace-nowrap"
-                                style={{background:"#0a1f0a",color:"#6dbd6d",border:"1px solid #2d5c2d"}}>{t}</span>
-                            ))}
+                            {twn.map((t,j)=>(<TensionChip key={j} label={t.label} note={t.note} tipo="ok"/>))}
                             {!twn.length&&<span className="text-gray-700">—</span>}
                           </div>
                         </td>
                         <td className="px-3 py-2">
                           <div className="flex flex-wrap gap-1">
-                            {awn.map((t,j)=>(
-                              <span key={j} className="px-1.5 py-0.5 rounded font-mono whitespace-nowrap"
-                                style={{background:"#1f0a0a",color:"#bd6d6d",border:"1px solid #5c2d2d"}}>{t}</span>
-                            ))}
+                            {awn.map((t,j)=>(<TensionChip key={j} label={t.label} note={t.note} tipo="no"/>))}
                             {!awn.length&&<span className="text-gray-700">—</span>}
                           </div>
                         </td>
@@ -3835,7 +3831,7 @@ function cqChords(notes, ivs){
     else if(i3===3&&i5===6){tri="dim";ts="°"; sev=i7===9?"°7":"ø7";}
     else if(i3===4&&i5===8){tri="aug";ts="+"; sev=i7===11?"+△7":"+7";}
     const d=iv-CQ_MAJ_IV[i]; const pre=d<0?"♭":d>0?"♯":"";
-    let num=CQ_NUM[i]; if(tri==="min"||tri==="dim") num=num.toLowerCase();
+    let num=CQ_NUM[i]; /* los grados van siempre en mayúscula */
     return {root:r,rootPc:noteIdx(r),tri,ts,sev,roman:pre+num+(tri==="dim"?"°":tri==="aug"?"+":""),i3,i5,i7,deg:i};
   });
 }
@@ -4752,11 +4748,6 @@ export default function HarmoniaApp(){
                             <div className="flex flex-wrap gap-1.5 mb-3">
                               {ch.notes.map(n=><Nota key={n} note={n} size="sm"/>)}
                             </div>
-                            {/* Piano voicing */}
-                            <div className="rounded-xl p-2.5 border border-gray-700 mb-3" style={{background:"#121212"}}>
-                              <p className="text-xs text-gray-600 mb-1.5">Voicing en piano</p>
-                              <Piano leftVoice={v.L} rightVoice={v.R}/>
-                            </div>
                             {f&&(
                               <div className="text-sm flex flex-wrap gap-x-4 gap-y-1">
                                 <span><span className="text-[#a3a3a3]">Modo: </span><span className="text-white font-semibold">{f.mode}</span></span>
@@ -4805,44 +4796,29 @@ export default function HarmoniaApp(){
                                         <tr key={di} style={{borderBottom:"1px solid #121212",background:di%2===0?"transparent":"#0a0a0a"}}>
                                           <td className="py-1.5 pr-2">
                                             <span className="font-mono font-bold px-1.5 py-0.5 rounded"
-                                              style={{background:rc+"22",color:rc}}>{dc.degree}</span>
+                                              style={{background:"#1a1a1a",color:"#e6e6e6",border:"1px solid #2a2a2e"}}>{dc.degree}</span>
                                           </td>
                                           <td className="py-1.5 pr-2">
-                                            <button className="font-bold hover:opacity-75" style={{color:rc}}
+                                            <button className="font-bold hover:opacity-75" style={{color:"#ececec",fontSize:13}}
                                               onClick={()=>{const c=parseChord(`${dc.root}${dc.quality}`);if(c)playChord(c.notes);}}>
-                                              {dc.root}{dc.quality} ▶
+                                              {fmtNota(dc.root)}{dc.quality} ▶
                                             </button>
                                           </td>
                                           <td className="py-1.5 pr-2">
-                                            <div className="flex gap-0.5 flex-wrap">
-                                              {dc.chNotes.map((n,ni)=>(
-                                                <span key={ni} className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full border font-bold"
-                                                  style={{fontSize:"9px",backgroundColor:nc(n)+"18",borderColor:nc(n)+"55",color:nc(n)}}>
-                                                  <span className="w-1.5 h-1.5 rounded-full" style={{background:nc(n)}}/>{n}
-                                                </span>
-                                              ))}
+                                            <div className="flex gap-1 flex-wrap">
+                                              {dc.chNotes.map((n,ni)=>(<NotaDot key={ni} note={n} size={24}/>))}
                                             </div>
                                           </td>
                                           <td className="py-1.5 pr-2 text-[#a3a3a3] whitespace-nowrap">{dc.mode}</td>
                                           <td className="py-1.5 pr-2">
                                             <div className="flex gap-0.5 flex-wrap">
-                                              {dc.tens.map(({label,note},ti)=>(
-                                                <span key={ti} className="px-1 py-0.5 rounded font-mono whitespace-nowrap"
-                                                  style={{background:"#0a1f0a",color:"#6dbd6d",border:"1px solid #2d5c2d",fontSize:"9px"}}>
-                                                  {label}{note?`→${note}`:""}
-                                                </span>
-                                              ))}
+                                              {dc.tens.map(({label,note},ti)=>(<TensionChip key={ti} label={label} note={note} tipo="ok"/>))}
                                               {!dc.tens.length&&<span className="text-gray-700">—</span>}
                                             </div>
                                           </td>
                                           <td className="py-1.5">
                                             <div className="flex gap-0.5 flex-wrap">
-                                              {dc.avd.map(({label,note},ai)=>(
-                                                <span key={ai} className="px-1 py-0.5 rounded font-mono whitespace-nowrap"
-                                                  style={{background:"#1f0a0a",color:"#bd6d6d",border:"1px solid #5c2d2d",fontSize:"9px"}}>
-                                                  {label}{note?`→${note}`:""}
-                                                </span>
-                                              ))}
+                                              {dc.avd.map(({label,note},ai)=>(<TensionChip key={ai} label={label} note={note} tipo="no"/>))}
                                               {!dc.avd.length&&<span className="text-gray-700">—</span>}
                                             </div>
                                           </td>
